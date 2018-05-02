@@ -1,6 +1,17 @@
-*****************************************************************
+********************************************************************************
+DFTB+XT: open software package for quantum nanoscale modeling
+********************************************************************************
+
+DFTB+XT is DFTB+ eXTended version for 
+model and atomistic quantum transport at nanoscale,
+many-body nonequilibrium phenomena, 
+material & device modeling.
+
+DFTB+XT is available from http://quantranspro.org/dftb+xt/ site
+
+********************************************************************************
 DFTB+: general package for performing fast atomistic calculations
-*****************************************************************
+********************************************************************************
 
 DFTB+ is a software package for carrying out fast quantum mechanical atomistic
 calculations based on the Density Functional Tight Binding method. It can be
@@ -9,8 +20,8 @@ as a library.
 
 The project is hosted on `github <http://github.com/dftbplus/dftbplus>`_.
 
-DFTB+ is released under the GNU Lesser General Public License. Please consult
-the included `LICENSE <LICENSE>`_ file for the detailed licensing conditions.
+DFTB+ is released under the GNU Lesser General Public License version 3. 
+Please consult the included `LICENSE <LICENSE>`_ file for the detailed licensing conditions.
 
 Information on the compiling, testing and installation of DFTB+ is given in the
 file `INSTALL.rst <INSTALL.rst>`_ in this directory.

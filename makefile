@@ -58,6 +58,15 @@ endif
 ifeq ($(strip $(WITH_MPI)),1)
 dftb+: external_mpifx external_scalapackfx
 endif
+ifeq ($(strip $(WITH_LIBNEGF)),1)
+dftb+: external_tranas external_sparskit #external_libnegf 
+#external_libnegf: external_mpifx 
+external_tranas: external_mpifx
+WITH_POISSON := 1
+endif
+ifeq ($(strip $(WITH_POISSON)),1)
+dftb+: external_mudpack 
+endif
 modes: external_xmlf90
 waveplot: external_xmlf90
 
@@ -74,8 +83,10 @@ misc_skderivs: external_xmlf90
 
 EXTERNAL_NAME = $(subst external_,,$@)
 
-EXTERNALS = external_xmlf90 external_fsockets external_dftd3 external_mpifx\
-    external_scalapackfx
+EXTERNALS = external_xmlf90 external_fsockets external_dftd3 external_mpifx \
+            external_scalapackfx external_mudpack external_tranas external_sparskit 
+	    #external_libnegf
+	    
 .PHONY: $(EXTERNALS)
 $(EXTERNALS):
 	mkdir -p $(BUILDDIR)/external/$(EXTERNAL_NAME)
@@ -151,6 +162,10 @@ check_dptools_py3:
 .PHONY: distclean
 distclean:
 	rm -rf $(BUILDDIR)
+	rm -rf external/sparskit/*/*.o !DAR!
+	rm -rf doc/dftb+/manual/*.aux doc/dftb+/manual/*._tmp_ doc/dftb+/manual/*.blg doc/dftb+/manual/*.ilg doc/dftb+/manual/*.log 
+	rm -rf doc/dftb+/manual/*.out doc/dftb+/manual/*.brf doc/dftb+/manual/*.idx doc/dftb+/manual/*.ind doc/dftb+/manual/*.pl
+	find -iname "*~"  -exec rm -i {} \;
 
 # Create a source distribution from current git check-out
 # Note: check-out must contain all submodules
