@@ -11,3 +11,6 @@ make.config
 __pycache__
 .idea
 RELEASE
+*.[oa]
+tempdir
+tools/dptools/build/

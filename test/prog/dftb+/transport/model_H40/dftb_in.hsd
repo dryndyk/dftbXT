@@ -1,0 +1,129 @@
+Geometry = NoGeometry {}
+
+Transport {
+  Device {
+    AtomRange = 1 16
+    FirstLayerAtoms = 1
+    ContactPLs = 1 1         #Required for NoGeometry
+  }
+  Contact {
+    Id = "source"
+    AtomRange = 17 24
+    FermiLevel = -0.01756396865017   
+    Potential [eV] = 0.
+    Temperature [K] = 293.0
+    #WideBand = Yes   
+    #LevelSpacing = 0.231
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    #ReadSurfaceGF = Yes
+    #Unformatted = Yes
+    #WriteSeparatedSGF = Yes
+    #ReadSeparatedSGF = Yes
+  }
+  Contact {
+    Id = "drain"
+    AtomRange = 25 32
+    FermiLevel = -0.01756396865017   
+    Potential [eV] = 0.
+    Temperature [K] = 293.0
+    #WideBand = Yes  
+    #LevelSpacing = 0.231
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    #ReadSurfaceGF = Yes
+  }
+  Task = UploadContacts {
+  }
+}
+
+Hamiltonian = Model {
+  NumStates = 32              #Required for NoGeometry
+  HamiltonianFile = H.mtr     #Required for NoGeometry
+  ReadOverlap = Yes           #Relevant for NoGeometry
+  OverlapFile = S.mtr         #Relevant for NoGeometry
+  #SpinDegeneracy = Yes       #Relevant for NoGeometry
+  #Orthonormal = Yes      
+  #OrthonormalDevice = Yes
+  External = {
+    #WriteDFTB = Yes
+    #ReadDFTB = Yes
+    #ReadU = Yes
+    #FileNameH = H.mtr       #Do not change! 
+    #ReadLibNEGF = Yes
+  }  
+  #Dephasing {
+    #BuettikerProbes = ZeroCurrent {
+    #BuettikerProbes = ZeroPotential {
+    #  Coupling [eV] = constant { 0.0 }
+    #}
+    #VibronicElastic = local {
+    #  AtomBlock = Yes
+    #  SemiLocal = Yes
+    #  Coupling [eV] = Constant { 0.0 }
+    #  Coupling [eV] = AtomCoupling {
+    #    AtomList { Atoms = 1
+    #               Value = 0.1
+    #    }
+    #    AtomList { Atoms = 2 3
+    #               Value = 0.01
+    #    }
+    #    AtomList { Atoms = 4 5
+    #               Value = 0.03
+    #    }
+    #  }
+    #  Coupling [eV] = AllOrbitals { 0.1 0.1 0.1 0.1 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.03 0.03 0.03 0.03 0.03 0.03 #0.03 0.03}
+    #  MaxNumIter = 100000
+    #}
+  #}
+  #Interactions {
+    #ManyBody = Yes
+    #Elastic = Yes
+    #MBNGF = Yes
+  #}
+  #Electrostatics = Poisson {
+  #  Poissonbox [Angstrom] = 40.0 30.0 30.0
+  #  MinimalGrid [Angstrom] = 0.5 0.5 0.5
+  #  SavePotential = Yes
+  #}
+  Eigensolver = TransportOnly {}
+  #Eigensolver = GreensFunction {}
+  #Mixer = Broyden {
+  #  MixingParameter = 0.02
+  #}
+}
+
+Analysis = {
+  TunnelingAndDos {
+    Verbosity = 101
+    EnergyRange [eV] = -5.  6.
+    EnergyStep [eV] =0.03
+    TerminalCurrents{
+      EmitterCollector = {"drain" "source"}
+    }      
+    Region = {
+      Atoms = 1:16
+    }
+    #WriteEqLDOS = Yes
+    #DOSwithS = No
+    #Write_negf_params = Yes
+  }
+}
+
+Options = {
+  #MullikenAnalysis = Yes
+  WriteAutotestTag = Yes
+}
+
+
+ParserOptions = {
+  ParserVersion = 4
+}
+
+
+
+
+
+

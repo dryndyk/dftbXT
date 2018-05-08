@@ -1,7 +1,12 @@
 !--------------------------------------------------------------------------------------------------!
 !  DFTB+: general package for performing fast atomistic simulations                                !
 !  Copyright (C) 2018  DFTB+ developers group                                                      !
-!                                                                                                  !
+!--------------------------------------------------------------------------------------------------!
+!  DFTB+XT: eXTended version for model and atomistic quantum transport at nanoscale                !
+!  many-body nonequilibrium phenomena, material & device modeling                                  !
+!  Copyright (C) 2018 Dmitry A. Ryndyk.                                                            !
+!--------------------------------------------------------------------------------------------------!
+!  GNU Lesser General Public License version 3 or (at your option) any later version.              !
 !  See the LICENSE file for terms of usage and distribution.                                       !
 !--------------------------------------------------------------------------------------------------!
 
@@ -13,7 +18,6 @@
 !> input has taken place and the details of the user settings for the running-environment are
 !> known. Also, it can be used by routines which are not MPI-aware but wish to make I/O or abort the
 !> code.
-!>
 module globalenv
   use, intrinsic :: iso_fortran_env, only : output_unit
 #:if WITH_MPI
@@ -23,6 +27,7 @@ module globalenv
   private
 
   public :: initGlobalEnv, destructGlobalEnv
+  public :: initGlobalEnv_CP2K !!DAR
   public :: abort, shutdown, synchronizeAll
   public :: stdOut, tIoProc
   public :: withScalapack, withMpi
@@ -47,8 +52,6 @@ module globalenv
   !> Whether code was compiled with Scalapack
   logical, parameter :: withScalapack = ${FORTRAN_LOGICAL(WITH_SCALAPACK)}$
 
-
-
 contains
 
   !> Initializes global environment (must be the first statement of a program)
@@ -69,6 +72,26 @@ contains
   #:endif
 
   end subroutine initGlobalEnv
+  
+  !!DAR begin - initGlobalEnv_CP2K()  
+  !> Initializes DFTB+XT global environment in CP2K+XT
+  subroutine initGlobalEnv_CP2K()
+
+  #:if WITH_MPI
+    !call mpifx_init()
+    call globalMpiComm%init()
+    if (globalMpiComm%master) then
+      stdOut = output_unit
+    else
+      stdOut = 1
+      open(stdOut, file="/dev/null", action="write")
+    end if
+  #:else
+    stdOut = stdOut0  
+  #:endif
+
+  end subroutine initGlobalEnv_CP2K
+  !!DAR end
 
 
   !> Finalizes global environment (must be the last statement of a program)

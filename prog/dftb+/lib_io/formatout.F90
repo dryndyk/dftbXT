@@ -14,6 +14,7 @@ module formatout
   use message
   use assert
   use accuracy
+  use fileid
   use constants
   use lapackroutines, only: matinv
   use sparse2dense
@@ -22,7 +23,7 @@ module formatout
 
   public :: clearFile, writeGenFormat, writeXYZFormat
   public :: printDFTBHeader
-  public :: writeSparseAsSquare, writeSparse
+  public :: writeSparseAsSquare, writeSparseAsSquare_old, writeSparse
 
 
   !> Clears contents of a file
@@ -50,7 +51,12 @@ module formatout
     module procedure writeSparseAsSquare_real
     module procedure writeSparseAsSquare_cplx
   end interface writeSparseAsSquare
-
+  
+  interface writeSparseAsSquare_old
+    module procedure writeSparseAsSquare_real_old
+    module procedure writeSparseAsSquare_cplx_old
+  end interface writeSparseAsSquare_old
+  
 contains
 
 
@@ -307,39 +313,47 @@ contains
 
 
   !> Writes the greeting message of dftb+ on stdout
-  subroutine printDFTBHeader(release, year)
+  subroutine printDFTBHeader(release, year, outunit)
 
     !> release version of the code
     character(len=*), intent(in) :: release
 
     !> release year
-    integer, intent(in) :: year
+    integer, intent(in) :: year, outunit
 
     character, parameter :: vbar = '|'
     character, parameter :: hbar = '='
     integer, parameter :: headerWidth = 80
 
-    write(stdOut, '(2A,/,A)') vbar, repeat(hbar, headerWidth - 1), vbar
-    write(stdOut, '(3A)') vbar, '  DFTB+ ', trim(release)
-    write(stdOut, '(A)') vbar
-    write(stdOut, '(2A,I0,A)') vbar, '  Copyright (C) ', year, '  DFTB+ developers group'
-    write(stdOut, '(A,/,2A,/,A)') vbar, vbar, repeat(hbar, headerWidth - 1), vbar
-    write(stdOut, '(2A)') vbar,&
-        & '  When publishing results obtained with DFTB+, please cite the following',&
-        & vbar, '  reference:'
-    write(stdOut, '(A)') vbar
-    write(stdOut, '(2A)') vbar,'  * B. Aradi, B. Hourahine and T. Frauenheim,',&
-        & vbar, '    DFTB+, a Sparse Matrix-Based Implementation of the DFTB Method,',&
-        & vbar, '    J. Phys. Chem. A, 111 5678 (2007).  [doi: 10.1021/jp070186p]'
-    write(stdOut, '(A)') vbar
-    write(stdOut, '(2A,2(/,2A))') vbar,&
-        & '  You should also cite additional publications crediting the parametrization',&
-        & vbar,&
-        & '  data you use. Please consult the documentation of the SK-files for the',&
-        & vbar,&
-        & '  references.'
-    write(stdOut, '(A,/,2A,/)') vbar, vbar, repeat(hbar, headerWidth - 1)
-
+    write(outunit,*)
+    write(outunit, '(A)') repeat(hbar, headerWidth)
+    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,'                                DFTB+XT 1.02                                ',hbar,hbar 
+    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,'            open software package for quantum nanoscale modeling            ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' DFTB+ eXTended version for model and atomistic quantum transport,          ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' many-body nonequilibrium phenomena, material & device modeling             ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' Copyright (C) 2017-2018 DFTB+ developers group                             ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' Copyright (C) 2018 Dmitry A. Ryndyk                                        ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
+    write(outunit, '(A)') repeat(hbar, headerWidth)
+    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' Please cite as: DFTB+XT package [1], based on the DFTB+ [2,3] source code  ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' [1] Dmitry A. Ryndyk, DFTB+XT, http://quantranspro.org/dftb+xt/            ',hbar,hbar 
+    write(outunit, '(5A)') hbar,hbar,' [2] B. Aradi, B. Hourahine and T. Frauenheim,                              ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,'     J. Phys. Chem. A 111, 5678 (2007); http://dftbplus.org/                ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' [3] A. Pecchia, G. Penazzi, L. Salvucci and A. Di Carlo,                   ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,'     New Journal of Physics 10, 065022 (2008) [for transport calculations]  ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' You should also cite additional publications crediting the parametrization ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' data you use. Please consult the documentation of the SK-files for the     ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' references. Other references to the particular methods are given in the    ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,' manual and in the end of the output file.                                  ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
+    write(outunit, '(A)') repeat(hbar, headerWidth)
+  
   end subroutine printDFTBHeader
 
 
@@ -467,6 +481,116 @@ contains
     close(fd)
 
   end subroutine writeSparseAsSquare_cplx
+  
+  !> Converts a sparse matrix to its square form and write it to a file.
+  subroutine writeSparseAsSquare_real_old(fname, sparse, iNeighbor, nNeighbor, iAtomStart, iPair, &
+      & img2CentCell)
+
+    !> Name of the file to write the matrix to.
+    character(len=*), intent(in) :: fname
+
+    !> Sparse matrix.
+    real(dp), intent(in) :: sparse(:)
+
+    !> Neighbor list index.
+    integer, intent(in) :: iNeighbor(0:,:)
+
+    !> Number of neighbors.
+    integer, intent(in) :: nNeighbor(:)
+
+    !> Offset array in the square matrix.
+    integer, intent(in) :: iAtomStart(:), iPair(0:,:)
+
+    !> Pair indexing array.
+    integer, intent(in) :: img2CentCell(:)
+
+    !> Mapping of the atoms to the central cell.
+    real(dp), allocatable :: square(:,:)
+    character(mc) :: strForm
+    integer :: fd, nOrb
+
+    nOrb = iAtomStart(size(nNeighbor) + 1) - 1
+
+    allocate(square(nOrb, nOrb))
+    fd = getFileId()
+    open(fd, file=fname, form="formatted", status="replace")
+    write(fd, "(A1,A10,A10,A10,A10)") "#", "REAL", "NALLORB", "NKPOINT"
+    write(fd, "(1X,L10,I10,I10,I10)") .true., nOrb, 1
+
+    write (strForm, "(A,I0,A)") "(", nOrb, "ES24.15)"
+    call unpackHS(square, sparse, iNeighbor, nNeighbor, iAtomStart, iPair, &
+        &img2CentCell)
+    call blockSymmetrizeHS(square, iAtomStart)
+    write(fd, "(A1,A10,A10)") "#", "IKPOINT"
+    write(fd, "(1X,I10,I10)") 1
+    write(fd, "(A1,A)") "#", " MATRIX"
+    write(fd, strForm) square
+    close(fd)
+
+  end subroutine writeSparseAsSquare_real_old  
+
+
+  !> Converts a sparse matrix to its square form and write it to a file.
+  subroutine writeSparseAsSquare_cplx_old(fname, sparse, kPoints, iNeighbor, nNeighbor, iAtomStart, &
+      & iPair, img2CentCell, iCellVec, cellVec)
+
+    !> Name of the file to write the matrix into.
+    character(len=*), intent(in) :: fname
+
+    !> Sparse matrix.
+    real(dp), intent(in) :: sparse(:)
+
+    !> List of k-points.
+    real(dp), intent(in) :: kPoints(:,:)
+
+    !> Neighbor list index.
+    integer, intent(in) :: iNeighbor(0:,:)
+
+    !> Number of neighbors.
+    integer, intent(in) :: nNeighbor(:)
+
+    !> Offset array in the square matrix.
+    integer, intent(in) :: iAtomStart(:)
+
+    !> Pair indexing array.
+    integer, intent(in) :: iPair(0:,:)
+
+    !> Mapping of the atoms to the central cell.
+    integer, intent(in) :: img2CentCell(:)
+
+    !> Index of the cell translation vectors for each atom.
+    integer, intent(in) :: iCellVec(:)
+
+    !> Cell translation vectors.
+    real(dp), intent(in) :: cellVec(:,:)
+
+    complex(dp), allocatable :: square(:,:)
+    character(mc) :: strForm
+    integer :: fd, nOrb, nKPoint
+    integer :: iK
+
+    nOrb = iAtomStart(size(nNeighbor) + 1) - 1
+    nKPoint = size(kPoints, dim =2)
+
+    allocate(square(nOrb, nOrb))
+    fd = getFileId()
+    open(fd, file=fname, form="formatted", status="replace")
+    write(fd, "(A1,A10,A10,A10,A10)") "#", "REAL", "NALLORB", "NKPOINT"
+    write(fd, "(1X,L10,I10,I10)") .false., nOrb, nKPoint
+
+    write (strForm, "(A,I0,A)") "(", 2 * nOrb, "ES24.15)"
+    do iK = 1, nKPoint
+      call unpackHS(square, sparse, kPoints(:,iK), iNeighbor, nNeighbor, &
+          &iCellVec, cellVec, iAtomStart, iPair, img2CentCell)
+      call blockHermitianHS(square, iAtomStart)
+      write(fd, "(A1,A10,A10)") "#", "IKPOINT"
+      write(fd, "(1X,I10,I10)") iK
+      write(fd, "(A1,A)") "#", " MATRIX"
+      write(fd, strForm) square
+    end do
+    close(fd)
+
+  end subroutine writeSparseAsSquare_cplx_old
 
 
   !> Writes a sparse matrix to a file.

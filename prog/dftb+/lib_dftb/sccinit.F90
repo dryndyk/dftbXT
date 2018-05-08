@@ -255,7 +255,7 @@ contains
       if (abs(nEl - sumQ) >= 1e-3_dp) then
         write(error_string, 99000) sumQ, nEl
 99000   format ('External file of charges has a total charge:', F18.6,', instead of ',F18.6)
-        call error(error_string)
+        call warning(error_string) !!DAR error => warning
       end if
     end if
     if (present(magnetisation)) then

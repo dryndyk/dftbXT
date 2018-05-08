@@ -4,13 +4,27 @@
 \makeindex
 \include{newcommands}
 
-\title{\textbf{{\dftbp}\\[0.5cm]Version 18.1\\[1.5cm]
-    {U\,S\,E\,R\,\ \, M\,A\,N\,U\,A\,L}}}
+\definecolor{red}{RGB}{160,0,0}
+%\newcommand{\new}{\color{red}}
+\newcommand{\new}{\color{black}}
+
+\newcommand{\frameofframes}{/}
+ 
+\title{\textbf{
+    {\new {\dftbpxt} \\[0.5cm]
+    open software package for quantum nanoscale modeling\footnote{http://quantranspro.org/dftb+xt/}
+    } \\[1.5cm]
+    {U\,S\,E\,R\,\ \, M\,A\,N\,U\,A\,L}} \\[0.2cm]Version 1.01, Release \today }
 \date{}
-\author{}
+\author{} 
 
 \begin{document}
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
 \maketitle
+
+\renewcommand*{\thefootnote}{\arabic{footnote}}
 
 \setcounter{tocdepth}{2}
 \tableofcontents
@@ -18,7 +32,7 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
 
-
+\include{preface}
 \include{introduction}
 \include{dftbp}
 \include{modes}
@@ -30,7 +44,6 @@
 \include{gen}
 \include{spin_constants}
 \include{disp_constants}
-\include{restart_files}
 \include{publications}
 \include{references}
 

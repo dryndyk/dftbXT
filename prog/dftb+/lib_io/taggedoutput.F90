@@ -94,6 +94,9 @@ module taggedoutput
 
   !> External electric field
   character(*), parameter, public :: tag_externfield = 'external_efield'
+  
+  !> transmission function
+  character(*), parameter, public :: tag_transmission = 'transmission' !!DAR
 
   ! general format strings
 

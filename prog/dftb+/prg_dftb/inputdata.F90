@@ -25,6 +25,9 @@ module inputdata_module
 #:endif
   use pmlocalisation, only : TPipekMezeyInp
   use elstatpot, only : TElStatPotentialsInp
+  use libnegf_vars  !!DAR
+  use poisson_vars  !!DAR
+  
   implicit none
   private
   save
@@ -32,6 +35,8 @@ module inputdata_module
   public :: control, TGeometry, slater, inputData, XLBOMDInp, TParallelOpts
   public :: TBlacsOpts
   public :: init, destruct
+  public :: TNEGFInfo
+
 
 
   !> Contains Blacs specific options.
@@ -119,7 +124,7 @@ module inputdata_module
     logical :: tAppendGeo  = .false.
 
     !> use converged SCC forces only
-    logical :: tConvrgForces = .true.
+    logical :: tConvrgForces = .false.
 
     !> geometry step
     integer :: iGeoOpt     = 0
@@ -341,6 +346,7 @@ module inputdata_module
     logical, allocatable :: tShellResInRegion(:)
     logical, allocatable :: tOrbResInRegion(:)
     character(lc), allocatable :: RegionLabel(:)
+    character(lc), allocatable :: regionLabels(:)
 
 
     !> H short range damping
@@ -376,6 +382,12 @@ module inputdata_module
     logical :: tWriteRealHS = .false.
     logical :: tMinMemory = .false.
 
+    
+    !> potential shifts are read from file
+    logical :: tReadShift = .false.
+    !> use Poisson solver for electrostatics
+    logical :: tPoisson = .false.
+    
 
     !> Dispersion related stuff
     type(DispersionInp), allocatable :: dispInp
@@ -409,6 +421,9 @@ module inputdata_module
 
     !> Maximal timing level to show in output
     integer :: timingLevel
+    
+    !> global verbosity level 
+    integer :: verbose  !!DAR
 
   end type control
 
@@ -425,6 +440,15 @@ module inputdata_module
     type(ORepCont), allocatable :: repCont
     type(TOrbitals), allocatable :: orb
   end type slater
+  
+  !------------------------------------------------------------------------------------------------!
+  
+  !> container for data needed by libNEGF
+  type TNEGFInfo
+    type(TGDFTBTunDos) :: tundos  !Transport section informations
+    type(TGDFTBGreenDensInfo) :: greendens  !NEGF solver section informations
+    type(TPoissonInfo) :: poisson !DAR
+  end type TNEGFInfo
 
 
   !> container for input data constituents
@@ -432,6 +456,9 @@ module inputdata_module
     type(control) :: ctrl
     type(TGeometry) :: geom
     type(slater) :: slako
+    type(TTransPar) :: transpar
+    type(TNEGFInfo) :: ginfo
+    type(TPoissonInfo) :: poisson
     logical :: tInitialized = .false.
   end type inputData
 
@@ -447,7 +474,17 @@ module inputdata_module
     module procedure InputData_destruct
   end interface destruct
 
+  !> Solver types (used like an enumerator)
+  integer, parameter, public :: solverQR = 1
+  integer, parameter, public :: solverDAC = 2
+  integer, parameter, public :: solverRR1 = 3
+  integer, parameter, public :: solverRR2 = 4
+  integer, parameter, public :: solverGF = 5
+  integer, parameter, public :: onlyTransport = 6
+
+!--------------------------------------------------------------------------------------------------!  
 contains
+!--------------------------------------------------------------------------------------------------!
 
 
   !> Mark data structure as initialised

@@ -1,0 +1,253 @@
+#!/bin/csh -f
+
+# Fermi_search 1.0 for gDFTB code 
+# Fermi_search EFermi_guess Target_N Tolerance
+# search for Fermi level near a given guess energy for a Target 
+# number of electrons
+
+
+# alias calculator and > < checker
+# using awk !!
+#
+#
+if ( $3 == "" ) then
+  echo Fermi_search EFermi_guess Target_N Tolerance
+  exit
+endif
+
+#************************************************************
+# SET RUN_PATH
+# ***********************************************************
+set RUN_PATH=~/bin
+set RUN = ${RUN_PATH}/dftb+
+
+alias calc 'awk -v OFMT="%.10g" "BEGIN{print \!* }" '
+alias chk 'awk "BEGIN{print \!* }" '
+
+echo '**************************************************'
+echo '*               FERMI SEARCH script              *'
+echo '**************************************************'
+
+#define initial variables
+
+
+#-----------------------------------------------
+set Es=$1
+set N0 = $2
+set Acc = $3
+
+echo ""
+echo "Target N=" $N0
+echo "Accuracy=" $Acc
+echo "Setting Ef=" $Es  
+echo ""
+# ---------------------------------------------
+# back-up PAR.IN in a file which can be updated
+\cp -f dftb_in.hsd dftb_in.bk
+# ===============================================================
+#FIRST PART: FIND INVERSION INTERVAL
+
+awk '{if ($1 == "FermiLevel"){printf("%s%.12f%s\n","FermiLevel [eV] = setforall { ",'"$Es"'," }")}else{print $0}}' dftb_in.bk >! dftb_in.hsd 
+
+# run gDFTB
+$RUN
+
+# read resulting total charge from CHR.DAT
+set NN = `awk '{if($1=="Input/Output"){print $6}}' detailed.out`
+# compute relative charge
+set Ns = `calc ($NN-$N0)`
+
+ echo ' '
+ echo "N=" $NN
+ echo ' '
+
+# set the absolute value of Ns.
+if `chk ($Ns < 0)` then
+  set Ns_u = `calc ( - $Ns)`
+else
+  set Ns_u = $Ns
+endif
+
+# -------------------------------------
+# Check whether Accuracy is already met for one of the two 
+# starting points.
+# -------------------------------------
+# Con==1 for not converged result
+set Con = `chk ($Ns_u > $Acc)` 
+
+if ($Con) then
+  echo "Searching for sign inversion interval..."
+  echo ' '
+  set Em = $Es
+  set Found = 0 
+
+  # ===============================================================
+  # search for inversion interval
+
+  while ( $Found == 0 )  
+ 
+    if `chk ($Ns < 0)` then
+      set Em = `calc ($Em + 0.2)`
+    else
+      set Em = `calc ($Em - 0.2)`
+    endif
+    echo ' '
+    echo "Setting Ef = " $Em
+    echo ' '
+    awk '{if ($1 == "FermiLevel"){printf("%s%.12f%s\n","FermiLevel [eV] = setforall { ",'"$Em"'," }")}else{print $0}}' dftb_in.bk >! dftb_in.hsd 
+
+    #   Run gDFTB
+    $RUN
+ 
+    set NN = `awk '{if($1=="Input/Output"){print $6}}' detailed.out`
+    set Nm = `calc ($NN-$N0) ` 
+
+    if `chk ($Nm < 0)` then
+      set Nm_u = `calc ( - $Nm)`
+    else 
+      set Nm_u = $Nm
+    endif
+    # -------------------------------------------------------------------
+    echo "Em=" $Em  "Nm=" $NN
+
+    # decide whether there is a sign inversion
+    set P = `calc ($Ns*$Nm)`
+    
+    if ($P =~ -*) then 
+        set Found = 1
+    endif
+  end
+
+  echo '' 
+  echo "Sign inversion found between " $Es "and" $Em
+  echo '' 
+# -------------------------------------------------------------------
+# Once sign inversion is found start with devide and conquer -----
+   
+  if `chk ($Ns < 0)` then
+   set E1 = $Es
+   set E2 = $Em
+   set N1 = $Ns 
+   set N1_u = $Ns_u
+   set N2 = $Nm
+   set N2_u = $Nm_u
+  else
+   set E1 = $Em
+   set E2 = $Es
+   set N1 = $Nm 
+   set N1_u = $Nm_u
+   set N2 = $Ns
+   set N2_u = $Ns_u
+  endif
+
+  # ===============================================================
+  # Step 3.
+  set Sum = `calc ($N2_u+$N1_u)`
+  set P = `calc ($N1*$N2)` 
+
+  # -------------------------------------
+  # Check whether Accuracy is already met for one of the two 
+  # starting points.
+  # -------------------------------------
+  set Con = `chk ($N2_u > $Acc)`
+  set wh = 2 
+  # -------------------------------------
+  echo "N1*N2=" $P
+  echo
+
+else
+
+  set E1 = $Es  
+  set N1 = $Ns
+  set wh = 1
+  set P = -1
+
+endif
+
+# =========================================================================
+# check if there is a sign inversion
+# if not skip all and output error msg
+
+if ( $P =~ -* )  then
+
+  while ( $Con == 1 ) 
+
+    # Compute charge at Em, the median point of the interval---------------
+    set Em = `calc ($N2_u * $E1 + $N1_u * $E2)/$Sum `
+
+    echo 'setting Ef = ' $Em
+
+    awk '{if ($1 == "FermiLevel"){printf("%s%.12f%s\n","FermiLevel [eV] = setforall { ",'"$Em"'," }")}else{print $0}}' dftb_in.bk >! dftb_in.hsd 
+
+    #   Run gDFTB
+    $RUN
+ 
+    set NN = `awk '{if($1=="Input/Output"){print $6}}' detailed.out`
+    set Nm = `calc ($NN-$N0) ` 
+
+    if `chk ($Nm < 0)` then
+      set Nm_u = `calc ( - $Nm)`
+    else 
+      set Nm_u = $Nm
+    endif
+    # -------------------------------------------------------------------
+    echo "Em=" $Em  "Nm=" $NN
+
+    # start devide and conquer algo --------------------------------------
+    # decide for the interval where there is a sign inversion
+    set P = `calc ($N1*$Nm)`
+
+    if ( $P =~ -* ) then
+
+        set N2 = $Nm
+        set N2_u = $Nm_u
+        set E2 = $Em
+    
+    else
+     
+        set N1 = $Nm
+        set N1_u = $Nm_u
+        set E1 = $Em
+
+    endif
+
+    # set variables for next loop ----------------------------------------
+    set Sum = `calc ($N2_u+$N1_u)`
+
+    # check for convergence ----------------------------------------------
+    set Con = `chk ($N1_u > $Acc)` 
+    set wh = 1
+    if $Con then 
+      set Con = `chk ($N2_u > $Acc)`
+      set wh = 2 
+    endif
+    # -------------------------------------------------------------------
+  end
+
+# =======================================================================
+# write an output -------------------------------------------------------
+  echo
+  echo "=============================="
+  echo 
+  if ($wh == 1) then
+  echo "Diff=" $N1
+  echo "Efermi=" $E1
+  else
+  echo "Diff=" $N2
+  echo "Efermi=" $E2
+  endif
+
+# =======================================================================
+else
+   echo "NO sign inversion in the given interval"
+endif
+# =======================================================================
+
+
+
+
+ 
+ 
+
+ 
+

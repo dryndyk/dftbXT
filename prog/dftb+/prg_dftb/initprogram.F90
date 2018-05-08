@@ -1,7 +1,11 @@
 !--------------------------------------------------------------------------------------------------!
 !  DFTB+: general package for performing fast atomistic simulations                                !
 !  Copyright (C) 2018  DFTB+ developers group                                                      !
-!                                                                                                  !
+!--------------------------------------------------------------------------------------------------!
+!  DFTB+XT open software package for quantum nanoscale modeling                                    !
+!  Copyright (C) 2018 Dmitry A. Ryndyk.                                                            !
+!--------------------------------------------------------------------------------------------------!
+!  GNU Lesser General Public License version 3 or (at your option) any later version.              !
 !  See the LICENSE file for terms of usage and distribution.                                       !
 !--------------------------------------------------------------------------------------------------!
 
@@ -77,6 +81,14 @@ module initprogram
   use potentials
   use taggedoutput
   use formatout
+  use libnegf_vars
+  use negf_int
+  !!DAR begin - use
+  use poisson_vars
+  use poisson_int
+  use blacsfx_module
+  use negf_int 
+  !!DAR end
   implicit none
 
   !> Tagged output files (machine readable)
@@ -139,7 +151,7 @@ module initprogram
   integer, allocatable :: species(:)
 
   !> type of the atoms (nAtom)
-  integer, allocatable :: species0(:)
+  integer, allocatable, target :: species0(:) !!DAR +target
 
   !> Coords of the atoms (3, nAllAtom)
   real(dp), allocatable :: coord(:,:)
@@ -767,8 +779,54 @@ module initprogram
 
   !> Contains (iK, iS) tuples to be processed in parallel by various processor groups
   type(TParallelKS) :: parallelKS
-
+  
   private :: createRandomGenerators
+  
+  
+  !> Transport variables
+  !> Container for the atomistic structure for poisson
+  type(TPoissonStructure) :: poissStr
+  type(TGDFTBStructure) :: negfStr
+  integer, allocatable, target :: iAtomStart(:) !!DAR otherwise "negfStr%iAtomStart => denseDesc%iAtomStar" does not work 
+  
+  !> Container for SK data for poisson
+  type(TSKData) :: gdftbSKData
+
+  !> Whether contact Hamiltonians are uploaded
+  !> Synonim for G.F. calculation of density 
+  logical :: tUpload   
+
+  !> Whether contact Hamiltonians are computed
+  logical :: tContCalc       ! Compute contacts
+
+  !> Whether Poisson solver is invoked 
+  logical :: tPoisson     
+  
+  !> Whether recompute Poisson after every SCC
+  logical :: tPoissonTwice 
+
+  !> Calculate terminal tunneling and current
+  logical :: tTunn           
+
+  !> True if we use any part of Negf (green solver, landauer etc.)
+  logical :: tNegf           
+
+  !> Whether local currents are computed 
+  logical :: tLocalCurrents  
+
+  !> True if LDOS is stored on separate files for k-points
+  logical :: writeLDOS
+  
+  !> True if Tunneling is stored on separate files
+  logical :: writeTunn
+  
+  !> Holds spin-dependent electrochemical potentials
+  !> This is because libNEGF is not spin-aware 
+  real(dp), allocatable :: mu(:,:) 
+  
+  !> NEGF !DAR
+  integer, allocatable :: groupKS(:,:)
+  integer :: descHS(DLEN_)
 
 contains
 
@@ -891,9 +949,10 @@ contains
 
 
     @:ASSERT(input%tInitialized)
-
-    write(stdOut, "(/, A)") "Starting initialization..."
+    
     write(stdOut, "(A80)") repeat("-", 80)
+    write(stdOut, "(A)") "-- Initialization is started                                                  --"
+    write(stdOut, "(A80,/)") repeat("-", 80)
 
     call env%initGlobalTimer(input%ctrl%timingLevel, "DFTB+ running times", stdOut)
     call env%globalTimer%startTimer(globalTimers%globalInit)
@@ -2330,6 +2389,10 @@ contains
       write (strTmp, "(A)") "Relatively robust (version 1)"
     case(4)
       write (strTmp, "(A)") "Relativel robust (version 2)"
+    case(solverGF)
+      write (strTmp, "(A)") "Green's functions"
+    case(onlyTransport)
+      write (strTmp, "(A)") "Transport Only (no energies)"  
     case default
       call error("Unknown eigensolver!")
     end select
@@ -2681,10 +2744,66 @@ contains
       end if
 
     end if
+    
+    call initTransport(env, input)
 
+    call initProcessorGroups(1, nKPoint, nSpin, groupKS) !!DAR!!
+    
+    write(stdout, "(/,A)") repeat("-", 80)
+    write(stdOut, "(A)") "-- Initialization is finished                                                 --"
+    write(stdout, "(A)") repeat("-", 80)
+    
     call env%globalTimer%stopTimer(globalTimers%globalInit)
 
   end subroutine initProgramVariables
+  
+  !DAR begin groupKS
+  !------------------------------------------------------------------------------
+  
+  subroutine initProcessorGroups(nGroup, nKPoint, nSpin, groupKS)
+    
+    integer, intent(in) :: nGroup, nKPoint, nSpin
+    integer, allocatable, intent(out) :: groupKS(:,:)
+    integer :: iproc, nproc, groupsize, mygroup, nprow, npcol
+    integer :: nHam, nHamAll, res
+    integer :: ind, iHam, iS, iK
+    
+    !call blacsfx_pinfo(iproc, nproc)
+    iproc=0; nproc=1 !DAR! Hack!
+    if (ngroup < 1 .or. ngroup > nproc) then
+      call error("Nr. of  groups must be between 1 and nr. of processes")
+    end if
+    if (mod(nproc, ngroup) /= 0) then
+      call error("Nr. of groups must be a divisor of nr. of processes")
+    end if
+    groupsize = nproc / ngroup 
+    mygroup = iproc / groupsize
+     
+    ! Sort out k-point and spin indices
+    nHamAll = nKPoint * nSpin
+    nHam = nHamAll / nGroup
+    res = nHamAll - nHam * nGroup
+    if (myGroup < res) then
+      nHam = nHam + 1
+    end if
+    ALLOCATE(groupKS(2, nHam))
+    ind = 0
+    iHam = 1
+    do iS = 1, nSpin
+      do iK = 1, nKPoint
+        if (mod(ind, nGroup) == myGroup) then
+          groupKS(1, iHam) = iK
+          groupKS(2, iHam) = iS
+          iHam = iHam + 1
+        end if
+        ind = ind + 1
+      end do
+    end do
+
+  end subroutine initProcessorGroups
+  
+  !------------------------------------------------------------------------------
+  !DAR end groupKS
 
 
   !> Clean up things that do not automatically get removed on going out of scope
@@ -3259,6 +3378,104 @@ contains
 
   end subroutine getDenseDescCommon
 
+  !!DAR begin - initTransport
+  subroutine initTransport(env, input)
+    type(TEnvironment), intent(in) :: env
+    type(inputData), intent(in) :: input
+  
+    !> Wheter transport has been initialized
+    logical :: tInitialized
 
+    write(stdOut,"(/,'> initTransport is started')")
+    tUpload = input%transpar%taskUpload
+    tContcalc = input%transpar%defined .and. (.not. input%transpar%taskUpload) 
+    ! These two checks are redundant, I check if they are equal 
+    if (input%ginfo%poisson%defined .neqv. input%ctrl%tPoisson) then
+      call error("Mismatch in ctrl and ginfo fields")
+    end if
+    tPoisson = input%ginfo%poisson%defined
+    tPoissonTwice = input%ginfo%poisson%solveTwice
+    ! Calculate the tunneling only if we upload the contacts
+    tTunn = input%ginfo%tundos%defined .and. tUpload
+    tLocalCurrents = input%ginfo%greendens%doLocalCurr
+    ! Do we use any part of negf (solver, tunn etc.)?
+    tNegf = (solver .eq. solverGF) .or. tTunn
+
+    associate(transpar=>input%transpar, greendens=>input%ginfo%greendens)
+      ! Non colinear spin not yet supported
+      ! Inclintude the built-in potential as in negf init, but the whole 
+      ! scc only works for
+      ! calculation without spin (poisson does not support spin dependent
+      ! built in potentials)
+      if (nSpin .eq. 1 .and. tTunn) then
+        allocate(mu(transpar%ncont,1))
+        mu = 0.0_dp
+        mu(1:transpar%ncont, 1) = minval(transpar%contacts(1:transpar%ncont)%eFermi(1)) - &
+            & transpar%contacts(1:transpar%ncont)%potential 
+      else if (nSpin .eq. 2 .and. tTunn) then
+        allocate(mu(transpar%ncont,2))
+        mu = 0.0_dp
+        mu(1:transpar%ncont, 1) = minval(transpar%contacts(1:transpar%ncont)%eFermi(1)) - &
+            & transpar%contacts(1:transpar%ncont)%potential 
+        mu(1:transpar%ncont, 2) = minval(transpar%contacts(1:transpar%ncont)%eFermi(2)) - &
+            & transpar%contacts(1:transpar%ncont)%potential 
+      else if (nSpin .eq. 1 .and. solver == solverGF) then
+        allocate(mu(1,1))
+        mu = 0.0_dp
+        mu(1,1) = greendens%oneFermi(1)
+      else if (nSpin .eq. 2 .and. solver == solverGF) then
+        allocate(mu(1,2))
+        mu = 0.0_dp
+        mu(1,:) = greendens%oneFermi(:)
+      end if
+    end associate
+
+    if (tPoisson) then
+      poissStr%nAtom = nAtom
+      poissStr%nSpecies = nType
+      poissStr%specie0 => species0
+      poissStr%x0 => coord0
+      poissStr%nel = nEl0
+      poissStr%isPeriodic = tPeriodic
+      if (tPeriodic) then
+        poissStr%latVecs(:,:) = latVec(:,:)
+      else
+        poissStr%latVecs(:,:) = 0.0_dp
+      end if
+      poissStr%tempElec = tempElec
+      gdftbSKData%hubbU => hubbU
+      gdftbSKData%mCutoff = skCutoff
+      gdftbSKData%orb => orb 
+    end if
+
+    if (tNegf) then
+      negfStr%nAtom = nAtom
+      allocate(iAtomStart(nAtom+1))
+      iAtomStart = denseDesc%iAtomStart 
+      negfStr%iAtomStart => iAtomStart           
+    end if
+
+    ! Some sanity checks and initialization of GDFTB/NEGF
+    if (tPoisson) then
+      call poiss_init(poissStr, gdftbSKData, input%ginfo%poisson, &
+          & input%transpar, env%mpi%globalComm, tInitialized)
+      if (.not. tInitialized) call error("gdftb not initialized")
+    end if
+    if (tNegf) then       
+      call negf_init(negfStr, input%transpar, input%ginfo%greendens, input%ginfo%tundos,&
+           & env%mpi%globalComm, tInitialized)
+      !call negf_init(input%transpar, input%ginfo%greendens, input%ginfo%tundos,&
+      !     & env%mpi%globalComm, tempElec, tInitialized)     
+      if (.not. tInitialized) call error("libnegf not initialized")
+    end if
+
+    !Write Dos and tunneling on separate files?
+    writeTunn = input%ginfo%tundos%writeTunn
+    writeLDOS = input%ginfo%tundos%writeLDOS
+    
+    write(stdOut,"('> initTransport is finished')")
+
+  end subroutine initTransport
+  !!DAR - end
 
 end module initprogram

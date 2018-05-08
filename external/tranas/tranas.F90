@@ -1,0 +1,1754 @@
+!--------------------------------------------------------------------------------------------------!                              
+! DFTB+XT: DFTB+ eXTended version for model and atomistic quantum transport at nanoscale.          !
+!                                                                                                  !
+! Copyright (C) 2017-2018 DFTB+ developers group.                                                  !
+! Copyright (C) 2018 Dmitry A. Ryndyk.                                                             !
+!                                                                                                  !
+! GNU Lesser General Public License version 3 or (at your option) any later version.               !
+! See the LICENSE file for terms of usage and distribution.                                        !
+!--------------------------------------------------------------------------------------------------!
+! This file is part of the TraNaS library for quantum transport at nanoscale.                      !
+!                                                                                                  !
+! Developer: Dmitry A. Ryndyk.                                                                     !
+!                                                                                                  !
+! Based on the LibNEGF library developed by                                                        !
+! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
+!--------------------------------------------------------------------------------------------------!
+
+!!--------------------------------------------------------------------------!
+!! libNEGF: a general library for Non-Equilibrium Green's functions.        !
+!! Copyright (C) 2012                                                       !
+!!                                                                          ! 
+!! This file is part of libNEGF: a library for                              !
+!! Non Equilibrium Green's Function calculation                             ! 
+!!                                                                          !
+!! Developers: Alessandro Pecchia, Gabriele Penazzi                         !
+!! Former Conctributors: Luca Latessa, Aldo Di Carlo                        !
+!!                                                                          !
+!! libNEGF is free software: you can redistribute it and/or modify          !
+!! it under the terms of the GNU Lesser General Public License as published !
+!! by the Free Software Foundation, either version 3 of the License, or     !
+!! (at your option) any later version.                                      !
+!!                                                                          !
+!!  You should have received a copy of the GNU Lesser General Public        !
+!!  License along with libNEGF.  If not, see                                !
+!!  <http://www.gnu.org/licenses/>.                                         !  
+!!--------------------------------------------------------------------------!
+  
+module tranas
+
+use tranas_types_negf
+use tranas_mbngf
+
+use ln_precision
+use ln_constants
+use ln_allocation
+use lib_param
+use globals, only : LST
+use mpi_globals, only : id, numprocs, id0
+use input_output
+use ln_structure
+use rcm_module
+use mat_def
+use ln_extract
+use sparsekit_drv
+use integrations
+use interactions                                                          
+use iso_c_binding
+
+implicit none
+private
+
+!Input and work flow procedures
+public :: lnParams
+public :: init_negf, destroy_negf
+public :: init_structure
+public :: get_params, set_params
+public :: init_ldos, set_ldos_intervals, set_ldos_indexes
+
+public :: set_H, set_S, set_S_id, read_HS, pass_HS, copy_HS
+public :: set_readoldsgf, set_computation, set_iteration
+public :: set_convfactor, set_fictcont
+public :: read_negf_in
+public :: negf_version 
+public :: destroy_matrices ! cleanup matrices in Tnegf container (H,S,rho,rhoE)
+private :: block_partition ! chop structure into PLs (CAREFUL!!!)
+! H need to be already ordered properly 
+public :: negf_partition_info  !write down partition info
+private :: find_cblocks        ! Find interacting contact block
+public :: set_ref_cont, print_tnegf
+public :: associate_transmission, associate_current, associate_ldos
+public :: get_energies, pass_DM, get_DM, get_currents
+
+public :: compute_density_dft      ! high-level wrapping
+! Extract HM and SM
+! run DM calculation
+
+public :: compute_current          ! high-level wrapping routines
+! Extract HM and SM
+! run total current calculation
+
+public ::  write_tunneling_and_dos ! Print tunneling and dot to file
+! Note: for debug purpose. I/O should be managed 
+! by calling program
+public :: compute_ldos             ! wrapping to compute ldos
+public :: return_dos_mat           ! return pointer to LDOS matrix 
+
+public :: compute_phonon_current   ! High-level wrapping to
+! compute phonon transmission
+! and heat currents 
+public :: thermal_conductance
+
+public :: reorder, sort, swap      ! not used 
+public :: printcsr                 ! debugging routines
+public :: printcsrij               ! debugging routines
+public :: getel                    ! debugging routines
+
+integer, PARAMETER :: VBT=70
+integer, PARAMETER :: MAXNUMPLs = 10000
+
+!-----------------------------------------------------------------------------
+!> Contains all the general parameters to be passed as input to library
+!! which are compatible with iso_c_binding representations
+!! 1-1 correspondance to input parameter in type Tnegf
+type, bind(c) :: lnparams
+  !! General
+   !> verbosity, > 100 is maximum
+   integer(c_int) :: verbose
+   !> Managing SGF readwrite: 0: Read 1: compute 2: comp & save
+   integer(c_int)  :: readoldsgf 
+   !> Spin component (for io)
+   integer(c_int)  :: spin
+   !> k-point index (for io)
+   integer(c_int) :: kpoint 
+   !> Current iteration (for io) 
+   integer(c_int) :: iteration          ! Number of current SCC itaration
+   !> Spin degeneracy
+   real(c_double) :: g_spin          
+   !> Imaginary delta
+   real(c_double) :: delta           
+   !> Additional delta to force more broadening in the DOS 
+   real(c_double) :: dos_delta
+   !> Energy conversion factor
+   real(c_double) :: eneconv
+   !> Weight for k-point integration, output integrals are scaled accordingly
+   real(c_double) :: wght        
+   !> Conduction band edge
+   real(c_double) :: ec
+   !> Valence band edge
+   real(c_double) :: ev        
+   !! Real axis integral
+   !> Minimum energy for real axis (current integration, DOS, tunneling)
+   real(c_double) :: emin       
+   !> Maximum energy for real axis
+   real(c_double) :: emax   
+   !> Energy step for real axis
+   real(c_double) :: estep    
+   !! Contacts info
+   !> Electron electrochemical potential
+   real(c_double) :: mu_n(MAXNCONT)
+   !> Hole electrochemical potential
+   real(c_double) :: mu_p(MAXNCONT)  
+   !> Electron electrochemical Potential (for dft)
+   real(c_double) :: mu(MAXNCONT)    
+   !> Contact DOS for WBA
+   real(c_double) :: contact_dos(MAXNCONT) 
+   !> Logical value: is the contact WB?
+   logical(c_bool)  :: fictcont(MAXNCONT)
+   !> Electronic temperature for each contact
+   real(c_double) :: kbt(MAXNCONT) 
+   !! Contour integral
+   !> Number of points for n 
+   integer(c_int) :: np_n(2)
+   !> Number of points for p 
+   integer(c_int) :: np_p(2)
+   !> Number of real axis points
+   integer(c_int) :: np_real(11)
+   !> ! Number of kT extending integrations
+   integer(c_int) :: n_kt
+   !> Number of poles
+   integer(c_int) :: n_poles
+   !! Emitter and collector for transmission or Meir-Wingreen 
+   !! (only emitter in this case)
+   !> Emitter contact list (or lead for integration in MW)
+   integer(c_int) :: ni(MAXNCONT)
+   !> Collector contact list
+   integer(c_int) :: nf(MAXNCONT)
+   !> Should I calculate the density ("D") or the energy weighted density ("E")?
+   character(kind=c_char, len=1) :: dore  ! Density or En.Density
+   !> Reference contact is set to maximum or minimum Fermi level
+   integer(c_int) :: min_or_max
+end type lnparams
+!--------------------------------------------------------------------------------------------------!
+
+contains
+
+!--------------------------------------------------------------------------------------------------!
+
+subroutine compute_ldos(negf)
+
+  type(Tnegf) :: negf
+
+  call extract_device(negf)
+  call extract_cont(negf)
+  if(negf%tMBNGF) call mbngf_init(negf)    !DAR
+  if(negf%tMBNGF) call mbngf_compute(negf) !DAR
+  call tunneling_int_def(negf)
+  call ldos_int(negf)
+  call destroy_matrices(negf)
+  if(negf%tMBNGF) call mbngf_destroy(negf) !DAR
+
+end subroutine compute_ldos
+
+!--------------------------------------------------------------------------------------------------!
+  
+subroutine compute_current(negf)
+
+  type(Tnegf) :: negf
+
+  integer :: flagbkup,folderbkup
+
+  flagbkup = negf%readOldSGF
+  folderbkup = negf%FolderSGF
+  negf%FolderSGF = 1
+  if (negf%readOldSGF.ne.1) then
+     negf%readOldSGF = 1
+  end if
+
+  if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
+     call compute_landauer(negf);
+  else
+     call compute_meir_wingreen(negf);
+  endif
+
+  negf%readOldSGF = flagbkup
+  negf%FolderSGF = folderbkup
+
+end subroutine compute_current
+
+!--------------------------------------------------------------------------------------------------!
+!> Calculate current, tunneling and, if specified, density of states using
+!! Landauer formula. DOS is calculated during the T(E) loop 
+!! @param negf input/output container
+!--------------------------------------------------------------------------------------------------!
+  
+subroutine compute_landauer(negf) 
+
+  type(Tnegf) :: negf
+
+  integer :: i,j1,icont
+  call extract_device(negf)
+  call extract_cont(negf)
+  call tunneling_int_def(negf)
+  ! TODO: need a check on elph here, but how to handle exception and messages
+  call tunneling_and_dos(negf)
+  call electron_current(negf)
+  call destroy_matrices(negf)
+
+     !debug begin
+     !if (id.eq.1) then
+     !do i = 1, size(negf%en_grid)
+     !  do icont=1,negf%str%num_conts  
+     !     !print *, negf%tranas%cont(icont)%tWriteSurfaceGF
+     !     if(negf%tranas%cont(icont)%tWriteSurfaceGF) then
+     !       print *, 'SurfaceGF',icont,'IndexEnergy=',i
+     !       do j1=1,size(negf%tranas%cont(icont)%SurfaceGF,1)
+     !         print *, negf%tranas%cont(icont)%SurfaceGF(j1,1:size(negf%tranas%cont(icont)%SurfaceGF,1),i)
+     !       end do
+     !     end if 
+     !  end do
+     ! end do
+     ! end if
+     !debug end
+
+end subroutine compute_landauer
+
+!--------------------------------------------------------------------------------------------------!
+!> Calculate current, tunneling and, if specified, density of states using
+!! Landauer formula. DOS is calculated during the T(E) loop 
+!! @param negf input/output container
+!--------------------------------------------------------------------------------------------------!
+  
+subroutine compute_meir_wingreen(negf) 
+
+  type(Tnegf) :: negf
+
+  call extract_device(negf)
+  call extract_cont(negf)
+  if(negf%tMBNGF) call mbngf_init(negf)     !DAR
+  if(negf%tMBNGF) call mbngf_compute(negf)  !DAR
+  call tunneling_int_def(negf)
+  call meir_wingreen(negf)
+  call electron_current_meir_wingreen(negf) !DAR
+  call destroy_matrices(negf)
+  if(negf%tMBNGF) call mbngf_destroy(negf)  !DAR
+
+end subroutine compute_meir_wingreen
+
+!--------------------------------------------------------------------------------------------------!
+!--------------------------------------------------------------------------------------------------!
+!--------------------------------------------------------------------------------------------------!
+
+  !--------------------------------------------------------------------
+  !>  Init libNEGF
+  !!  General initializations of libNEGF are currently done via files.
+  !!  "negf.in" contains all parameters information
+  !!  all needed info about the structure and matrix format.
+  !!  H and S are also read-in from files
+  !!  Some parameters are still hard-coded and need to be set from api  
+  !--------------------------------------------------------------------
+  subroutine init_negf(negf)
+    type(Tnegf) :: negf
+
+    call set_defaults(negf)
+    negf%form%formatted = .true.
+    negf%isSid = .false.
+    negf%form%type = "PETSc" 
+    negf%form%fmt = "F" 
+
+  end subroutine init_negf
+
+   !!===================================================================
+   !! INPUT Routines
+   !!===================================================================     
+
+   !!-------------------------------------------------------------------
+   !! Passing & reading H,S
+   !!-------------------------------------------------------------------
+
+   !>--------------------------------------------------------------------
+   !!  Read H and S from file
+   !!  @param[in] negf: libnegf container instance
+   !!  @param[in] real_path (string): filename for real part of target matrix in PETSC format
+   !!  @param[in] imag_path (string): filename for imaginary part of target matrix in PETSC format. 
+   !!  @param[in] target_matrix (integer): controlo flag which specify if the Hamiltonian
+   !!      or the Overlap is parsed. 0 for the Hamiltonian, 1 for the Overlap
+   !!      formatted (logical, optional): true (default) if file is formatted.
+   !!
+   !!   Note: up to now both the real and imaginary part files must have the same 
+   !!     indexes and number of non zero elements, even if zero values appear
+   subroutine read_HS(negf, real_path, imag_path, target_matrix, formatted)
+     type(Tnegf), intent(inout) :: negf
+     character(len=*), intent(in) :: real_path, imag_path
+     integer, intent(in) :: target_matrix
+     logical, intent(in), optional :: formatted
+
+     logical :: formatted_opt
+     logical :: doesexist  
+     character(11) :: fmtstring
+     type(format) :: fmt
+
+     if (present(formatted)) then
+       formatted_opt = formatted 
+     else 
+       formatted_opt = .true.
+     endif
+
+     if(formatted_opt) then
+       fmtstring = 'formatted'
+       fmt%formatted = .true.
+     else
+       fmtstring = 'unformatted'
+       fmt%formatted = .false.
+     endif
+
+     fmt%type = 'PETSc'  !! only PETSc now supported here. Maybe need to add support for UPT?
+     fmt%fmt = 'F'       !! only Full matrix supported. We could also support upper or lower
+
+     inquire(file=trim(real_path), exist= doesexist)  
+     inquire(file=trim(imag_path), exist= doesexist)  
+     if (.not.doesexist) then
+       write(*,*) "libNEGF error. Matrix files not found"
+       stop  
+     endif
+
+     open(401, file=real_path, form=trim(fmtstring))
+     open(402, file=imag_path, form=trim(fmtstring))
+
+     if (target_matrix.eq.0) then
+       allocate(negf%H)
+       call read_H(401,402,negf%H,fmt)
+     else if (target_matrix.eq.1) then
+       allocate(negf%S)
+       call read_H(401,402,negf%S,fmt)
+     else 
+       write(*,*) "libNEGF error. Wrong target_matrix: must be 0 (H) or 1 (S)"
+       stop
+     endif
+     close(401)
+     close(402)
+
+     negf%intHS=.true.
+
+   end subroutine read_HS
+
+  !-------------------------------------------------------------------
+  !> Pass H from memory in CSR format
+  !! @param[in] negf: libnegf container instance
+  !! @param[in] nrow: number of rows
+  !! @param[in] nzval: number of non zero values
+  !! @param[in] colind: column indexes
+  !! @param[in] rowpnt: row pointers
+  subroutine set_H(negf, nrow, nzval, colind, rowpnt)
+    type(Tnegf) :: negf
+    integer :: nrow
+    complex(dp) :: nzval(*)
+    integer :: colind(*)
+    integer :: rowpnt(*)
+
+    integer :: nnz, i, base
+
+    base = 0
+    if (rowpnt(1) == 0) base = 1
+
+    nnz = rowpnt(nrow+1)-rowpnt(1)
+
+    allocate(negf%H)
+    call create(negf%H,nrow,nrow,nnz)
+
+    do i = 1, nnz
+      negf%H%nzval(i) = nzval(i)
+      negf%H%colind(i) = colind(i) + base
+    enddo
+    do i = 1,nrow+1
+      negf%H%rowpnt(i) = rowpnt(i) + base 
+    enddo  
+    negf%intHS=.true.
+
+  end subroutine set_H
+
+  !-------------------------------------------------------------------
+  !> Pass S from memory in CSR format
+  !! @param[in] negf: libnegf container instance
+  !! @param[in] nrow: number of rows
+  !! @param[in] nzval: number of non zero values
+  !! @param[in] colind: column indexes
+  !! @param[in] rowpnt: row pointers
+  subroutine set_S(negf, nrow, nzval, colind, rowpnt)
+    type(Tnegf) :: negf
+    integer :: nrow
+    complex(dp) :: nzval(*)
+    integer :: colind(*)
+    integer :: rowpnt(*)
+
+    integer :: nnz, i, base
+
+    base = 0
+    if (rowpnt(1) == 0) base = 1
+
+    nnz = rowpnt(nrow+1)-rowpnt(1)
+
+    allocate(negf%S)
+    call create(negf%S,nrow,nrow,nnz)
+
+    do i = 1, nnz
+      negf%S%nzval(i) = nzval(i)
+      negf%S%colind(i) = colind(i) + base
+    enddo
+    do i = 1,nrow+1
+      negf%S%rowpnt(i) = rowpnt(i) + base
+    enddo  
+    negf%intHS=.true.
+    
+  end subroutine set_S
+
+  !-------------------------------------------------------------------
+  !> Set S as identity
+  !! @param[in] negf: libnegf container instance
+  !! @param[in] nrow: number of rows
+  subroutine set_S_id(negf, nrow)
+    type(Tnegf) :: negf
+    integer, intent(in) :: nrow
+
+    allocate(negf%S)
+    call create_id(negf%S, nrow)
+    negf%isSid = .true. 
+
+  end subroutine set_S_id
+
+  !------------------------------------------------------------------
+  !> Assign H,S pointers to externally allocated matrices
+  !! @param [in]  negf: libnegf container instance
+  !! @param [in] H: target z_CSR hamiltonian
+  !! @param [in] S: target z_CSR overlap (optional, default to identity)
+  subroutine pass_HS(negf,H,S)
+    type(Tnegf) :: negf    
+    type(z_CSR), target :: H
+    type(z_CSR), optional, target :: S
+
+    negf%H => H
+    if (present(S)) then   
+       negf%S => S   
+    else
+       negf%isSid=.true.
+       allocate(negf%S)
+       call create_id(negf%S,negf%H%nrow) 
+    endif
+    negf%intHS = .false.
+
+  end subroutine pass_HS
+
+  ! -----------------------------------------------------
+  !  Allocate and copy H,S 
+  ! -----------------------------------------------------
+  subroutine copy_HS(negf,H,S)
+    type(Tnegf) :: negf    
+    type(z_CSR), target :: H
+    type(z_CSR), optional, target :: S
+
+    call create(negf%H,H%nrow,H%ncol,H%nnz)
+    negf%H%nzval = H%nzval
+    negf%H%colind = H%colind
+    negf%H%rowpnt = H%rowpnt
+    negf%H%sorted = H%sorted   
+    
+    if (present(S)) then
+       negf%isSid=.false.
+       call create(negf%S,S%nrow,S%ncol,S%nnz)
+       negf%S%nzval = S%nzval
+       negf%S%colind = S%colind
+       negf%S%rowpnt = S%rowpnt
+       negf%S%sorted = S%sorted
+    else
+       negf%isSid=.true.
+       call create_id(negf%S,negf%H%nrow) 
+    endif
+    
+    negf%intHS = .true.
+
+  end subroutine copy_HS
+  
+  !!-------------------------------------------------------------------
+  !! Setting structure and partitioning
+  !!-------------------------------------------------------------------
+  !------------------------------------------------------------------
+  !> Set device/contact and PLs partition information
+  !! @param [in] negf: libnegf container instance
+  !! @param [in] ncont: number of contacts
+  !! @param [in] contend: on which hamiltonian index where are contacts 
+  !!               ending? Array with size ncont
+  !! @param [in] surfend: on which index is Device surface ending before
+  !!              the corresponding contact (would be beginning contact-1)
+  !! @param [in] npl: number of principal layers
+  !! @param [in] plend: indexes where each principal layer ends
+  !! @param [in] cblk: array with index of interacting blocks for each 
+  !!               contact(fortran indexing. If cblk is not known, use 
+  !!               find_cblocks
+  !!
+  !! If nbl = 0 the code will try to guess an automatic partitioning
+  !!
+  !! Example: device goes from 1 to 60. Contacts from 61 to 80 and to
+  !! 81 to 100. Only 1 PL:
+  !!  ncont = 2
+  !!  contend = [80, 100]
+  !!  surfend = [60, 80]
+  !!  npl = 1
+  !!  plend = [60]
+  subroutine init_structure(negf, ncont, contend, surfend, npl, plend, cblk)
+     type(Tnegf) :: negf                                             !DAR
+     integer, intent(in) :: ncont
+     integer, intent(in), allocatable :: contend(:), surfend(:)
+     integer, intent(in) :: npl
+     integer, intent(in), allocatable :: plend(:)
+     integer, intent(in), allocatable :: cblk(:)
+
+     integer, allocatable :: plend_tmp(:)
+     integer :: npl_tmp
+
+     if (size(contend) .ne. ncont) then
+       stop "Error in set_structure: contend and ncont mismatch"
+     end if
+     if (size(surfend) .ne. ncont) then
+       stop "Error in set_structure: surfend and ncont mismatch"
+     end if
+     if (npl .ne. 0 .and. size(plend) .ne. npl) then
+       stop "Error in set_structure: plend and npl mismatch"
+     end if
+     
+     if (npl .eq. 0) then
+       call log_allocate(plend_tmp, MAXNUMPLs)  
+       call block_partition(negf%H, surfend(1), contend, surfend, ncont, npl_tmp, plend_tmp)   
+     else 
+       plend_tmp = plend
+       npl_tmp = npl
+     end if
+     call create_Tstruct(ncont, npl_tmp, plend_tmp, contend, surfend, cblk, negf%str)
+
+  end subroutine init_structure
+
+  !!-------------------------------------------------------------------
+  !! Get/Set parameters container
+  !!-------------------------------------------------------------------
+
+  !> Set paramters from libnegf. Useful to get defaults
+  !!  or to only set some values
+  subroutine get_params(negf, params)
+    type(Tnegf) :: negf
+    type(lnParams), intent(out) :: params
+
+    params%verbose = negf%verbose
+    params%ReadoldSGF = negf%ReadoldSGF
+    !params%scratch_path = negf%scratch_path
+    !params%out_path = negf%out_path
+    params%g_spin = negf%g_spin
+    params%delta = negf%delta
+    params%dos_delta = negf%dos_delta
+    params%mu_n = negf%mu_n
+    params%mu_p = negf%mu_p
+    params%mu = negf%mu
+    params%contact_dos = negf%contact_dos
+    params%FictCont = negf%FictCont
+    params%kbT = negf%kbT
+    params%Np_n = negf%Np_n
+    params%Np_real = negf%Np_real
+    params%n_kt = negf%n_kt
+    params%n_poles = negf%n_poles
+    params%Ec = negf%Ec
+    params%Ev = negf%Ev
+    params%Emin = negf%Emin
+    params%Emax = negf%Emax
+    params%Estep = negf%Estep
+    params%ni = negf%ni
+    params%nf = negf%nf    
+    params%eneconv = negf%eneconv
+    params%spin = negf%spin
+    params%wght = negf%wght
+    params%kpoint = negf%kpoint
+    params%iteration = negf%iteration
+    params%DorE = negf%DorE
+    params%min_or_max = negf%min_or_max
+
+  end subroutine get_params
+
+  !> Assign parameters to libnegf
+  subroutine set_params(negf, params)
+    type(Tnegf) :: negf
+    type(lnParams), intent(in) :: params
+
+    negf%verbose = params%verbose
+    negf%ReadoldSGF = params%ReadoldSGF
+    !negf%scratch_path = params%scratch_path
+    !negf%out_path = params%out_path
+    negf%g_spin = params%g_spin
+    negf%delta = params%delta
+    negf%dos_delta = params%dos_delta
+    negf%mu_n = params%mu_n
+    negf%mu_p = params%mu_p
+    negf%mu = params%mu
+    negf%contact_dos = params%contact_dos
+    negf%FictCont = params%FictCont
+    negf%kbT = params%kbT
+    negf%Np_n = params%Np_n
+    negf%Np_real = params%Np_real
+    negf%n_kt = params%n_kt
+    negf%n_poles = params%n_poles
+    negf%Ec = params%Ec
+    negf%Ev = params%Ev
+    negf%Emin = params%Emin
+    negf%Emax = params%Emax
+    negf%Estep = params%Estep
+    negf%ni = params%ni
+    negf%nf = params%nf
+    negf%eneconv = params%eneconv
+    negf%spin = params%spin
+    negf%wght = params%wght
+    negf%kpoint = params%kpoint
+    negf%iteration = params%iteration
+    negf%DorE = params%DorE
+    negf%min_or_max = params%min_or_max
+    !! Some internal variables in libnegf are set internally 
+    !! after parameters are available
+    call set_ref_cont(negf)
+
+  end subroutine set_params
+
+  !--------------------------------------------------------------------
+  ! LDOS methods: you can set N index intervals OR N separate index 
+  ! arrays. You have to initialize the data by indicating the number of 
+  ! ldos interval (nldos) and then you can either set the start/end
+  ! indexes for intervals OR append one by one explicit arrays
+  !
+  !--------------------------------------------------------------------
+
+  !> Initialize the ldos info
+  !! @param [in] negf: libnegf container instance
+  !! @param [in] nldos: number of intervals
+  subroutine init_ldos(negf,nldos)
+    type(Tnegf) :: negf
+    integer, intent(in) :: nldos
+
+    if (allocated(negf%ldos)) deallocate(negf%ldos)
+    allocate(negf%ldos(nldos))
+    negf%nldos = nldos
+    
+  end subroutine init_ldos
+
+  !> Destroy the LDOS container
+  subroutine destroy_ldos(ldos)
+    type(intarray), dimension(:), allocatable :: ldos 
+      
+    integer :: err, i
+    do i=1, size(ldos)
+      call log_deallocate(ldos(i)%indexes)
+    end do
+
+    deallocate(ldos)
+    
+  end subroutine destroy_ldos
+
+  !> Set ldos intervals
+  !! @param [in] negf: libnegf container instance
+  !! @param [in] istart(nldos) array with first interval index
+  !! @param [in] iend(nldos) array with first interval index
+  subroutine set_ldos_intervals(negf, nldos, istart, iend)
+    type(Tnegf) :: negf
+    integer, intent(in) :: nldos
+    integer, intent(in) :: istart(*), iend(*)
+    
+    integer :: ii, jj
+
+    do ii = 1, negf%nldos
+      call log_allocate(negf%ldos(ii)%indexes,iend(ii)-istart(ii)+1)
+      do jj = 1, iend(ii) - istart(ii) + 1
+        negf%ldos(ii)%indexes(jj) = istart(ii) + jj - 1
+      end do
+    end do
+
+  end subroutine set_ldos_intervals
+
+  !> Set ldos indexes arrays for a given ldos 
+  !!
+  !! @param [in] negf: libnegf container instance
+  !! @param [in] ildos: index of ldos 
+  !! @param [in] idx: 1D array with indexes
+  subroutine set_ldos_indexes(negf, ildos, idx)
+    type(Tnegf) :: negf
+    integer, intent(in) :: ildos
+    integer, intent(in) :: idx(:)
+    
+    integer :: ii, jj
+
+    negf%ldos(ildos)%indexes = idx
+
+  end subroutine set_ldos_indexes
+  ! -------------------------------------------------------------------
+
+  !subroutine set_mpi_comm(negf, mpicomm)
+  ! type(Tnegf) :: negf
+  ! type(mpifx_comm) :: mpicomm
+  !
+  ! negf%mpicomm = mpicomm
+  !
+  !end subroutine
+  
+  ! -------------------------------------------------------------------   
+  subroutine set_convfactor(negf, eneconv)
+    type(Tnegf) :: negf
+    real(dp) :: eneconv
+    
+    negf%eneconv=eneconv
+
+  end subroutine set_convfactor
+  
+  ! -------------------------------------------------------------------
+  subroutine set_fictcont(negf,cont,dos)
+    type(Tnegf) :: negf
+    integer :: cont
+    real(dp) :: DOS
+ 
+    negf%FictCont(cont) = .true. 
+    negf%contact_DOS(cont) = DOS
+
+  end subroutine set_fictcont
+  
+  ! ------------------------------------------------------------------
+  subroutine set_iteration(negf,iter)
+    type(Tnegf) :: negf
+    integer :: iter
+
+    negf%iteration = iter
+  end subroutine set_iteration      
+  ! -------------------------------------------------------------------
+
+  subroutine set_computation(negf,DorE) 
+    type(Tnegf) :: negf
+    character(1) :: DorE           !Density or En.Density
+
+    negf%DorE=DorE
+  end subroutine set_computation
+  
+  ! -------------------------------------------------------------------
+  subroutine set_readOldSGF(negf,flag) 
+    type(Tnegf) :: negf
+    integer :: flag
+
+    negf%ReadoldSGF=flag
+  end subroutine set_readoldsgf
+  
+  ! -------------------------------------------------------------------
+
+  !--------------------------------------------------------------------
+  !> Initialize and set parameters from input file negf.in
+  subroutine read_negf_in(negf)
+    type(Tnegf) :: negf
+    Integer :: ncont, nbl, ii, jj, ist, iend
+    Integer, dimension(:), allocatable :: PL_end, cont_end, surf_end
+    character(32) :: tmp
+    character(LST) :: file_re_H, file_im_H, file_re_S, file_im_S
+    integer, dimension(:), allocatable :: cblk
+
+    open(101, file="negf.in", form='formatted')
+  
+    read(101,*) tmp, file_re_H 
+    read(101,*) tmp, file_im_H
+
+    read(101,*) tmp, file_re_S
+    read(101,*) tmp, file_im_S
+
+    call read_HS(negf, file_re_H, file_im_H, 0)
+    negf%H%nzval=negf%H%nzval/27.21138469   !DAR
+    if (trim(file_re_S).eq.'identity') then
+         negf%isSid = .true.
+         call set_S_id(negf, negf%H%nrow)
+    else
+      call read_HS(negf, file_re_S, file_im_S, 1)
+    end if
+
+    !! A dummy descriptor must be present at the beginning of each line
+    !! Used for debug 
+    read(101,*) tmp, ncont
+    call log_allocate(cblk, ncont)
+    call log_allocate(cont_end,ncont)
+    surf_end = cont_end
+    !call log_allocate(surf_end,ncont)
+    read(101,*) tmp, nbl
+    if (nbl .gt. 0) then
+       call log_allocate(PL_end,nbl)
+       read(101,*) tmp, PL_end(1:nbl)
+    end if
+    read(101,*) tmp, cont_end(1:ncont)
+    read(101,*) tmp, surf_end(1:ncont)
+
+    call find_cblocks(negf%H, ncont, nbl, PL_end, cont_end, surf_end, cblk)
+    call init_structure(negf, ncont, cont_end, surf_end, nbl, PL_end, cblk)
+       
+    call log_deallocate(PL_end)
+    call log_deallocate(cont_end)
+    call log_deallocate(surf_end)
+    call log_deallocate(cblk)
+
+    read(101,*)  tmp, negf%Ec, negf%Ev
+    read(101,*)  tmp, negf%DeltaEc, negf%DeltaEv
+    read(101,*)  tmp, negf%Emin, negf%Emax, negf%Estep
+    if (ncont.gt.0) then
+      read(101,*) tmp, negf%kbT(1:ncont)
+    else
+      read(101,*) tmp, negf%kbT(1)
+    endif
+    read(101,*)  tmp, negf%wght
+    read(101,*)  tmp, negf%Np_n(1:2)
+    read(101,*)  tmp, negf%Np_p(1:2)
+    read(101,*)  tmp, negf%Np_real(1)
+    read(101,*)  tmp, negf%n_kt
+    read(101,*)  tmp, negf%n_poles
+    read(101,*)  tmp, negf%g_spin
+    read(101,*)  tmp, negf%delta
+    read(101,*)  tmp, negf%nLDOS
+    deallocate(negf%LDOS)   !DAR
+    allocate(negf%LDOS(negf%nLDOS))
+    do ii = 1, negf%nLDOS
+      read(101,*) tmp, ist, iend
+      call log_allocate(negf%LDOS(ii)%indexes, iend-ist+1)
+      do jj = 1, iend-ist+1
+        negf%LDOS(ii)%indexes(jj) = ist + jj - 1
+      end do  
+    end do
+    read(101,*) tmp, negf%mu_n(1:ncont)    ! Will be the Electrochemical potential
+    read(101,*) tmp, negf%mu_p(1:ncont)    ! hole potentials
+    !! Internally a different mu is used for dft-like integrations
+    !! we define it as equal to mu_n in negf.in
+    negf%mu(1:ncont) = negf%mu_n(1:ncont)
+
+    close(101)
+
+    !print*, '(init NEGF) done'
+
+  end subroutine read_negf_in
+ 
+  !-------------------------------------------------------------------- 
+  subroutine negf_version(negf)
+    type(Tnegf) :: negf
+    !character(3), parameter :: SVNVER= __SVNREVISION 
+    !character(3),parameter :: MODIF= __MODIFIED 
+    character(3), parameter :: GITVER= __GITREVISION 
+    character(10),parameter :: DATE= __COMPDATE 
+ 
+    write(*,'(a21,a20,2x,a10)') '(libnegf) version: 1.',TRIM(GITVER), & 
+                                         TRIM(DATE) 
+
+  end subroutine negf_version
+
+!--------------------------------------------------------------------
+  subroutine negf_partition_info(negf)
+      type(Tnegf) :: negf
+       
+      integer :: i
+
+      write(*,*) "(LibNEGF) Partitioning:"
+      write(*,*) "Number of blocks: ",negf%str%num_Pls
+      !write(*,*) negf%str%mat_PL_end(:)
+      write(*,*) "Contact interactions:",negf%str%cblk(:)     
+
+      open(1001,file='blocks.dat')
+        write(1001,*) 1
+        do i = 1, negf%str%num_Pls       
+           write(1001,*)  negf%str%mat_PL_end(i)
+        enddo
+      close(1001)
+
+  end subroutine negf_partition_info
+
+  !--------------------------------------------------------------------
+  !> Destroy all the info defined in initialization. 
+  !! To run at the very end of libnegf usage
+  subroutine destroy_negf(negf)
+    type(Tnegf) :: negf   
+
+    call destroy_matrices(negf)
+    call destroy_HS(negf)
+    call kill_Tstruct(negf%str) 
+    if (allocated(negf%LDOS)) call destroy_ldos(negf%ldos)
+    if (allocated(negf%en_grid)) deallocate(negf%en_grid)
+    if (associated(negf%tunn_mat)) call log_deallocatep(negf%tunn_mat)
+    if (associated(negf%ldos_mat)) call log_deallocatep(negf%ldos_mat)    
+    if (associated(negf%currents)) call log_deallocatep(negf%currents)    
+    call destroy_DM(negf)
+
+  end subroutine destroy_negf
+
+  !--------------------------------------------------------------------
+  !> Copy the energy axis on all processors (for output, plot, debug)
+  !! @param [in] negf: negf container
+  !! @param [out] energies: energy values, it can eb allocated internally
+  subroutine get_energies(negf, energies)
+    type(Tnegf), intent(in) :: negf
+    complex(dp), allocatable :: energies(:)
+
+    if (.not.allocated(energies)) then
+      allocate(energies(size(negf%en_grid)))
+    end if
+    energies = negf%en_grid(:)%Ec
+
+  end subroutine get_energies
+
+  !--------------------------------------------------------------------
+  !> 
+  !! Associate an input pointer with the internal pointer of 
+  !! transmissions. Return NULL if internal pointer is not
+  !! associated
+  subroutine associate_transmission(negf, tr_pointer)
+    type(TNegf), intent(in)  :: negf
+    real(dp), dimension(:,:), pointer, intent(inout) :: tr_pointer
+
+    if (associated(negf%tunn_mat)) then
+      tr_pointer => negf%tunn_mat
+    else 
+      tr_pointer => NULL()
+    end if
+
+  end subroutine associate_transmission
+
+  !--------------------------------------------------------------------
+  !> 
+  !!  Associate an input pointer with the internal pointer of 
+  !! LDOS
+  subroutine associate_ldos(negf, ldos_pointer)
+    type(TNegf), intent(in)  :: negf
+    real(dp), dimension(:,:), pointer, intent(inout) :: ldos_pointer
+
+    if (associated(negf%ldos_mat)) then
+      ldos_pointer => negf%ldos_mat
+    else 
+      ldos_pointer => NULL()
+    end if
+
+  end subroutine associate_ldos
+
+  !--------------------------------------------------------------------
+  !> 
+  !!  Associate an input pointer with the internal pointer of 
+  !! currents
+  subroutine associate_current(negf, curr_pointer)
+    type(TNegf), intent(in)  :: negf
+    real(dp), dimension(:), pointer, intent(inout) :: curr_pointer
+
+    if (associated(negf%currents)) then
+      curr_pointer => negf%currents
+    else 
+      curr_pointer => NULL()
+    end if
+
+  end subroutine associate_current
+
+  !--------------------------------------------------------------------
+  !> 
+  !! Get currents by copy. 
+  !! @param [in] negf: negf container
+  !! @param [out] currents: current values, it can eb allocated internally
+  subroutine get_currents(negf, currents)
+    type(TNegf), intent(in)  :: negf
+    real(dp), intent(out) :: currents(:)
+
+    currents = negf%currents(:)
+  end subroutine get_currents
+
+  !> Get density matrix CSR sparse arrays by copy
+  !! @param [in] negf: negf container
+  !! @param [out] nzval: number of non zero values
+  !! @param [out] nrow: number of rows
+  !! @param [out] rowpnt (int array): row pointer indexes
+  !! @param [out] colind (int array): column indexes array
+  !! @param [out] nzval (complex array): non zero values
+  subroutine get_DM(negf, nnz, nrow, rowpnt, colind, nzval)
+    type(TNegf), intent(in)  :: negf
+    integer, intent(out) :: nnz, nrow
+    integer, intent(out) :: rowpnt(:), colind(:)
+    real(dp), intent(out) :: nzval(:)
+
+    nnz = negf%rho%nnz
+    nrow = negf%rho%nrow
+    rowpnt = negf%rho%rowpnt
+    colind = negf%rho%colind
+    nzval = negf%rho%nzval
+  end subroutine get_DM
+
+  !-------------------------------------------------------------------- 
+  subroutine create_DM(negf)
+    type(Tnegf) :: negf   
+  
+    if (negf%intDM) then
+       if (.not.associated(negf%rho)) allocate(negf%rho)
+       if (.not.associated(negf%rho_eps)) allocate(negf%rho_eps)
+    endif  
+
+  end subroutine create_DM
+
+  ! -----------------------------------------------------
+  !  Pass an externally allocated density matrix
+  ! -----------------------------------------------------
+  subroutine pass_DM(negf,rho, rhoE)
+    type(Tnegf) :: negf    
+    type(z_CSR), optional, target :: rho
+    type(z_CSR), optional, target :: rhoE
+ 
+    if (present(rho)) then
+       negf%rho => rho
+       if(allocated(negf%rho%nzval)) then
+          call destroy(negf%rho)
+       endif   
+    endif 
+
+    if (present(rhoE)) then
+       negf%rho_eps => rhoE
+       if (allocated(negf%rho_eps%nzval)) then
+          call destroy(negf%rho_eps)
+       endif 
+    end if
+    
+    negf%intDM = .false.
+
+  end subroutine pass_DM
+  
+  !-------------------------------------------------------------------- 
+  !> Destroy matrices created runtime in libnegf
+  subroutine destroy_matrices(negf)
+    
+    type(Tnegf) :: negf   
+    integer :: i
+
+    do i=1,negf%str%num_conts
+       if (allocated(negf%HC(i)%val)) call destroy(negf%HC(i))
+       if (allocated(negf%SC(i)%val)) call destroy(negf%SC(i))
+       if (allocated(negf%HMC(i)%val)) call destroy(negf%HMC(i))
+       if (allocated(negf%SMC(i)%val)) call destroy(negf%SMC(i))
+    enddo
+       
+  end subroutine destroy_matrices
+
+  !--------------------------------------------------------------------
+  subroutine destroy_HS(negf)
+    type(Tnegf) :: negf
+
+    if (negf%intHS) then
+      if (associated(negf%H)) then
+        if (allocated(negf%H%nzval)) then
+           !print*,'(destroy) deallocate negf%H',%LOC(negf%H%nzval)
+           call destroy(negf%H)
+        end if
+        deallocate(negf%H)
+        nullify(negf%H)
+      endif
+
+      if (associated(negf%S)) then
+        if (allocated(negf%S%nzval)) then
+           !print*,'(destroy) deallocate negf%S',%LOC(negf%S%nzval)
+           call destroy(negf%S) 
+        end if
+        deallocate(negf%S)
+        nullify(negf%S) 
+      endif
+
+    endif
+
+  end subroutine destroy_HS   
+
+  !--------------------------------------------------------------------
+  subroutine destroy_DM(negf)
+    type(Tnegf) :: negf   
+
+    if (negf%intDM) then
+      
+      if (associated(negf%rho)) then
+        if (allocated(negf%rho%nzval)) then
+           !print*,'(destroy) deallocate negf%rho',%LOC(negf%rho%nzval)
+           call destroy(negf%rho) 
+        end if
+        deallocate(negf%rho)
+        nullify(negf%rho)
+      endif  
+      
+      if (associated(negf%rho_eps)) then
+        if (allocated(negf%rho_eps%nzval)) then
+           !print*,'(destroy) deallocate negf%rho_eps',%LOC(negf%rho_eps%nzval)
+           call destroy(negf%rho_eps) 
+        end if
+        deallocate(negf%rho_eps)
+        nullify(negf%rho_eps) 
+      endif
+
+    endif  
+
+  end subroutine destroy_DM  
+  
+  !-------------------------------------------------------------------------------
+  ! Compact collection of calls to extract device/contact H and S 
+  ! and compute density matrix using contour + real axis integration
+  ! Should be used for dftt calculations
+  !  
+  ! NOTE: the returned DensMat and EnMat are masked with S
+  ! Matrix Structure:  CSR 
+  !                    %nrow=%ncol=(Full squared Hamiltonian size)
+  !                    %nnz = Only non-zero elements of the blocks
+  !
+  !                    +-----+--+--+--+
+  !                    !  D  !C1!C2!C3!  masked with the S matrix 
+  !                    !     !  !  !  !
+  !                    +-----+--+--+--+
+  !                    ! C1  !0 !0 !0 !  The lower part of DensMat
+  !                    +-----+--+--+--+  is filled with 0.
+  !                    ! C2  !0 !0 !0 !
+  !                    +-----+--+--+--+  negf%outer=0,1,2 is used
+  !                    ! C3  !0 !0 !0 !  in order to compute Ci
+  !                    +-----+--+--+--+
+  !-------------------------------------------------------------------------------
+  subroutine compute_density_dft(negf)
+    type(Tnegf) :: negf
+
+    call extract_device(negf)
+    call extract_cont(negf)
+
+    !! Did anyone passed externally allocated DM? If not, create it
+    call create_DM(negf)
+    
+    ! Reference contact for contour/real axis separation
+    call set_ref_cont(negf)
+   
+    !Decide what to do with surface GFs.
+    !sets readOldSGF: if it is 0 or 1 it is left so 
+    if (negf%readOldSGF.eq.2) then
+      if(negf%iteration.eq.1) then        
+        negf%readOldSGF=2  ! compute and save SGF on files
+      else
+        negf%readOldSGF=0  ! read from files
+      endif
+    endif
+
+    if (negf%Np_n(1)+negf%Np_n(2)+negf%n_poles.gt.0) then
+      call contour_int_def(negf)
+      call contour_int(negf)
+    endif
+
+    if (negf%Np_real(1).gt.0) then
+      call real_axis_int_def(negf)
+      call real_axis_int(negf)
+    endif
+     
+    call destroy_matrices(negf)
+ 
+  end subroutine compute_density_dft 
+
+  ! --------------------------------------------------------------------------------
+  ! GP Left in MPI version for debug purpose only. This will write a separate
+  ! file for every ID, which is not possible on all architectures 
+  subroutine write_current(negf)
+
+    type(Tnegf), pointer :: negf
+
+    integer :: i1
+    logical :: lex
+    character(6) :: idstr
+
+    write(idstr,'(i6.6)') id
+    inquire(file=trim(negf%out_path)//'current_'//idstr//'.dat',EXIST=lex)
+    
+    if (lex) then
+       open(101,file=trim(negf%out_path)//'current_'//idstr//'.dat',position='APPEND')
+    else
+       open(101,file=trim(negf%out_path)//'current_'//idstr//'.dat')
+    endif
+
+    do i1=1,size(negf%currents)
+
+       write(101,'(1x,a,i3,i3,a,i3,a,ES14.5,a,ES14.5,a)') 'contacts:',negf%ni(i1),negf%nf(i1), &
+            '; k-point:',negf%kpoint,'; current:', negf%currents(i1),' A'
+
+    end do
+
+    close(101)
+
+  end subroutine write_current  
+  !-------------------------------------------------------------------------------
+  
+  !---- RETURN THE DOS MATRIX ---------------------------------------------------------
+  subroutine return_dos_mat(negf, esteps, npoints, ldos)
+  
+    type(Tnegf) :: negf
+    
+    integer :: esteps, npoints
+    real(dp), dimension(:,:) :: ldos
+    integer :: i, j
+    
+    if (associated(negf%ldos_mat) .and. (esteps .eq. size(negf%ldos_mat,1)) .and. (npoints .eq. size(negf%ldos_mat,2))) then
+
+      do j=1,npoints       
+        do i=1,esteps
+          ldos(i,j) = negf%ldos_mat(i,j)
+        end do
+      end do
+    end if
+    
+  end subroutine return_dos_mat
+  
+  
+  !---- SAVE TUNNELING AND DOS ON FILES -----------------------------------------------
+  ! GP Left in MPI version for debug purpose only. This will write a separate
+  ! file for every ID, which is not possible on all architectures 
+  subroutine write_tunneling_and_dos(negf)
+
+    type(Tnegf) :: negf
+
+    integer :: Nstep, i, i1, iLDOS, size_ni
+    character(6) :: ofKP, idstr
+    real(dp) :: E
+
+    if (associated(negf%tunn_mat)) then
+        
+        Nstep = size(negf%tunn_mat,1) 
+        size_ni = size(negf%tunn_mat,2)
+        
+        write(ofKP,'(i6.6)') negf%kpoint
+        write(idstr,'(i6.6)') id
+        
+        open(1021,file=trim(negf%out_path)//'tunneling_'//ofKP//'_'//idstr//'.dat')
+        
+        !print*,'ENE CONV=',negf%eneconv
+        negf%eneconv=1.d0
+        
+        do i = 1,Nstep
+       
+          E=(negf%Emin+negf%Estep*(i-1))
+          
+          WRITE(1021,'(E17.8,20(E17.8))') E*negf%eneconv, &
+              (negf%tunn_mat(i,i1), i1=1,size_ni)
+          
+        enddo
+        
+        close(1021)
+        
+    endif
+
+    if (associated(negf%ldos_mat) .and. negf%nLDOS.gt.0) then
+        
+        Nstep = size(negf%ldos_mat,1)
+        
+        write(ofKP,'(i6.6)') negf%kpoint
+        write(idstr,'(i6.6)') id
+        
+        open(1021,file=trim(negf%out_path)//'localDOS_'//ofKP//'_'//idstr//'.dat')  !DAR
+        
+        do i = 1,Nstep
+          
+          E=(negf%Emin+negf%Estep*(i-1))
+          WRITE(1021,'((E17.8))',advance='NO') E*negf%eneconv
+          do iLDOS = 1, negf%nLDOS
+            WRITE(1021,'((E17.8))',advance='NO') negf%ldos_mat(i,iLDOS)/negf%eneconv
+          end do
+          write(1021,*)
+
+        end do
+        
+        close(1021)
+       
+    endif
+    
+  end subroutine write_tunneling_and_dos
+  
+  !-------------------------------------------------------------------------------
+  subroutine compute_phonon_current(negf)
+
+    type(Tnegf) :: negf
+    
+    integer :: flagbkup
+    
+    call extract_device(negf)
+    
+    call extract_cont(negf)
+    
+    flagbkup = negf%readOldSGF
+    if (negf%readOldSGF.ne.1) then
+       negf%readOldSGF = 1
+    end if
+
+    call tunneling_int_def(negf)
+
+    call phonon_tunneling(negf)
+  
+    call phonon_current(negf) 
+
+    !!GP Locally writing energy dependent data is not meaningful in the MPI
+    !implementation, because the gathering is done externally.
+    ! An implementation node by node is still active, for debugging purposes 
+    !call write_tunneling_and_dos(negf)
+    
+    call destroy_matrices(negf)
+ 
+    negf%readOldSGF = flagbkup
+  
+  end subroutine compute_phonon_current
+
+  !---------------------------------------------------------------------------
+  ! Sets the Reference contact for non-eq calculations
+  ! 
+  ! The behaviour depends on how negf%min_or_max has been set.
+  !
+  ! min_or_max = 0 : refcont is chosen at the minimum   mu
+  ! min_or_max = 1 : refcont is chosen at the maximum   mu 
+  ! 
+  subroutine set_ref_cont(negf)
+
+    type(TNegf) :: negf
+
+    integer :: nc_vec(1), ncont
+
+    ncont = negf%str%num_conts
+
+    if (ncont > 0) then
+      if (negf%min_or_max .eq. 0) then
+         negf%muref = minval(negf%mu(1:ncont))
+         nc_vec = minloc(negf%mu(1:ncont))  
+      else
+         negf%muref = maxval(negf%mu(1:ncont))
+         nc_vec = maxloc(negf%mu(1:ncont))
+      endif
+      negf%refcont = nc_vec(1)
+    else
+      negf%muref = negf%mu(1)
+      negf%refcont = 1  
+    endif
+     
+  end subroutine set_ref_cont
+
+  !> Print TNegf state, for debug
+  subroutine print_tnegf(negf)
+    type(TNegf) :: negf
+
+    call print_all_vars(negf, 6)
+  end subroutine print_tnegf
+
+  !////////////////////////////////////////////////////////////////////////
+  ! RCM algorithm for reordering.
+  ! 
+  ! Actually not used because it is not suitable for contacted structures
+  !////////////////////////////////////////////////////////////////////////
+  subroutine reorder(mat)
+    type(z_CSR) :: mat
+    
+
+    type(z_CSR) :: P, Tmp
+
+    integer, dimension(:), allocatable :: perm
+    integer :: i, nrow
+
+    nrow=mat%nrow
+
+    call log_allocate(perm,nrow)
+
+    call genrcm(nrow, mat%nnz, mat%rowpnt, mat%colind, perm)
+
+    call create(P,nrow,nrow,nrow)
+
+    do i=1,nrow
+       P%nzval(i)=1
+       P%colind(i)=perm(i)
+       P%rowpnt(i)=i
+    enddo
+    P%rowpnt(nrow+1)=nrow+1
+
+    
+    call create(Tmp,nrow,nrow,mat%nnz)
+
+    call zamub_st(P,mat,Tmp)
+
+    call ztransp_st(P)
+
+    call zamub_st(Tmp,P,mat)   
+
+    call destroy(P,Tmp)
+
+    call log_deallocate(perm)
+ 
+  end subroutine reorder
+
+  !----------------------------------------------------------------------
+  ! Authomatic Block partitioning. The Hamiltonian must be already sorted
+  !----------------------------------------------------------------------
+  subroutine block_partition(mat,nrow,cont_end,surf_end,ncont,nbl,blks)
+    type(z_CSR), intent(in) :: mat
+    integer, intent(in) :: nrow
+    integer, dimension(:), intent(in) :: cont_end
+    integer, dimension(:), intent(in) :: surf_end
+   integer, intent(in) :: ncont
+    integer, intent(out) :: nbl
+    integer, dimension(:), intent(inout) :: blks 
+
+    integer :: j, k, i
+    integer :: i1, i2
+
+    integer :: rn, rnold, tmax, rmax, maxmax
+    integer :: dbuff, minsize, minv, maxv
+
+    !nrow = mat%nrow
+    
+     minsize = 0
+     do i1 = 1, ncont
+        maxv = 0
+        minv = 400000000
+        do k = surf_end(i1)+1, cont_end(i1)
+           do i = mat%rowpnt(k), mat%rowpnt(k+1)-1
+            if (mat%colind(i).le.nrow .and.  mat%colind(i).lt.minv) minv = mat%colind(i)
+            if (mat%colind(i).le.nrow .and.  mat%colind(i).gt.maxv) maxv = mat%colind(i)
+           end do
+        end do
+        if (maxv-minv+1 .gt. minsize) minsize = maxv - minv + 1
+    end do
+                                                                                
+    ! Find maximal stancil of the matrix and on which row
+    !  ( Xx     )
+    !  ( xXxx   )  
+    !  (  xXxxx )  <- maxmax = 3 ; rmax = 3
+    !  (   xXx  )
+    maxmax = 0
+    do j=1,nrow
+
+       i1 = mat%rowpnt(j)
+       i2 = mat%rowpnt(j+1) - 1
+
+       tmax = 0
+       do i = i1, i2
+           if ( mat%colind(i).le.nrow .and. (mat%colind(i)-j) .gt. tmax) then
+                tmax = mat%colind(i)-j
+           endif
+       enddo  
+ 
+       if(tmax .gt. maxmax) then 
+          maxmax = tmax
+          rmax = j
+       endif
+
+       dbuff = maxmax        ! dbuff should be linked to maxmax
+       minsize = max((dbuff+1)/2,minsize)  
+    enddo
+
+    !write(*,*) 'minsize=',minsize
+    !write(*,*) 'maxrow=',rmax
+
+    ! Define central block 
+    rn = rmax - maxmax/2 - dbuff 
+
+    !write(*,*) 'rn=',rn
+
+
+    if(rn-dbuff.ge.0) then 
+
+       blks(1) = rn-1  ! fine del blocco precedente
+
+       nbl = 1
+
+       do 
+          
+          do j = rn, minsize, -1
+
+             rnold = rn
+             i1 = mat%rowpnt(j-minsize+1)
+             i2 = mat%rowpnt(j+1) - 1
+ 
+             !k = maxval(mat%colind(i1:i2))
+             k = 0
+             do i = i1, i2
+                if ( mat%colind(i).le.nrow .and. (mat%colind(i)) .gt. k) then
+                   k = mat%colind(i)
+                endif
+             enddo
+       
+             if(k.lt.rn) then
+                rn = j       
+                nbl = nbl + 1
+                if (nbl.gt.MAXNUMPLs) call errormsg()
+                blks(nbl) = j-1 ! fine del blocco precedente
+                exit
+             endif
+          enddo
+
+          if(rn.le.minsize .or. rnold.eq.rn) then
+             exit
+          endif
+          
+       enddo
+
+       rn = rmax - maxmax/2 - dbuff
+
+    else
+       nbl= 0
+       rn = 1
+
+    endif
+
+    do 
+
+       do j = rn, nrow-minsize+1, 1
+
+          rnold = rn
+          i1 = mat%rowpnt(j)
+          i2 = mat%rowpnt(j+minsize) - 1
+
+          !k = minval(mat%colind(i1:i2))
+          k = nrow 
+          do i = i1, i2
+             if ( mat%colind(i).le.nrow .and. (mat%colind(i)) .lt. k) then
+                k = mat%colind(i)
+             endif
+          enddo
+         
+
+          if(k.gt.rn) then  
+             rn = j
+             nbl = nbl + 1 
+             if (nbl.gt.MAXNUMPLs) call errormsg()
+             blks(nbl) = j-1 ! fine del blocco 
+             exit
+          endif
+       enddo
+
+       if(nrow-rn.le.minsize .or. rnold.eq.rn) then
+          exit
+       endif
+    enddo
+
+    nbl = nbl + 1
+    if (nbl.gt.MAXNUMPLs) call errormsg()
+    blks(nbl) = nrow
+
+    ! Sorting blocks
+    
+    do i = 1, nbl
+       do j = i+1, nbl 
+          if(blks(j).lt.blks(i)) then
+             k = blks(i)
+             blks(i) = blks(j)
+             blks(j) = k
+          endif
+       enddo
+    enddo
+
+
+  end subroutine block_partition
+
+!----------------------------------------------------------------------------
+  subroutine errormsg()
+
+     write(*,*) "ERROR: Maximum number of PLs exceeded"
+     write(*,*) "increase the value of MAXNUMPLS in libnegf.F90"
+     write(*,*) "and recompile the library"
+
+     STOP !should rise an exception
+
+  end subroutine errormsg
+ 
+!----------------------------------------------------------------------------
+  subroutine find_cblocks(mat ,ncont, nbl, PL_end, cont_end, surf_end, cblk)
+    type(z_CSR), intent(in) :: mat
+    integer, intent(in) :: ncont
+    integer, intent(in) :: nbl
+    integer, dimension(:), intent(in) :: PL_end 
+    integer, dimension(:), intent(in) :: cont_end
+    integer, dimension(:), intent(in) :: surf_end
+    integer, dimension(:), allocatable, intent(out) :: cblk
+
+    integer :: j1,k,i,min,max
+    integer, dimension(:), allocatable :: PL_start
+
+    call log_allocate(PL_start,nbl)
+    call log_allocate(cblk,ncont)
+
+    PL_start(1) = 1
+
+    do i = 2, nbl
+       PL_start(i) = PL_end(i-1) + 1
+    enddo
+
+
+    do j1 = 1, ncont
+
+       max = 0
+       min = 400000000
+
+       do k = surf_end(j1)+1, cont_end(j1)
+
+          do i = mat%rowpnt(k), mat%rowpnt(k+1)-1
+
+             if (mat%colind(i).le.PL_end(nbl) .and.  mat%colind(i).lt.min) min = mat%colind(i)
+             if (mat%colind(i).le.PL_end(nbl) .and.  mat%colind(i).gt.max) max = mat%colind(i)
+
+          end do
+
+       end do
+
+       do k = 1, nbl
+
+          if( max .le. PL_end(k) ) then
+             cblk(j1) = k
+
+             if( min .ge. PL_start(k) ) then                
+                exit
+             else
+                write(*,*) "(LibNEGF) Partitioning:"
+                write(*,*) "Number of blocks: ",nbl
+                write(*,*) "PL_end: ",PL_end(1:nbl)
+                write(*,*) "Contact interaction: ",cblk(j1)      
+                write(*,'(a,i3,a)') " ERROR: contact",j1," interacting with more than one block"
+                write(*,*) "min ",min,"max ",max
+                stop
+             end if
+
+          end if
+
+       end do
+
+    end do
+
+    call log_deallocate(PL_start)
+
+  end subroutine find_cblocks
+
+!----------------------------------------------------------------------------
+
+  Subroutine sort(blks, Ipt)
+    ! *
+    ! ***********************************
+    ! * Sort Array X(:) in ascendent order.
+    ! * If present Ipt, a pointer with the 
+    ! * changes is returned in Ipt. 
+    ! ***********************************
+ 
+    Integer, Intent (inout) :: blks(:)
+    Integer, Intent (out), Optional :: Ipt(:)
+ 
+    Integer :: Rtmp
+    Integer :: i, j
+ 
+    If (Present(Ipt)) Then
+       Forall (i=1:Size(blks)) Ipt(i) = i
+ 
+       Do i = 2, Size(blks)
+          Rtmp = blks(i)
+          Do j = i-1, 1, -1
+             If (Rtmp < blks(j)) Then
+                blks(j+1) = blks(j)
+                call Swap(blks, j, j+1)
+             Else
+                Exit
+             End If
+          End Do
+          blks(j+1) = Rtmp
+       End Do
+    Else
+       Do i = 2, Size(blks)
+          Rtmp = blks(i)
+          Do j = i-1, 1, -1
+             If (Rtmp < blks(j)) Then
+                blks(j+1) = blks(j)
+             Else
+                Exit
+             End If
+          End Do
+          blks(j+1) = Rtmp
+       End Do
+    End If
+ 
+    Return
+  End Subroutine sort
+ 
+  ! ***********************************
+  ! * Swaps elements I and J of array X(:). 
+  ! ***********************************
+  Subroutine Swap(X, i, j)
+ 
+    Integer, Intent (inout) :: X(:)
+    Integer, Intent (in) :: i, j
+ 
+    Integer :: Itmp
+ 
+    Itmp = X(I)
+    X(I) = X(J)
+    X(J) = Itmp
+ 
+    Return
+  End Subroutine Swap
+
+  !------------------------------------------
+  subroutine printcsr(id, mat)
+    integer :: id
+    type(z_csr) :: mat
+    
+    call zprint_csrcoo(id, mat, 'c')
+  end subroutine printcsr
+
+  subroutine printcsrij(id, mat, i, j)
+    integer :: id
+    type(z_csr) :: mat
+    integer :: i, j
+
+    write(id,*) i,j,getelement(i,j,mat)
+
+  end subroutine printcsrij
+
+  function getel(mat,i,j) result(el)
+    type(z_csr) :: mat
+    integer :: i, j
+    complex(dp) :: el
+    
+    el = getelement(i,j,mat)
+
+  end function getel
+
+end module tranas

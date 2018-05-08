@@ -127,7 +127,7 @@ deepcopydir_filtered () {
     [ -d $dst ] || exit 1		# exit if dest. dir cannot be created
     for i in `ls $1/`; do
 	case "$i" in CVS*|_*) continue ;; esac	# filter
-	cp -p -f $1/$i $dst
+	cp -L -r -p -f $1/$i $dst #!!DAR add -L -r for transport tests
     done
 }
 

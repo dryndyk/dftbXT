@@ -1,0 +1,79 @@
+Geometry = GenFormat {
+<<< 'H57.gen'
+}
+
+Transport {
+  Device {
+    AtomRange = 1 37
+    FirstLayerAtoms =  1 7 13 21
+  }
+  Contact {
+    Id = "source"
+    AtomRange = 38 47
+    FermiLevel [eV] = -6.   
+    Potential [eV] = 4.
+    #WideBand = Yes   
+    #LevelSpacing = 0.231
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    ReadSurfaceGF = Yes
+    Unformatted = Yes
+  }
+  Contact {
+    Id = "drain"
+    AtomRange = 48 57
+    FermiLevel [eV] = -6.   
+    Potential [eV] = -4.
+    #WideBand = Yes  
+    #LevelSpacing = 0.231
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    ReadSurfaceGF = Yes
+    Unformatted = Yes
+  }
+  Task = UploadContacts {}
+}
+
+Hamiltonian = DFTB {
+  SCC = No
+  #SCCTolerance = 1e-6
+  #ReadInitialCharges = No
+  MaxAngularMomentum = {
+    H = "s"
+  }  
+  SlaterKosterFiles = Type2FileNames {
+    #Prefix = "../../../slako/mio-0-1/"
+    Separator = "-"    
+    Suffix = ".skf"
+  }
+  Dephasing {
+    BuettikerProbes = ZeroPotential {
+    #BuettikerProbes = ZeroCurrent {
+      Coupling [eV] = constant { 0.5 }
+    }
+  }  
+  Eigensolver = TransportOnly{}
+}
+
+Analysis = {
+  TunnelingAndDos {
+    Verbosity = 101
+    EnergyRange [eV] = -10. -2.
+    EnergyStep [eV] =0.1
+    Region = {
+      Atoms = 1:37
+    }
+  }
+}
+
+Options = {
+  WriteAutotestTag = Yes
+}
+
+
+
+
+
+

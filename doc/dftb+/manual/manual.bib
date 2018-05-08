@@ -240,7 +240,8 @@ of Iterative Vector Sequences},
  year = {2007},
  volume = {111},
  number = {26},
- pages = {5678}
+ pages = {5678},
+ note    = {http://dftbplus.org/}
 }
 
 
@@ -437,11 +438,123 @@ Density Functional Theory},
   pages =        {3357-3363},
 }
 
-@Book{NoceWrig06,
-  Title                    = {Numerical Optimization},
-  Author                   = {Jorge Nocedal and Stephen J. Wright},
-  Publisher                = {Springer},
-  Year                     = {2006},
-  Address                  = {New York, NY, USA},
-  Edition                  = {second}
+@Article{Pecchia_NJP,
+  Title                    = {Non-equilibrium Green's functions in
+                  density functional tight binding: method and
+                  applications},
+  Author                   = {A Pecchia and G Penazzi and L Salvucci
+                  and A Di Carlo},
+  Journal                  = {New Journal of Physics},
+  Year                     = {2008},
+  Number                   = {6},
+  Pages                    = {065022},
+  Volume                   = {10},
+
+  Abstract                 = {We present a detailed description of the
+                  implementation of the non-equilibrium Green's
+                  function (NEGF) technique on the
+                  density-functional-based tight-binding ( g DFTB)
+                  simulation tool. This approach can be used to
+                  compute electronic transport in organic and
+                  inorganic molecular-scale devices. The DFTB
+                  tight-binding formulation gives an efficient
+                  computational tool that is able to handle a large
+                  number of atoms. NEGFs are used to compute the
+                  electronic density self-consistently with the
+                  open-boundary conditions naturally encountered in
+                  quantum transport problems and the boundary
+                  conditions imposed by the potentials at the
+                  contacts. The efficient block-iterative algorithm
+                  used to compute the Green's functions is
+                  illustrated. The Hartree potential of the
+                  density-functional Hamiltonian is obtained by
+                  solving the three-dimensional Poisson equation. A
+                  scheme to treat geometrically complex boundary
+                  conditions is discussed, including the possibility
+                  of including multiterminal calculations.},
+  Url                      =
+                  {http://stacks.iop.org/1367-2630/10/i=6/a=065022}
+}
+
+@Article{Pecchia_RPP,
+  Title                    = {Atomistic theory of transport in organic
+                  and inorganic nanostructures},
+  Author                   = {Alessandro Pecchia and Aldo Di Carlo},
+  Journal                  = {Reports on Progress in Physics},
+  Year                     = {2004},
+  Number                   = {8},
+  Pages                    = {1497},
+  Volume                   = {67},
+
+  Abstract                 = {As the size of modern electronic and
+                  optoelectronic devices is scaling down at a steady
+                  pace, atomistic simulations become necessary for an
+                  accurate modelling of their structural, electronic,
+                  optical and transport properties. Such microscopic
+                  approaches are important in order to account
+                  correctly for quantum-mechanical phenomena affecting
+                  both electronic and transport properties of
+                  nanodevices. Effective bulk parameters cannot be
+                  used for the description of the electronic states
+                  since interfacial properties play a crucial role and
+                  semiclassical methods for transport calculations are
+                  not suitable at the typical scales where the device
+                  behaviour is characterized by coherent
+                  tunnelling. Quantum-mechanical computations with
+                  atomic resolution can be achieved using localized
+                  basis sets for the description of the system
+                  Hamiltonian. Such methods have been extensively used
+                  to predict optical and electronic properties of
+                  molecules and mesoscopic systems. The most important
+                  approaches formulated in terms of localized basis
+                  sets, from empirical tight-binding (TB) to first
+                  principles methods, are here reviewed. Being a full
+                  band approach, even the simplest TB overcomes the
+                  limitations of envelope function approximations,
+                  such as the well-known k ? p , and allows to retain
+                  atomic details and realistic band structures. First
+                  principles calculations, on the other hand, can give
+                  a very accurate description of the electronic and
+                  structural properties. Transport in nanoscale
+                  devices cannot neglect quantum effects such as
+                  coherent tunnelling. In this context, localized
+                  basis sets are well-suited for the formal treatment
+                  of quantum transport since they provide a simple
+                  mathematical framework to treat open-boundary
+                  conditions, typically encountered when the system
+                  eigenstates carry a steady-state current. We review
+                  the principal methods used to formulate quantum
+                  transport based on local orbital sets via transfer
+                  matrix and Green's function (GF) techniques. We
+                  start from a general introduction to the scattering
+                  theory which leads to the Landauer formula, and then
+                  report on the most recent progresses of the field
+                  including the application of the self-consistent
+                  non-equilibrium GF formalism.},
+  Url                      =
+                  {http://stacks.iop.org/0034-4885/67/i=8/a=R04}
+}
+
+@InBook{Pecchia_spring,
+  Title                    = {Tight-Binding \mbox{DFT} for Molecular
+                  Electronics (gDFTB)},
+  Author                   = {Di Carlo, A. and Pecchia, A. and
+                  Latessa, L. and Frauenheim, Th. and Seifert, G.},
+  Editor                   = {Cuniberti, Gianaurelio and Richter,
+                  Klaus and Fagas, Giorgos},
+  Pages                    = {153--184},
+  Publisher                = {Springer Berlin Heidelberg},
+  Year                     = {2005},
+  Address                  = {Berlin, Heidelberg },
+  Booktitle                = {Introducing Molecular Electronics},
+  Doi                      = {10.1007/3-540-31514-4_6},
+  ISBN                     = {978-3-540-31514-8},
+  Url                      =
+                  {http://dx.doi.org/10.1007/3-540-31514-4_6}
+}
+
+@www{DFTBXT,
+  author = {Dmitry A. Ryndyk},
+  title  = {{\textsc{DFTB$^{\text{+}}\,$XT}} open software package for quantum nanoscale modeling},
+  note    = {http://quantranspro.org/dftb+xt/}
 }

@@ -1,0 +1,33 @@
+############################################################################
+# Makefile to compile the package within DFTB+
+#
+# Receives:
+#     ROOT: Root of the source directory
+#     BUILDROOT: Root of the build directory
+#
+############################################################################
+
+include $(ROOT)/make.config
+
+OBJDIR := $(BUILDROOT)/external/tranas
+SRCDIR := $(ROOT)/external/tranas
+STAMPFILE := $(OBJDIR)/BUILD_TIMESTAMP
+
+.PHONY: all clean libtranas
+
+all: libtranas
+	touch -r $(OBJDIR)/libtranas.a $(STAMPFILE)
+
+libtranas:
+	$(MAKE) -C $(OBJDIR) -f $(SRCDIR)/Makefile.lib \
+	    FXX="$(FXX)" FXXOPT="$(FXXOPT)" SRCDIR="$(SRCDIR)" \
+	    OBJDIR="$(OBJDIR)" INCLUDES="$(INCLUDES)" MPIFX_PATH="../mpifx/"
+
+clean:
+	$(MAKE) -C $(OBJDIR) -f $(SRCDIR)/Makefile.lib \
+	    FXX="$(FXX)" FXXOPT="$(FXXOPT)" SRCDIR="$(SRCDIR)" clean
+
+
+### Local Variables:
+### mode:makefile
+### End:

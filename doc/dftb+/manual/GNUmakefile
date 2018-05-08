@@ -3,8 +3,8 @@
 
 MANUALCOMPONENTS = manual.tex packages.tex newcommands.tex hsd.tex \
     unit_mod.tex gen.tex spin_constants.tex disp_constants.tex \
-    restart_files.tex publications.tex references.tex \
-    introduction.tex dftbp.tex modes.tex waveplot.tex
+    publications.tex references.tex \
+    introduction.tex dftbp.tex modes.tex waveplot.tex preface.tex transport.tex
 
 RM = /usr/bin/env rm -f
 FIG2DEV = /usr/bin/env fig2dev
@@ -63,8 +63,8 @@ dependancies.mk : manual.tex
 	./depend.pl manual.tex > dependancies.mk
 
 clean :
-	${RM} manual.pdf manual.toc manual.out *.aux \
+	${RM} manual.toc manual.out *.aux \
   manual.log manual.bbl manual.blg manual.brf manual.ps dependancies.mk \
-  manual.ind manual.idx manual.ilg manual._tmp_
+  manual.ind manual.idx manual.ilg manual._tmp_ manual.synctex.gz
 	${RM} -r manual
 

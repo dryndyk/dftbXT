@@ -1874,7 +1874,7 @@ contains
   !> regression testing
   subroutine writeAutotestTag(fileName, tPeriodic, cellVol, tMulliken, qOutput, derivs,&
       & chrgForces, excitedDerivs, tStress, totalStress, pDynMatrix, freeEnergy, pressure,&
-      & gibbsFree, endCoords, tLocalise, localisation, esp)
+      & gibbsFree, endCoords, tLocalise, localisation, esp, tTransmission, transmission)
 
     !> Name of output file
     character(*), intent(in) :: fileName
@@ -1926,6 +1926,12 @@ contains
 
     !> Localisation measure, if relevant
     real(dp), intent(in) :: localisation
+    
+    !> Is the transmission function calculated? !DAR
+    logical, intent(in) :: tTransmission !DAR
+    
+    !> Transmission function !DAR
+    real(dp), intent(in) :: transmission(:,:) !DAR
 
     !> Object holding the potentials and their locations
     type(TElStatPotentials), allocatable, intent(in) :: esp
@@ -1972,6 +1978,9 @@ contains
       if (allocated(esp%extPotential)) then
         call writeTagged(fd, tag_externfield, -esp%extPotential)
       end if
+    end if
+    if (tTransmission) then
+      call writeTagged(fd, tag_transmission, transmission) !DAR 
     end if
     close(fd)
 
@@ -2179,7 +2188,8 @@ contains
         write(fd, *) 'KPT ', iK, ' SPIN ', iSpin, ' KWEIGHT ', kWeight(iK)
         do iEgy = 1, size(eigen, dim=1)
           ! meV accuracy for eigenvalues
-          write(fd, "(I6, F10.3, F9.5)") iEgy, Hartree__eV * eigen(iEgy, iK, iSpin),&
+          !!DAR write(fd, "(I6, F10.3, F9.5)") iEgy, Hartree__eV * eigen(iEgy, iK, iSpin),&
+          write(fd, "(F10.3, F9.5)") Hartree__eV * eigen(iEgy, iK, iSpin),& !!DAR     
               & filling(iEgy, iK, iSpin)
         end do
         write(fd,*)
@@ -3556,11 +3566,12 @@ contains
 
     write(stdOut, '(/, A)') repeat('-', 80)
     if (tCoordOpt .and. tLatOpt) then
-      write(stdOut, "(/, A, I0, A, I0,/)") '***  Geometry step: ', iGeoStep, ', Lattice step: ',&
+      write(stdOut, "(A, I0, A, I0)") '-- Geometry step: ', iGeoStep, ', Lattice step: ',&
           & iLatGeoStep
     else
-      write(stdOut, "(/, A, I0, /)") '***  Geometry step: ', iGeoStep
-    end if
+      write(stdOut, "(A, I0)") '-- Geometry step: ', iGeoStep
+   end if
+   write(stdOut, '(A)') repeat('-', 80)
 
   end subroutine printGeoStepInfo
 
