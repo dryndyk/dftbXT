@@ -281,6 +281,7 @@ module tranas_types_negf
    logical :: tWrite_negf_params = .false.
    type(Ttranas) :: tranas
    type(Tdephasing) :: deph
+   logical :: tWriteTagged = .false.
    !----------------------------------------------------------------------------
    !DAR end
 

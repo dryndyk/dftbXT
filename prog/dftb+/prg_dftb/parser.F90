@@ -213,11 +213,11 @@ contains
            input%ctrl%iSolver/=onlyTransport)) then
          call detailedError(value, "Solver not allowed for transport calculations")
       end if
-      
-      !! Some post-assignment in negf input containers
-      call finalizeNegf(input)
 
-      call readOptions(value, input%ctrl) 
+      ! Options for calculation
+      call getChildValue(root, "Options", dummy, "", child=child, list=.true., &
+        & allowEmptyValue=.true., dummyValue=.true.)
+      call readOptions(child, input%ctrl)
       
       !! Some post-assignment in negf input containers
       call finalizeNegf(input)

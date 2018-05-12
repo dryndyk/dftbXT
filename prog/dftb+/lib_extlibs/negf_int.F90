@@ -44,6 +44,7 @@ module negf_int
   use libmpifx_module
 
   use FormatOut                                                             !DAR
+  use taggedoutput                                                          !DAR
   
   implicit none
   private
@@ -601,6 +602,7 @@ module negf_int
     negf%tWrite_ldos=transpar%tWrite_ldos
     negf%tWrite_negf_params=transpar%tWrite_negf_params
     negf%tranas%out%tDOSwithS=transpar%tDOSwithS
+    negf%tWriteTagged=transpar%tWriteTagged
     allocate(negf%tranas%cont(transpar%ncont))
     negf%tranas%cont(:)%name=transpar%contacts(:)%name
     negf%tranas%cont(:)%tWriteSelfEnergy=transpar%contacts(:)%tWriteSelfEnergy
@@ -1399,29 +1401,13 @@ module negf_int
        close(65000)
     end if
 
-  !if
+    if (negf%tWriteTagged) then
     
-    open(unit=10, file='autotest.tag', action="write", position="append")
+      call initTaggedWriter()
+    
+      open(unit=10, file='autotest.tag', action="write", status="replace")
 
-    if (id0 .and. tundos%writeTunn) then  
-       do i=1,size(tunn,1)
-          write(10,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
-          do j=1,size(tunn,2)
-             write(10,'(E18.8E3)',ADVANCE='NO') tunn(i,j)
-          enddo
-          write(10,*)
-       enddo
-    endif
-    
-    if (id0 .and. tundos%writeLDOS) then
-       do i=1,size(ledos,1)
-          write(10,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
-          do j=1,size(ledos,2)
-             write(10,'(E18.8E3)',ADVANCE='NO') ledos(i,j)
-          enddo
-          write(10,*)
-       enddo
-     end if  
+      if (id0 .and. tundos%writeTunn) call writeTagged(10, tag_transmission, tunn)
     
 !    if (tPeriodic) then
 !      call writeTagged(10, tag_volume, cellVol)
@@ -1432,7 +1418,7 @@ module negf_int
 
     close(10)
 
-    !end if
+    end if
         
   end subroutine negf_current_nogeom
   !-----------------------------------------------------------------------------

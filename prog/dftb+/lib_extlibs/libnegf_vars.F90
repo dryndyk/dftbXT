@@ -197,6 +197,7 @@ module libnegf_vars
     logical :: tDOSwithS =.true.
     type(fnode), pointer :: nodeVE
     type(fnode), pointer :: nodeBP
+    logical :: tWriteTagged = .false.
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !DAR end
     

@@ -55,6 +55,8 @@ program dftbplus
     write(stdOut, "(A)") "-- Initialization is started (without geometry)                               --"
     write(stdout, "(A)") repeat("-", 80)
 
+    input%transpar%tWriteTagged = input%ctrl%tWriteTagged
+    
     call negf_init_nogeom(input%transpar,input%ginfo%greendens,input%ginfo%tundos,env%mpi%globalComm,tInitNEGF)
     if (.not.tInitNEGF) write(stdout, "('libnegf initialization error (negf_init_nogeom)')")
     gdftbStr%nAtom=input%transpar%NumStates
