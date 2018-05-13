@@ -4,18 +4,18 @@
 
 #:include 'common.fypp'
 
-transport/model_H40
-transport/GaAs
-transport/CH4
+transport/model_H40                   
+transport/GaAs                         #? MPI_PROCS <= 8
+transport/CH4                          #? MPI_PROCS <= 4  
 transport/CNT
 transport/deph_C25_ve
 transport/deph_vacancy1
-transport/CH4-poisson
-transport/deph_CH4-poisson
+transport/CH4-poisson                  #? MPI_PROCS <= 4 
+transport/deph_CH4-poisson             #? MPI_PROCS <= 4 
 transport/deph_C25_ve_scc
 transport/deph_H57_bp
 transport/graphene3T
-#transport/graphene_x
+transport/graphene_x
 
 derivatives/Si_2_Delta                 #? MPI_PROCS <= 1
 legacy/Si2_oldSKinterp                 #? MPI_PROCS <= 1
