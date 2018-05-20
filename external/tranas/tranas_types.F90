@@ -1,18 +1,14 @@
-!--------------------------------------------------------------------------------------------------!                              
-! DFTB+XT: DFTB+ eXTended version for model and atomistic quantum transport at nanoscale.          !
-!                                                                                                  !
-! Copyright (C) 2017-2018 DFTB+ developers group.                                                  !
-! Copyright (C) 2018 Dmitry A. Ryndyk.                                                             !
-!                                                                                                  !
-! GNU Lesser General Public License version 3 or (at your option) any later version.               !
-! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the TraNaS library for quantum transport at nanoscale.                      !
-!                                                                                                  !
-! Developer: Dmitry A. Ryndyk.                                                                     !
-!                                                                                                  !
-! Based on the LibNEGF library developed by                                                        !
-! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
+!  DFTB+XT open software package for quantum nanoscale modeling                                    !
+!  Copyright (C) 2018 Dmitry A. Ryndyk                                                             !
+!--------------------------------------------------------------------------------------------------!
+!  GNU Lesser General Public License version 3 or (at your option) any later version.              !
+!  See the LICENSE file for terms of usage and distribution.                                       !
+!--------------------------------------------------------------------------------------------------!
+!  This file is part of the TraNaS library for quantum transport at nanoscale.                     !
+!  Developer: Dmitry A. Ryndyk.                                                                    !
+!  Based on the LibNEGF library developed by                                                       !
+!  Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                              !
 !--------------------------------------------------------------------------------------------------!
 
 !!--------------------------------------------------------------------------!
@@ -35,7 +31,7 @@
 !!  <http://www.gnu.org/licenses/>.                                         !  
 !!--------------------------------------------------------------------------!
 
-module tranas_types_negf
+module tranas_types
 
   use ln_precision, only : dp
   use globals
@@ -51,10 +47,15 @@ module tranas_types_negf
   implicit none
   private
 
+  public :: TTraNaS
   public :: Tnegf, intArray, TEnGrid
 
   integer, public, parameter :: MAXNCONT=10
 
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!   
+
+  !------------------------------------------------------------------------------------------------!   
   type intArray
     integer, dimension(:), allocatable :: indexes
   end type intArray 
@@ -126,20 +127,20 @@ module tranas_types_negf
 
   end type Toutput
 
-  type Ttranas
+  type Ttranas_old
 
      type(Telectrons) :: e
      type(Tcontact), dimension(:), allocatable :: cont
      type(Toutput) :: out
 
-  end type Ttranas
+  end type Ttranas_old
 
-  !-----------------------------------------------------------------------------
-  !DAR - end
-
- !> General libnegf container
- !! Contains input data, runtime quantities and output data
- type Tnegf
+  !------------------------------------------------------------------------------------------------!
+  
+  !> General LibNEGF container.
+  !> Contains input data, runtime quantities and output data used by LibNEGF.
+  !> Is included now in the general Ttranas container.
+  type Tnegf
    !! Input parameters: set by library user
    !! General
    integer :: verbose
@@ -234,7 +235,7 @@ module tranas_types_negf
 
    type(mesh) :: emesh           ! energy mesh for adaptive Simpson
 
-   ! Many Body Interactions
+   !! Many Body Interactions
    class(Interaction), allocatable :: inter
    class(Tmbngf), allocatable :: mbngf                                      !DAR
 
@@ -279,17 +280,31 @@ module tranas_types_negf
    integer :: MaxIter = 1000
    logical :: tWrite_ldos = .false.
    logical :: tWrite_negf_params = .false.
-   type(Ttranas) :: tranas
+   type(Ttranas_old) :: tranas
    type(Tdephasing) :: deph
    logical :: tWriteTagged = .false.
    !----------------------------------------------------------------------------
    !DAR end
 
- end type Tnegf
+  end type Tnegf
 
-!contains 
+  !------------------------------------------------------------------------------------------------!
+  
+  !> General TraNaS container.
+  !> Contains all input data, runtime quantities and output data used by the TraNaS library.
+  type Ttranas
 
-end module tranas_types_negf
+    type(TNEGF) :: negf 
+    !type(Tinput) :: input    
+    !type(TMBNGF) :: mbngf
+    !type(TTDNGF) :: tdngf
+    !type(TQME) :: qme
+     
+  end type Ttranas
+
+  !------------------------------------------------------------------------------------------------!
+  
+end module tranas_types
  
 
 

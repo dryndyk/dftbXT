@@ -1,24 +1,18 @@
 !--------------------------------------------------------------------------------------------------!
-! DFTB+: general package for performing fast atomistic simulations.                                !
-! Copyright (C) 2017-2018  DFTB+ developers group.                                                 !
-! DFTB+XT: DFTB+ eXTended version for model and atomistic quantum transport at nanoscale.          !
-! Copyright (C) 2018 Dmitry A. Ryndyk.                                                             !
-!                                                                                                  !
-! GNU Lesser General Public License version 3 or (at your option) any later version.               !
-! See the LICENSE file for terms of usage and distribution.                                        !
+!  DFTB+XT open software package for quantum nanoscale modeling                                    !
+!  Copyright (C) 2018 Dmitry A. Ryndyk                                                             !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the DFTB+XT/TraNaS interface.                                               !
-!                                                                                                  !
-! Developer: Dmitry A. Ryndyk.                                                                     !
-!                                                                                                  !
-! Based on the DFTB+/LibNEGF interface.                                                            !
+!  GNU Lesser General Public License version 3 or (at your option) any later version.              !
+!  See the LICENSE file for terms of usage and distribution.                                       !
 !--------------------------------------------------------------------------------------------------!
-! TraNaS is the library for quantum transport at nanoscale.                                        !
-!                                                                                                  !
-! Developer: Dmitry A. Ryndyk.                                                                     !
-!                                                                                                  !
-! Based on the LibNEGF library developed by                                                        !
-! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
+!  This file is part of the DFTB+XT/TraNaS interface.                                              !
+!  Developer: Dmitry A. Ryndyk.                                                                    !
+!  Based on the DFTB+/LibNEGF interface.                                                           !
+!--------------------------------------------------------------------------------------------------!
+!  TraNaS is the library for quantum transport at nanoscale.                                       !
+!  Developer: Dmitry A. Ryndyk.                                                                    !
+!  Based on the LibNEGF library developed by                                                       !
+!  Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                              !
 !--------------------------------------------------------------------------------------------------!
 
 module negf_int
@@ -35,7 +29,7 @@ module negf_int
   use lib_param    !, only : Tnegf, set_defaults,  & 
                    !     set_elph_dephasing, set_elph_block_dephasing, &
                    !     set_elph_s_dephasing, destroy_elph_model
-  use tranas_types_negf                 
+  use tranas_types                 
   !use libnegf
   use tranas
   use ln_extract
@@ -77,22 +71,18 @@ module negf_int
 
   contains
 
-!------------------------------------------------------------------------------
-! Init gDFTB environment and variables
-!------------------------------------------------------------------------------
-  subroutine negf_init(structure, transpar, greendens, tundos, mpicomm,&
-        & initinfo)
-      
-    
+  !-----------------------------------------------------------------------------------------------!
+  !> Initialize QT environment and variables (public)
+  !-----------------------------------------------------------------------------------------------!
+  subroutine negf_init(structure, transpar, greendens, tundos, mpicomm, initinfo)
+          
     Type(TTranspar), intent(IN) :: transpar
     Type(TGDFTBstructure), intent(IN) :: structure
     Type(TGDFTBGreenDensInfo), intent(IN) :: greendens
     Type(TGDFTBTunDos), intent(IN) :: tundos
     Type(mpifx_comm), intent(in) :: mpicomm
     logical, intent(OUT) :: initinfo
-    
-
-    
+        
     ! local variables
     real(dp), dimension(:), allocatable :: pot, eFermi
     integer :: i,error, l, ncont, nc_vec(1), j, nldos
@@ -327,10 +317,11 @@ module negf_int
   end subroutine negf_init
   !-----------------------------------------------------------------------------
 
-  !-----------------------------------------------------------------------------
   !DAR begin - negf_init_nogeom
-  !-----------------------------------------------------------------------------
-   subroutine negf_init_nogeom(transpar,greendens,tundos,mpicomm,initinfo)
+  !------------------------------------------------------------------------------------------------!
+  !> Initialize QT environment and variables without geometry (public)
+  !------------------------------------------------------------------------------------------------!
+   subroutine negf_init_nogeom(transpar, greendens, tundos, mpicomm, initinfo)
          
     Type(TTranspar), intent(IN) :: transpar
     Type(TGDFTBstructure) :: structure
@@ -338,9 +329,7 @@ module negf_int
     Type(TGDFTBTunDos) :: tundos
     Type(mpifx_comm), intent(in) :: mpicomm
     logical, intent(OUT) :: initinfo
-    
-  
-    
+       
     ! local variables
     real(dp), dimension(:), allocatable :: pot, eFermi
     integer :: i,error, l, ncont, nc_vec(1), j, nldos
@@ -615,9 +604,9 @@ module negf_int
 
   end subroutine tp2negf
     
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
   !DAR end
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
 
 
   subroutine negf_init_elph(elph)
@@ -834,9 +823,7 @@ module negf_int
 
       else
 
-         !cblk(1)=1                      !DAR!!! To be changed (todo 9.03.2017).
-         !cblk(2)=transpar%nPLs          !DAR!!!
-         cblk=transpar%cblk              !DAR!!!
+        cblk=transpar%cblk              !DAR!!!
 
       end if   
   
@@ -877,10 +864,14 @@ module negf_int
   
   end subroutine negf_init_str
 
-  !------------------------------------------------------------------------------
-  ! INTERFACE subroutine to call Density matrix computation
-  !------------------------------------------------------------------------------
-  subroutine negf_density(miter,spin,nkpoint,HH,SS,mu,tundos,DensMat,EnMat)
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
+  
+  !------------------------------------------------------------------------------------------------!
+  !> INTERFACE subroutine to call Density Matrix computation (called only from this module)
+  !------------------------------------------------------------------------------------------------!
+  subroutine negf_density(miter, spin, nkpoint, HH, SS, mu, tundos, DensMat, EnMat)
   !DAR - tundos is added, it is necessary for 'call negf_init_elph(tundos%elph)'
 
     Type(TGDFTBTunDos), intent(IN) :: tundos                                !DAR
@@ -945,10 +936,10 @@ module negf_int
 
   end subroutine negf_density
 
-  !------------------------------------------------------------------------------
-  ! INTERFACE subroutine to call ldos computation
-  !------------------------------------------------------------------------------
-  subroutine negf_ldos(HH,SS,spin,kpoint,wght,ledos)
+  !------------------------------------------------------------------------------------------------!
+  !> INTERFACE subroutine to call LDOS computation (called only from this module)
+  !------------------------------------------------------------------------------------------------!
+  subroutine negf_ldos(HH, SS, spin, kpoint, wght, ledos)
     type(z_CSR), intent(in) :: HH, SS
     integer, intent(in) :: spin      ! spin index 
     integer, intent(in) :: kpoint        ! kp index 
@@ -1012,10 +1003,10 @@ module negf_int
     close(1121) 
   end subroutine negf_dumpHS
   
-  !------------------------------------------------------------------------------
-  ! INTERFACE subroutine to call current computation
-  !------------------------------------------------------------------------------    
-  subroutine negf_current(HH,SS,spin,kpoint,wght,tunn,ledos,currents,tundos)
+  !------------------------------------------------------------------------------------------------!
+  !> INTERFACE subroutine to call current computation (called only from this module)
+  !------------------------------------------------------------------------------------------------!   
+  subroutine negf_current(HH, SS, spin, kpoint, wght, tunn, ledos, currents, tundos)
   !DAR - tundos is added, it is necessary for 'call negf_init_elph(tundos%elph)'
                                                                
     Type(TGDFTBTunDos), intent(IN) :: tundos                    !DAR
@@ -1031,7 +1022,7 @@ module negf_int
     type(lnParams) :: params   
 
     !DAR begin - Preparation of the Hamiltonian
-    !---------------------------------------------------------------------------
+    !--------------------------------------------------------------------------!
     
     integer :: j,k,l,m,n,NumStates,icont
     real(dp), allocatable :: H(:,:),S(:,:)
@@ -1053,7 +1044,7 @@ module negf_int
 
     if(negf%tRead_negf_in) call ReadLibNEGF 
          
-    !-------------------------------------------------------------------------
+    !--------------------------------------------------------------------------!
     !DAR end
 
     call get_params(negf, params)
@@ -1122,8 +1113,10 @@ module negf_int
   end subroutine negf_current
 
   !DAR begin - negf_current_nogeom
-  !-----------------------------------------------------------------------------
-  subroutine negf_current_nogeom(mpicomm,tundos)   !,tunn,ledos,currents)
+  !------------------------------------------------------------------------------------------------!
+  !> Subroutine to call current computation without geometry (public)
+  !>
+  subroutine negf_current_nogeom(mpicomm, tundos)   !,tunn,ledos,currents)
     !DAR - tundos is added, it is necessary for 'call negf_init_elph(tundos%elph)'
 
     Type(TGDFTBTunDos), intent(IN) :: tundos                    !DAR
@@ -1150,8 +1143,11 @@ module negf_int
     write(*,*)
     write(*,*)'Transport is started'
     write(*,"(' Number of States = ',I0)")negf%NumStates
-    endif
+    endif   
 
+    ! Preparation of the Hamiltonian
+    !--------------------------------------------------------------------------!
+    
     if(negf%tReadDFTB) call ReadDFTB
       
     if(negf%tModel) call ReadModel
@@ -1169,6 +1165,8 @@ module negf_int
 
     if(negf%tRead_negf_in) call ReadLibNEGF
 
+    !--------------------------------------------------------------------------!
+    
     call pass_HS(negf,HH,SS)
    
     if(negf%tWrite_negf_params) call check_negf_params
@@ -1424,8 +1422,9 @@ module negf_int
   !-----------------------------------------------------------------------------
   !DAR end
 
-  !> Calculates density matrix with Green's functions
-  !!
+  !------------------------------------------------------------------------------------------------!
+  !> Calculates density matrix with Green functions (public)
+  !------------------------------------------------------------------------------------------------!
   subroutine calcdensity_green(iSCCIter, mpicomm, groupKS, ham, over, &
       & desc, iNeighbor, nNeighbor, iAtomStart, iPair, img2CentCell, iCellVec, &
       & cellVec, orb, nEl, tempElec, kPoints, kWeights, &
@@ -1505,8 +1504,9 @@ module negf_int
   
   end subroutine calcdensity_green
 
-  !> Calculates E-density matrix with Green's functions
-  !!
+  !------------------------------------------------------------------------------------------------!
+  !> Calculates E-density matrix with Green functions (public)
+  !------------------------------------------------------------------------------------------------!
   subroutine calcEdensity_green(iSCCIter, mpicomm, groupKS, ham, over, &
       & desc, iNeighbor, nNeighbor, iAtomStart, iPair, img2CentCell, iCellVec, &
       & cellVec, orb, kPoints, kWeights, rhoE, mu, tundos)
@@ -1578,9 +1578,9 @@ module negf_int
     
   end subroutine calcEdensity_green
 
-  !------------------------------------------------------------------------------
-  ! INTERFACE subroutine to call current computation
-  !------------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
+  !>
+  !------------------------------------------------------------------------------------------------!
   subroutine calcPDOS_green(mpicomm, groupKS, ham, over, &
       & desc, iNeighbor, nNeighbor, iAtomStart, iPair, img2CentCell, iCellVec, &
       & cellVec, orb, nEl, tempElec, kPoints, kWeights, ldosTot, writeLDOS)
@@ -1654,10 +1654,9 @@ module negf_int
   end subroutine calcPDOS_green
 
       
-  
-  !------------------------------------------------------------------------------
-  ! INTERFACE subroutine to call current computation
-  !------------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
+  !> Subroutine to call current computation (public)
+  !------------------------------------------------------------------------------------------------!
   subroutine calc_current(mpicomm, groupKS, ham, over, &
       & desc, iNeighbor, nNeighbor, iAtomStart, iPair, img2CentCell, iCellVec, &
       & cellVec, orb, nEl, tempElec, kPoints, kWeights, tunnTot,&
@@ -1961,6 +1960,11 @@ module negf_int
     if (id0.and.params%verbose.gt.0) print*,'calc_current done'             
 
   end subroutine calc_current
+  !------------------------------------------------------------------------------------------------!
+
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
 
   !----------------------------------------------------------------------------
   !   utility to allocate and sum partial results
@@ -2275,9 +2279,13 @@ module negf_int
 
   end subroutine symmetrize_neiglist
 
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
+
+  !------------------------------------------------------------------------------------------------!
   !DAR begin - ReadDFTB, ReadModel, test_negf, orthogonalization, etc.
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
 
   subroutine ReadDFTB
 
@@ -2316,9 +2324,7 @@ module negf_int
 
   end subroutine ReadDFTB
 
-  !-----------------------------------------------------------------------------
-
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!!
 
   subroutine ReadModel
                                                      
@@ -2364,6 +2370,7 @@ module negf_int
       
   end subroutine ReadModel
 
+  !------------------------------------------------------------------------------------------------!
   !> Implementation of convertByMul for real scalar.
   subroutine convertByMul_NoNode(modifier, units, convertValue)
                                                            
@@ -2418,9 +2425,7 @@ module negf_int
 
   end function getModifierIndex_NoNode
 
-  !-----------------------------------------------------------------------------
-
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
 
   subroutine ReadU
       
@@ -2448,9 +2453,7 @@ module negf_int
     
   end subroutine ReadU
 
-  !-----------------------------------------------------------------------------
-
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
 
   subroutine ReadLibNEGF
    
@@ -2460,9 +2463,7 @@ module negf_int
 
   end subroutine ReadLibNEGF
 
-  !-----------------------------------------------------------------------------
-
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
 
   subroutine MakeHHSS(HH,SS)
 
@@ -2532,9 +2533,7 @@ module negf_int
 
   end subroutine MakeHHSS
   
-  !-----------------------------------------------------------------------------
-
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
   
   subroutine MakeHS_dev
 
@@ -2547,9 +2546,7 @@ module negf_int
 
   end subroutine MakeHS_dev
  
-  !-----------------------------------------------------------------------------
-  
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
 
   subroutine WriteLDOS
     
@@ -2571,7 +2568,7 @@ module negf_int
 
   end subroutine WriteLDOS
 
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
   
   subroutine check_negf_params
 
@@ -2636,9 +2633,9 @@ module negf_int
     write(*,"(' negf parameters are written to the log file')")
         
   end subroutine check_negf_params
-  !-----------------------------------------------------------------------------
- 
-  !-----------------------------------------------------------------------------
+  
+  !------------------------------------------------------------------------------------------------!
+
   subroutine orthogonalization
 
     integer :: i,m,n1_first,n1_last,n2_first,n2_last
@@ -2741,9 +2738,9 @@ module negf_int
     
   end subroutine orthogonalization
 
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
 
-    subroutine orthogonalization_dev
+  subroutine orthogonalization_dev
 
     integer :: i,m,n1_first,n1_last,n2_first,n2_last
     integer :: INFO, N, N2
@@ -2874,7 +2871,7 @@ module negf_int
     
   end subroutine orthogonalization_dev
   
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
 
   function inv(A) result(Ainv)
     
@@ -2911,62 +2908,9 @@ module negf_int
   
   end function inv
   
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
   !DAR end
-  !-----------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
     
 end module negf_int
-       
-! H*rho Performed in sparse formats--------------------
-!call log_allocate(tmpBlk, nRow, mOrb)
-!tmpBlk = 0.0_dp
-!do mu = 1, mOrb
-!  ii = iRow + mu - 1 
-!  do nu = H%rowpnt(ii), H%rowpnt(ii+1) - 1
-!    tmpBlk(H%colind(nu), mu) = &
-!              aimag(H%nzval(nu)*conjg(rho%nzval(nu)))
-!  enddo
-!enddo  
-! -----------------------------------------------------
-     
-! straightforward implementation
-!     do m = 1,nAtom
-      
- !      startm = iAtomStart(m)
- !      endm = startm + nOrbAtom(m) - 1
-  !     startm = H%rowpnt(startm)
-  !     endm =  H%rowpnt(endm+1)-1 
 
- !      do inn = 1, nNeighbor(m)
- !
- !        n = img2CentCell(iNeighbor(inn,m))
- !
- !        startn = iAtomStart(n)
- !        endn = startn + nOrbAtom(n) - 1
- !        startn = H%rowpnt(startn)
- !        endn =  H%rowpnt(endn+1)-1 
- 
- !        Inm = 0.0_dp
- !        
- !        do orbm = startm, endm
- !          do orbn = startn, endn
-
- !              Hmn = get_element(orbm,orbn,H)
- !              Rmn = get_element(orbn,orbm,rho)
- !              Inm = Inm + aimag(Hmn*Rmn)
- !     
- !          enddo 
- !        enddo
-
- !      enddo
- !    enddo
-
-       !startm = iAtomStart(m)
-       !endm = startm + nOrbAtom(m) - 1
-       !call extract(rho,startm,endm,1,nrow,BD)
-       !call extract(H,startm,endm,1,nrow,BH)
-       !call log_allocate(valH,endm-startm+1)
-       !call log_allocate(indH,endm-startm+1)
-       !call log_allocate(valD,endm-startm+1)
-       !call log_allocate(indD,endm-startm+1)
-       !call log_allocate( vec,endm-startm+1)

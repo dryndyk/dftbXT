@@ -63,7 +63,7 @@ MODULE iterative_dns
   USE elph
   USE ln_structure, only : TStruct_Info
   !USE lib_param, only : MAXNCONT, Tnegf, intarray
-  use tranas_types_negf, only : MAXNCONT, Tnegf, intarray
+  use tranas_types, only : MAXNCONT, Tnegf, intarray
   use mpi_globals, only : id, numprocs, id0                                 !DAR
   USE outmatrix, only : outmat_c, inmat_c, direct_out_c, direct_in_c 
   USE clock

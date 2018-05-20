@@ -51,7 +51,7 @@ module lib_param
   use elphds, only : ElPhonDephS, ElPhonDephS_create
   !use libmpifx_module, only : mpifx_comm
   
-  use tranas_types_negf   
+  use tranas_types   
 
   implicit none
   private

@@ -19,7 +19,7 @@ MYCPPOPT += -D__COMPDATE='"$(shell date +'%F')"'
 
 
 SOURCES = globals.F90 sparsekit_drv.F90 mat_def.F90 clock.F90 ln_structure.F90 ln_constants.F90 ln_allocation.F90 \
-          tranas_types_negf.F90 \
+          tranas_types.F90 \
           ln_precision.F90 interactions.F90 elphdd.F90 elphdb.F90 elphds.F90 \
           elph.F90 phph.F90 input_output.F90 energy_mesh.F90 lib_param.F90 ln_extract.F90 \
           inversions.F90 complexbands.F90 mpi_globals.F90 contselfenergy.F90  tranas.F90 tranas_mbngf.F90  \
@@ -48,26 +48,26 @@ $(BUILDDIR)ln_constants.o:     $(BUILDDIR)ln_precision.o
 $(BUILDDIR)lib_param.o:  $(BUILDDIR)ln_precision.o $(BUILDDIR)globals.o $(BUILDDIR)mat_def.o $(BUILDDIR)ln_structure.o  
 $(BUILDDIR)lib_param.o:  $(BUILDDIR)energy_mesh.o  $(BUILDDIR)input_output.o $(BUILDDIR)elph.o 
 $(BUILDDIR)lib_param.o:  $(BUILDDIR)interactions.o $(BUILDDIR)elphdd.o $(BUILDDIR)elphdb.o $(BUILDDIR)elphds.o $(BUILDDIR)phph.o
-$(BUILDDIR)tranas_types_negf.o:  $(BUILDDIR)ln_precision.o $(BUILDDIR)globals.o $(BUILDDIR)mat_def.o $(BUILDDIR)ln_structure.o  
-$(BUILDDIR)tranas_types_negf.o:  $(BUILDDIR)energy_mesh.o  $(BUILDDIR)input_output.o $(BUILDDIR)elph.o 
-$(BUILDDIR)tranas_types_negf.o:  $(BUILDDIR)interactions.o $(BUILDDIR)phph.o
+$(BUILDDIR)tranas_types.o:  $(BUILDDIR)ln_precision.o $(BUILDDIR)globals.o $(BUILDDIR)mat_def.o $(BUILDDIR)ln_structure.o  
+$(BUILDDIR)tranas_types.o:  $(BUILDDIR)energy_mesh.o  $(BUILDDIR)input_output.o $(BUILDDIR)elph.o 
+$(BUILDDIR)tranas_types.o:  $(BUILDDIR)interactions.o $(BUILDDIR)phph.o
 $(BUILDDIR)mat_def.o:       $(BUILDDIR)ln_allocation.o
 $(BUILDDIR)iterative_dns.o: $(BUILDDIR)ln_allocation.o  $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
 $(BUILDDIR)iterative_dns.o: $(BUILDDIR)inversions.o $(BUILDDIR)ln_structure.o
 #$(BUILDDIR)iterative_ph.o: $(BUILDDIR)ln_allocation.o  $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
 #$(BUILDDIR)iterative_ph.o: $(BUILDDIR)inversions.o $(BUILDDIR)ln_structure.o
 $(BUILDDIR)ln_extract.o: $(BUILDDIR)ln_precision.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o
-$(BUILDDIR)ln_extract.o: $(BUILDDIR)ln_structure.o $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_negf.o $(BUILDDIR)ln_constants.o
+$(BUILDDIR)ln_extract.o: $(BUILDDIR)ln_structure.o $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types.o $(BUILDDIR)ln_constants.o
 $(BUILDDIR)input_output.o:  $(BUILDDIR)ln_precision.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
 $(BUILDDIR)inversions.o:    $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o
 $(BUILDDIR)complexbands.o:    $(BUILDDIR)ln_precision.o $(BUILDDIR)ln_constants.o $(BUILDDIR)inversions.o	
-$(BUILDDIR)contselfenergy.o: $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_negf.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
+$(BUILDDIR)contselfenergy.o: $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
 $(BUILDDIR)contselfenergy.o: $(BUILDDIR)outmatrix.o $(BUILDDIR)clock.o $(BUILDDIR)complexbands.o $(BUILDDIR)mpi_globals.o
 $(BUILDDIR)contselfenergy.o: $(BUILDDIR)ln_structure.o
 $(BUILDDIR)sparsekit_drv.o:  $(BUILDDIR)mat_def.o $(BUILDDIR)ln_allocation.o
-$(BUILDDIR)tranas.o:    $(BUILDDIR)ln_precision.o $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_negf.o $(BUILDDIR)input_output.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)tranas_mbngf.o
+$(BUILDDIR)tranas.o:    $(BUILDDIR)ln_precision.o $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types.o $(BUILDDIR)input_output.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)tranas_mbngf.o
 $(BUILDDIR)tranas.o:    $(BUILDDIR)rcm_module.o $(BUILDDIR)integrations.o $(BUILDDIR)ln_extract.o  $(BUILDDIR)ln_structure.o
-$(BUILDDIR)tranas_mbngf.o: $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_negf.o $(BUILDDIR)sparsekit_drv.o $(BUILDDIR)integrations.o
+$(BUILDDIR)tranas_mbngf.o: $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types.o $(BUILDDIR)sparsekit_drv.o $(BUILDDIR)integrations.o
 $(BUILDDIR)integrations.o: $(BUILDDIR)sparsekit_drv.o $(BUILDDIR)inversions.o $(BUILDDIR)iterative_dns.o
 $(BUILDDIR)integrations.o: $(BUILDDIR)energy_mesh.o $(BUILDDIR)distributions.o $(BUILDDIR)contselfenergy.o 
 #$(BUILDDIR)integrations.o: $(BUILDDIR)iterative_ph.o	

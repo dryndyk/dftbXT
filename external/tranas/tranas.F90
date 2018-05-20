@@ -1,18 +1,14 @@
-!--------------------------------------------------------------------------------------------------!                              
-! DFTB+XT: DFTB+ eXTended version for model and atomistic quantum transport at nanoscale.          !
-!                                                                                                  !
-! Copyright (C) 2017-2018 DFTB+ developers group.                                                  !
-! Copyright (C) 2018 Dmitry A. Ryndyk.                                                             !
-!                                                                                                  !
-! GNU Lesser General Public License version 3 or (at your option) any later version.               !
-! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the TraNaS library for quantum transport at nanoscale.                      !
-!                                                                                                  !
-! Developer: Dmitry A. Ryndyk.                                                                     !
-!                                                                                                  !
-! Based on the LibNEGF library developed by                                                        !
-! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
+!  DFTB+XT open software package for quantum nanoscale modeling                                    !
+!  Copyright (C) 2018 Dmitry A. Ryndyk                                                             !
+!--------------------------------------------------------------------------------------------------!
+!  GNU Lesser General Public License version 3 or (at your option) any later version.              !
+!  See the LICENSE file for terms of usage and distribution.                                       !
+!--------------------------------------------------------------------------------------------------!
+!  This file is part of the TraNaS library for quantum transport at nanoscale.                     !
+!  Developer: Dmitry A. Ryndyk.                                                                    !
+!  Based on the LibNEGF library developed by                                                       !
+!  Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                              !
 !--------------------------------------------------------------------------------------------------!
 
 !!--------------------------------------------------------------------------!
@@ -34,256 +30,299 @@
 !!  License along with libNEGF.  If not, see                                !
 !!  <http://www.gnu.org/licenses/>.                                         !  
 !!--------------------------------------------------------------------------!
-  
+
+!> The main entries (API) for TraNaS library. All public calls.
 module tranas
 
-use tranas_types_negf
-use tranas_mbngf
+  use tranas_types
+  use tranas_mbngf
 
-use ln_precision
-use ln_constants
-use ln_allocation
-use lib_param
-use globals, only : LST
-use mpi_globals, only : id, numprocs, id0
-use input_output
-use ln_structure
-use rcm_module
-use mat_def
-use ln_extract
-use sparsekit_drv
-use integrations
-use interactions                                                          
-use iso_c_binding
+  use ln_precision
+  use ln_constants
+  use ln_allocation
+  use lib_param
+  use globals, only : LST
+  use mpi_globals, only : id, numprocs, id0
+  use input_output
+  use ln_structure
+  use rcm_module
+  use mat_def
+  use ln_extract
+  use sparsekit_drv
+  use integrations
+  use interactions                                                          
+  use iso_c_binding
 
-implicit none
-private
+  implicit none
+  private
 
-!Input and work flow procedures
-public :: lnParams
-public :: init_negf, destroy_negf
-public :: init_structure
-public :: get_params, set_params
-public :: init_ldos, set_ldos_intervals, set_ldos_indexes
+  !Input and work flow procedures
+  public :: lnParams
+  public :: init_negf, destroy_negf
+  public :: init_structure
+  public :: get_params, set_params
+  public :: init_ldos, set_ldos_intervals, set_ldos_indexes
 
-public :: set_H, set_S, set_S_id, read_HS, pass_HS, copy_HS
-public :: set_readoldsgf, set_computation, set_iteration
-public :: set_convfactor, set_fictcont
-public :: read_negf_in
-public :: negf_version 
-public :: destroy_matrices ! cleanup matrices in Tnegf container (H,S,rho,rhoE)
-private :: block_partition ! chop structure into PLs (CAREFUL!!!)
-! H need to be already ordered properly 
-public :: negf_partition_info  !write down partition info
-private :: find_cblocks        ! Find interacting contact block
-public :: set_ref_cont, print_tnegf
-public :: associate_transmission, associate_current, associate_ldos
-public :: get_energies, pass_DM, get_DM, get_currents
+  public :: set_H, set_S, set_S_id, read_HS, pass_HS, copy_HS
+  public :: set_readoldsgf, set_computation, set_iteration
+  public :: set_convfactor, set_fictcont
+  public :: read_negf_in
+  public :: negf_version 
+  public :: destroy_matrices ! cleanup matrices in Tnegf container (H,S,rho,rhoE)
+  private :: block_partition ! chop structure into PLs (CAREFUL!!!)
+  ! H need to be already ordered properly 
+  public :: negf_partition_info  !write down partition info
+  private :: find_cblocks        ! Find interacting contact block
+  public :: set_ref_cont, print_tnegf
+  public :: associate_transmission, associate_current, associate_ldos
+  public :: get_energies, pass_DM, get_DM, get_currents
 
-public :: compute_density_dft      ! high-level wrapping
-! Extract HM and SM
-! run DM calculation
+  public :: compute_density_dft      ! high-level wrapping
+  ! Extract HM and SM
+  ! run DM calculation
 
-public :: compute_current          ! high-level wrapping routines
-! Extract HM and SM
-! run total current calculation
+  public :: compute_current          ! high-level wrapping routines
+  ! Extract HM and SM
+  ! run total current calculation
 
-public ::  write_tunneling_and_dos ! Print tunneling and dot to file
-! Note: for debug purpose. I/O should be managed 
-! by calling program
-public :: compute_ldos             ! wrapping to compute ldos
-public :: return_dos_mat           ! return pointer to LDOS matrix 
+  public ::  write_tunneling_and_dos ! Print tunneling and dot to file
+  ! Note: for debug purpose. I/O should be managed 
+  ! by calling program
+  public :: compute_ldos             ! wrapping to compute ldos
+  public :: return_dos_mat           ! return pointer to LDOS matrix 
 
-public :: compute_phonon_current   ! High-level wrapping to
-! compute phonon transmission
-! and heat currents 
-public :: thermal_conductance
+  public :: compute_phonon_current   ! High-level wrapping to
+  ! compute phonon transmission
+  ! and heat currents 
+  public :: thermal_conductance
 
-public :: reorder, sort, swap      ! not used 
-public :: printcsr                 ! debugging routines
-public :: printcsrij               ! debugging routines
-public :: getel                    ! debugging routines
+  public :: reorder, sort, swap      ! not used 
+  public :: printcsr                 ! debugging routines
+  public :: printcsrij               ! debugging routines
+  public :: getel                    ! debugging routines
 
-integer, PARAMETER :: VBT=70
-integer, PARAMETER :: MAXNUMPLs = 10000
+  integer, PARAMETER :: VBT=70
+  integer, PARAMETER :: MAXNUMPLs = 10000
 
-!-----------------------------------------------------------------------------
-!> Contains all the general parameters to be passed as input to library
-!! which are compatible with iso_c_binding representations
-!! 1-1 correspondance to input parameter in type Tnegf
-type, bind(c) :: lnparams
-  !! General
-   !> verbosity, > 100 is maximum
-   integer(c_int) :: verbose
-   !> Managing SGF readwrite: 0: Read 1: compute 2: comp & save
-   integer(c_int)  :: readoldsgf 
-   !> Spin component (for io)
-   integer(c_int)  :: spin
-   !> k-point index (for io)
-   integer(c_int) :: kpoint 
-   !> Current iteration (for io) 
-   integer(c_int) :: iteration          ! Number of current SCC itaration
-   !> Spin degeneracy
-   real(c_double) :: g_spin          
-   !> Imaginary delta
-   real(c_double) :: delta           
-   !> Additional delta to force more broadening in the DOS 
-   real(c_double) :: dos_delta
-   !> Energy conversion factor
-   real(c_double) :: eneconv
-   !> Weight for k-point integration, output integrals are scaled accordingly
-   real(c_double) :: wght        
-   !> Conduction band edge
-   real(c_double) :: ec
-   !> Valence band edge
-   real(c_double) :: ev        
-   !! Real axis integral
-   !> Minimum energy for real axis (current integration, DOS, tunneling)
-   real(c_double) :: emin       
-   !> Maximum energy for real axis
-   real(c_double) :: emax   
-   !> Energy step for real axis
-   real(c_double) :: estep    
-   !! Contacts info
-   !> Electron electrochemical potential
-   real(c_double) :: mu_n(MAXNCONT)
-   !> Hole electrochemical potential
-   real(c_double) :: mu_p(MAXNCONT)  
-   !> Electron electrochemical Potential (for dft)
-   real(c_double) :: mu(MAXNCONT)    
-   !> Contact DOS for WBA
-   real(c_double) :: contact_dos(MAXNCONT) 
-   !> Logical value: is the contact WB?
-   logical(c_bool)  :: fictcont(MAXNCONT)
-   !> Electronic temperature for each contact
-   real(c_double) :: kbt(MAXNCONT) 
-   !! Contour integral
-   !> Number of points for n 
-   integer(c_int) :: np_n(2)
-   !> Number of points for p 
-   integer(c_int) :: np_p(2)
-   !> Number of real axis points
-   integer(c_int) :: np_real(11)
-   !> ! Number of kT extending integrations
-   integer(c_int) :: n_kt
-   !> Number of poles
-   integer(c_int) :: n_poles
-   !! Emitter and collector for transmission or Meir-Wingreen 
-   !! (only emitter in this case)
-   !> Emitter contact list (or lead for integration in MW)
-   integer(c_int) :: ni(MAXNCONT)
-   !> Collector contact list
-   integer(c_int) :: nf(MAXNCONT)
-   !> Should I calculate the density ("D") or the energy weighted density ("E")?
-   character(kind=c_char, len=1) :: dore  ! Density or En.Density
-   !> Reference contact is set to maximum or minimum Fermi level
-   integer(c_int) :: min_or_max
-end type lnparams
+  !-----------------------------------------------------------------------------
+  !> Contains all the general parameters to be passed as input to library
+  !! which are compatible with iso_c_binding representations
+  !! 1-1 correspondance to input parameter in type Tnegf
+  type, bind(c) :: lnparams
+    !! General
+    !> verbosity, > 100 is maximum
+    integer(c_int) :: verbose
+    !> Managing SGF readwrite: 0: Read 1: compute 2: comp & save
+    integer(c_int)  :: readoldsgf 
+    !> Spin component (for io)
+    integer(c_int)  :: spin
+    !> k-point index (for io)
+    integer(c_int) :: kpoint 
+    !> Current iteration (for io) 
+    integer(c_int) :: iteration          ! Number of current SCC itaration
+    !> Spin degeneracy
+    real(c_double) :: g_spin          
+    !> Imaginary delta
+    real(c_double) :: delta           
+    !> Additional delta to force more broadening in the DOS 
+    real(c_double) :: dos_delta
+    !> Energy conversion factor
+    real(c_double) :: eneconv
+    !> Weight for k-point integration, output integrals are scaled accordingly
+    real(c_double) :: wght        
+    !> Conduction band edge
+    real(c_double) :: ec
+    !> Valence band edge
+    real(c_double) :: ev        
+    !! Real axis integral
+    !> Minimum energy for real axis (current integration, DOS, tunneling)
+    real(c_double) :: emin       
+    !> Maximum energy for real axis
+    real(c_double) :: emax   
+    !> Energy step for real axis
+    real(c_double) :: estep    
+    !! Contacts info
+    !> Electron electrochemical potential
+    real(c_double) :: mu_n(MAXNCONT)
+    !> Hole electrochemical potential
+    real(c_double) :: mu_p(MAXNCONT)  
+    !> Electron electrochemical Potential (for dft)
+    real(c_double) :: mu(MAXNCONT)    
+    !> Contact DOS for WBA
+    real(c_double) :: contact_dos(MAXNCONT) 
+    !> Logical value: is the contact WB?
+    logical(c_bool)  :: fictcont(MAXNCONT)
+    !> Electronic temperature for each contact
+    real(c_double) :: kbt(MAXNCONT) 
+    !! Contour integral
+    !> Number of points for n 
+    integer(c_int) :: np_n(2)
+    !> Number of points for p 
+    integer(c_int) :: np_p(2)
+    !> Number of real axis points
+    integer(c_int) :: np_real(11)
+    !> ! Number of kT extending integrations
+    integer(c_int) :: n_kt
+    !> Number of poles
+    integer(c_int) :: n_poles
+    !! Emitter and collector for transmission or Meir-Wingreen 
+    !! (only emitter in this case)
+    !> Emitter contact list (or lead for integration in MW)
+    integer(c_int) :: ni(MAXNCONT)
+    !> Collector contact list
+    integer(c_int) :: nf(MAXNCONT)
+    !> Should I calculate the density ("D") or the energy weighted density ("E")?
+    character(kind=c_char, len=1) :: dore  ! Density or En.Density
+    !> Reference contact is set to maximum or minimum Fermi level
+    integer(c_int) :: min_or_max
+  end type lnparams
+
 !--------------------------------------------------------------------------------------------------!
-
 contains
-
 !--------------------------------------------------------------------------------------------------!
 
-subroutine compute_ldos(negf)
-
-  type(Tnegf) :: negf
-
-  call extract_device(negf)
-  call extract_cont(negf)
-  if(negf%tMBNGF) call mbngf_init(negf)    !DAR
-  if(negf%tMBNGF) call mbngf_compute(negf) !DAR
-  call tunneling_int_def(negf)
-  call ldos_int(negf)
-  call destroy_matrices(negf)
-  if(negf%tMBNGF) call mbngf_destroy(negf) !DAR
-
-end subroutine compute_ldos
-
 !--------------------------------------------------------------------------------------------------!
+! NEW TraNaS library API for TTraNaS type container (tranas_types.F)
+!--------------------------------------------------------------------------------------------------!
+
+  !> Calculates the (self-consistent) self-energies and Green functions for given Hamiltonian,
+  !> Overlap (if any), electrode potentials and temperatures.
+  subroutine calcMBNGF(tranas)
+
+    type(TTraNaS) :: tranas
+
+    call extract_device(tranas%negf)
+    call extract_cont(tranas%negf)
+    call mbngf_init(tranas%negf)
+    call mbngf_compute(tranas%negf)
+
+  end subroutine calcMBNGF
+
+  !------------------------------------------------------------------------------------------------!
   
-subroutine compute_current(negf)
+  !> Calculates the current spectral density and current using the Meir-Wingreen formula.
+  !> The many-body self-energies must be precalculated, if any.
+  !> In the case of ONLY elastic dephasing (no many-body self-energies) the dephasing self-energies
+  !> are calculated at all energies.  
+  subroutine calcMeirWingreen(tranas)
 
-  type(Tnegf) :: negf
+    type(TTraNaS) :: tranas
 
-  integer :: flagbkup,folderbkup
+  end subroutine calcMeirWingreen
 
-  flagbkup = negf%readOldSGF
-  folderbkup = negf%FolderSGF
-  negf%FolderSGF = 1
-  if (negf%readOldSGF.ne.1) then
-     negf%readOldSGF = 1
-  end if
-
-  if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
-     call compute_landauer(negf);
-  else
-     call compute_meir_wingreen(negf);
-  endif
-
-  negf%readOldSGF = flagbkup
-  negf%FolderSGF = folderbkup
-
-end subroutine compute_current
-
-!--------------------------------------------------------------------------------------------------!
-!> Calculate current, tunneling and, if specified, density of states using
-!! Landauer formula. DOS is calculated during the T(E) loop 
-!! @param negf input/output container
-!--------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
   
-subroutine compute_landauer(negf) 
+  !> Calculates the energy dependent density of states for groups of sites.
+  !> The many-body self-energies must be precalculated, if any.
+  !> In the case of ONLY elastic dephasing (no many-body self-energies) the dephasing self-energies
+  !> are calculated at all energies.  
+  subroutine calcLDOS(tranas)
 
-  type(Tnegf) :: negf
+    type(TTraNaS) :: tranas
 
-  integer :: i,j1,icont
-  call extract_device(negf)
-  call extract_cont(negf)
-  call tunneling_int_def(negf)
-  ! TODO: need a check on elph here, but how to handle exception and messages
-  call tunneling_and_dos(negf)
-  call electron_current(negf)
-  call destroy_matrices(negf)
+  end subroutine calcLDOS
 
-     !debug begin
-     !if (id.eq.1) then
-     !do i = 1, size(negf%en_grid)
-     !  do icont=1,negf%str%num_conts  
-     !     !print *, negf%tranas%cont(icont)%tWriteSurfaceGF
-     !     if(negf%tranas%cont(icont)%tWriteSurfaceGF) then
-     !       print *, 'SurfaceGF',icont,'IndexEnergy=',i
-     !       do j1=1,size(negf%tranas%cont(icont)%SurfaceGF,1)
-     !         print *, negf%tranas%cont(icont)%SurfaceGF(j1,1:size(negf%tranas%cont(icont)%SurfaceGF,1),i)
-     !       end do
-     !     end if 
-     !  end do
-     ! end do
-     ! end if
-     !debug end
-
-end subroutine compute_landauer
-
-!--------------------------------------------------------------------------------------------------!
-!> Calculate current, tunneling and, if specified, density of states using
-!! Landauer formula. DOS is calculated during the T(E) loop 
-!! @param negf input/output container
-!--------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
   
-subroutine compute_meir_wingreen(negf) 
+!--------------------------------------------------------------------------------------------------!
+! OLD LibNEGF library 
+!--------------------------------------------------------------------------------------------------!  
+  
+  subroutine compute_ldos(negf)
 
-  type(Tnegf) :: negf
+    type(Tnegf) :: negf
 
-  call extract_device(negf)
-  call extract_cont(negf)
-  if(negf%tMBNGF) call mbngf_init(negf)     !DAR
-  if(negf%tMBNGF) call mbngf_compute(negf)  !DAR
-  call tunneling_int_def(negf)
-  call meir_wingreen(negf)
-  call electron_current_meir_wingreen(negf) !DAR
-  call destroy_matrices(negf)
-  if(negf%tMBNGF) call mbngf_destroy(negf)  !DAR
+    call extract_device(negf)
+    call extract_cont(negf)
+    if(negf%tMBNGF) call mbngf_init(negf)    !DAR
+    if(negf%tMBNGF) call mbngf_compute(negf) !DAR
+    call tunneling_int_def(negf)
+    call ldos_int(negf)
+    call destroy_matrices(negf)
+    if(negf%tMBNGF) call mbngf_destroy(negf) !DAR
 
-end subroutine compute_meir_wingreen
+  end subroutine compute_ldos
+
+  !------------------------------------------------------------------------------------------------!
+
+  !> Wrapper for current calculation (public).
+  subroutine compute_current(negf)
+
+    type(Tnegf) :: negf
+
+    integer :: flagbkup, folderbkup
+
+    flagbkup = negf%readOldSGF
+    folderbkup = negf%FolderSGF
+    negf%FolderSGF = 1
+    if (negf%readOldSGF.ne.1) then
+      negf%readOldSGF = 1
+    end if
+
+    if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
+      call compute_landauer(negf);
+    else
+      call compute_meir_wingreen(negf);
+    endif
+
+    negf%readOldSGF = flagbkup
+    negf%FolderSGF = folderbkup
+
+  end subroutine compute_current
+
+  !------------------------------------------------------------------------------------------------!
+
+  !> For coherent transport in noninteracting systems.
+  !> Calculates transmission, current using Landauer formula, and, if specified, density of states.  
+  !> DOS is calculated during the T(E) loop.  
+  subroutine compute_landauer(negf) 
+
+    type(Tnegf) :: negf
+
+    integer :: i,j1,icont
+    call extract_device(negf)
+    call extract_cont(negf)
+    call tunneling_int_def(negf)
+    ! TODO: need a check on elph here, but how to handle exception and messages
+    call tunneling_and_dos(negf)
+    call electron_current(negf)
+    call destroy_matrices(negf)
+
+    !debug begin
+    !if (id.eq.1) then
+    !do i = 1, size(negf%en_grid)
+    !  do icont=1,negf%str%num_conts  
+    !    !print *, negf%tranas%cont(icont)%tWriteSurfaceGF
+    !    if(negf%tranas%cont(icont)%tWriteSurfaceGF) then
+    !      print *, 'SurfaceGF',icont,'IndexEnergy=',i
+    !      do j1=1,size(negf%tranas%cont(icont)%SurfaceGF,1)
+    !        print *, negf%tranas%cont(icont)%SurfaceGF(j1,1:size(negf%tranas%cont(icont)%SurfaceGF,1),i)
+    !      end do
+    !    end if 
+    !  end do
+    !end do
+    !end if
+    !debug end
+
+  end subroutine compute_landauer
+
+  !------------------------------------------------------------------------------------------------!
+  
+  subroutine compute_meir_wingreen(negf) 
+
+    type(Tnegf) :: negf
+
+    call extract_device(negf)
+    call extract_cont(negf)
+    if(negf%tMBNGF) call mbngf_init(negf)     !DAR
+    if(negf%tMBNGF) call mbngf_compute(negf)  !DAR
+    call tunneling_int_def(negf)
+    call meir_wingreen(negf)
+    call electron_current_meir_wingreen(negf) !DAR
+    call destroy_matrices(negf)
+    if(negf%tMBNGF) call mbngf_destroy(negf)  !DAR
+
+  end subroutine compute_meir_wingreen
 
 !--------------------------------------------------------------------------------------------------!
 !--------------------------------------------------------------------------------------------------!

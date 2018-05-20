@@ -28,7 +28,7 @@ module ln_extract
   use sparsekit_drv
   use ln_structure, only: TStruct_Info
   use lib_param
-  use tranas_types_negf
+  use tranas_types
 
   implicit none
 

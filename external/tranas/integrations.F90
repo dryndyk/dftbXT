@@ -41,7 +41,7 @@ use ln_precision
 use ln_constants
 use ln_allocation
 use lib_param
-use tranas_types_negf
+use tranas_types
 use mpi_globals, only : id, numprocs, id0
 use input_output
 use ln_structure
