@@ -10,13 +10,14 @@ TARGET = libtranas.a
 MYCPPOPT = $(CPPOPT)
 MYCPPOPT += -D__GITREVISION='"0.2"'
 MYCPPOPT += -D__COMPDATE='"$(shell date +'%F')"'
+FYPP = $(ROOT)/external/fypp/bin/fypp
+#WITH_MPI := 1
 
 %.o: %.F90
 	#$(FXX) $(FXXOPT) -I$(MPIFX_PATH) -o $@ -c $<
-	$(FPP) $(CPP) $(MYCPPOPT) $(SRCDIR)/$*.F90 > $*.f90
+	#$(FPP) $(CPP) $(MYCPPOPT) $(SRCDIR)/$*.F90 > $*.f90
+	$(FYPP) -DWITH_MPI=0 $(SRCDIR)/$*.F90 > $*.f90
 	$(FXX) $(FXXOPT) -I$(MPIFX_PATH)  -c $*.f90 # -o $@
-
-
 
 SOURCES = globals.F90 sparsekit_drv.F90 mat_def.F90 clock.F90 ln_structure.F90 ln_constants.F90 ln_allocation.F90 \
           tranas_types.F90 \
@@ -39,6 +40,7 @@ $(TARGET): $(OBJS)
 
 clean:
 	rm -f *.o *__genmod*
+
 
 ######################################################################
 # include deps

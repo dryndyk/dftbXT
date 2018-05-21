@@ -50,6 +50,7 @@ program dftbplus
   !------------------------------------------------------------------------------------------------!
 
   if(input%transpar%tNoGeometry) then
+
     call mpifx_barrier(env%mpi%globalComm) 
     write(stdout, "(A)") repeat("-", 80)
     write(stdOut, "(A)") "-- Initialization is started (without geometry)                               --"

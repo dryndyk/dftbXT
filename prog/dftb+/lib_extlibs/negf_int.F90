@@ -1113,11 +1113,11 @@ module negf_int
   end subroutine negf_current
 
   !DAR begin - negf_current_nogeom
+  
   !------------------------------------------------------------------------------------------------!
+
   !> Subroutine to call current computation without geometry (public)
-  !>
-  subroutine negf_current_nogeom(mpicomm, tundos)   !,tunn,ledos,currents)
-    !DAR - tundos is added, it is necessary for 'call negf_init_elph(tundos%elph)'
+  subroutine negf_current_nogeom(mpicomm, tundos) 
 
     Type(TGDFTBTunDos), intent(IN) :: tundos                    !DAR
     type(z_CSR) :: HH, SS
@@ -1132,19 +1132,22 @@ module negf_int
     real(8), dimension(:), allocatable :: coupling   
     real(dp), allocatable :: H(:,:),S(:,:)
 
+    type(TTraNaS) :: tranas
+
     unitOfEnergy%name = "H"
     unitOfCurrent%name = "A"
     
     if (id0.and.negf%verbose.gt.0) then
-    write(*,*)
-    write(*,'(80("="))')
-    write(*,*) '                            COMPUTATION OF TRANSPORT         '
-    write(*,'(80("="))') 
-    write(*,*)
-    write(*,*)'Transport is started'
-    write(*,"(' Number of States = ',I0)")negf%NumStates
+      write(*,*)
+      write(*,'(80("="))')
+      write(*,*) '                            COMPUTATION OF TRANSPORT         '
+      write(*,'(80("="))') 
+      write(*,*)
+      write(*,*)'Transport is started'
+      write(*,"(' Number of States = ',I0)")negf%NumStates
     endif   
 
+    !--------------------------------------------------------------------------!
     ! Preparation of the Hamiltonian
     !--------------------------------------------------------------------------!
     
@@ -1172,59 +1175,34 @@ module negf_int
     if(negf%tWrite_negf_params) call check_negf_params
 
     if(negf%tDephasingVE) call negf_init_elph(tundos%elph)                  
-    if(negf%tDephasingBP) call negf_init_bp(tundos%bp)                      
-
-    if(negf%tWrite_ldos) then
-
-       call WriteLDOS
-
-       !open(14,file='EqLDOS.dat')
-       !do i=1,size(negf%en_grid)
-       !   write(14,*)real(negf%en_grid(i)%Ec)*27.21138469,negf%ldos_mat(i,1)
-       !end do
-       !close(14)
-
-    end if
-   
-    if (id0.and.negf%verbose.gt.30.and.tundos%writeTunn) then
-    write(*,*)
-    write(*,'(80("="))')
-    write(*,*) '                         TraNaS: Current calculation'  
-    write(*,'(80("="))') 
-    !write(*,*)
-    endif
+    if(negf%tDephasingBP) call negf_init_bp(tundos%bp)
 
     negf%mpicomm = mpicomm !DAR! for compute_mbngf temporary solution
 
-    if (tundos%writeTunn) call compute_current(negf)    
+    !--------------------------------------------------------------------------!
+    ! Calculations with TraNaS
+    !--------------------------------------------------------------------------!
+
+    tranas%negf = negf 
+    
+    if (negf%tMBNGF) call calcMBNGF(tranas)
+
+    !if (negf%tWrite_ldos) call writeLDOS
+    if (negf%tWrite_ldos) call calcLDOS(tranas)
+
+    if (tundos%writeTunn) then
+      if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
+        call compute_current(tranas%negf)
+      else
+        call calcMeirWingreen(tranas)
+      end if
+    end if
+
+    negf = tranas%negf
 
     if (tundos%writeTunn) call associate_current(negf, currents)
     call associate_ldos(negf, ledos)
     if (tundos%writeTunn) call associate_transmission(negf, tunn)
-
-!    if(negf%tElastic) then
-    
-!       open(14,file='tunneling_check.dat')
-!       do i=1,size(negf%en_grid)
-!          write(14,*)real(negf%en_grid(i)%Ec)*27.21138469,negf%tunn_mat(i,1)
-!       end do
-!       close(14)
-
-!       open(14,file='localDOS_check.dat')
-!       do i=1,size(negf%en_grid)
-!          write(14,*)real(negf%en_grid(i)%Ec)*27.21138469,negf%ldos_mat(i,1)
-!       end do
-!       close(14)
-
-!    end if
-
-    if (id0.and.negf%verbose.gt.30.and.tundos%writeTunn) then
-    write(*,*)
-    write(*,'(80("="))')
-    write(*,*) '                           TraNaS: Current finished'   
-    write(*,'(80("="))') 
-    write(*,*)
-    endif      
 
     call mpifx_barrier(mpicomm)
     
@@ -2548,21 +2526,22 @@ module negf_int
  
   !------------------------------------------------------------------------------------------------!
 
-  subroutine WriteLDOS
+  subroutine writeLDOS
     
     if (id0.and.negf%verbose.gt.30) then
     write(*,*)
-    write(*,'(80("="))')
+    write(*,'(80("-"))')
     write(*,*) '                        TraNaS: Local DOS calculation'  
-    write(*,'(80("="))') 
+    write(*,'(80("-"))') 
     !write(*,*)
     endif
     call compute_ldos(negf)
+    !call calcLDOS(tranas)
     if (id0.and.negf%verbose.gt.30) then
     write(*,*)
-    write(*,'(80("="))')
+    write(*,'(80("-"))')
     write(*,*) '                         TraNaS: Local DOS finished'   
-    write(*,'(80("="))') 
+    write(*,'(80("-"))') 
     !write(*,*)
     endif
 

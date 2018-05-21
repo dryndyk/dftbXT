@@ -56,6 +56,9 @@ module tranas
   implicit none
   private
 
+  ! NEW API
+  public :: calcMBNGF, calcLDOS, calcMeirWingreen
+
   !Input and work flow procedures
   public :: lnParams
   public :: init_negf, destroy_negf
@@ -191,12 +194,59 @@ contains
 
     type(TTraNaS) :: tranas
 
+    if (id0.and.tranas%negf%verbose.gt.30) then
+      write(*,*)
+      write(*,'(80("-"))')
+      write(*,*) '                          TraNaS: MBNGF calculation'  
+      write(*,'(80("-"))') 
+    endif
+   
     call extract_device(tranas%negf)
     call extract_cont(tranas%negf)
     call mbngf_init(tranas%negf)
     call mbngf_compute(tranas%negf)
+    call destroy_matrices(tranas%negf)
+
+    if (id0.and.tranas%negf%verbose.gt.30) then
+      write(*,*)
+      write(*,'(80("-"))')
+      write(*,*) '                           TraNaS: MBNGF finished'   
+      write(*,'(80("-"))') 
+    endif
 
   end subroutine calcMBNGF
+
+  !------------------------------------------------------------------------------------------------!
+
+  !> Calculates the energy dependent density of states for groups of sites.
+  !> The many-body self-energies must be precalculated, if any.
+  !> In the case of ONLY elastic dephasing (no many-body self-energies) the dephasing self-energies
+  !> are calculated at all energies.  
+  subroutine calcLDOS(tranas)
+
+    type(TTraNaS) :: tranas
+
+    if (id0.and.tranas%negf%verbose.gt.30) then
+      write(*,*)
+      write(*,'(80("-"))')
+      write(*,*) '                        TraNaS: Local DOS calculation'  
+      write(*,'(80("-"))') 
+    endif 
+
+    call extract_device(tranas%negf)
+    call extract_cont(tranas%negf)
+    call tunneling_int_def(tranas%negf)
+    call ldos_int(tranas%negf)
+    call destroy_matrices(tranas%negf)
+
+    if (id0.and.tranas%negf%verbose.gt.30) then
+      write(*,*)
+      write(*,'(80("-"))')
+      write(*,*) '                         TraNaS: Local DOS finished'   
+      write(*,'(80("-"))') 
+    endif
+
+  end subroutine calcLDOS
 
   !------------------------------------------------------------------------------------------------!
   
@@ -208,19 +258,30 @@ contains
 
     type(TTraNaS) :: tranas
 
+    if (id0.and.tranas%negf%verbose.gt.30) then
+    write(*,*)
+    write(*,'(80("="))')
+    write(*,*) '                         TraNaS: Current calculation'  
+    write(*,'(80("="))') 
+    endif
+
+    call extract_device(tranas%negf)
+    call extract_cont(tranas%negf)
+    call tunneling_int_def(tranas%negf)
+    call meir_wingreen(tranas%negf)
+    call electron_current_meir_wingreen(tranas%negf) !DAR
+    call destroy_matrices(tranas%negf)
+    if(tranas%negf%tMBNGF) call mbngf_destroy(tranas%negf)  !DAR
+    
+    if (id0.and.tranas%negf%verbose.gt.30) then
+    write(*,*)
+    write(*,'(80("="))')
+    write(*,*) '                           TraNaS: Current finished'   
+    write(*,'(80("="))') 
+    write(*,*)
+    endif  
+
   end subroutine calcMeirWingreen
-
-  !------------------------------------------------------------------------------------------------!
-  
-  !> Calculates the energy dependent density of states for groups of sites.
-  !> The many-body self-energies must be precalculated, if any.
-  !> In the case of ONLY elastic dephasing (no many-body self-energies) the dephasing self-energies
-  !> are calculated at all energies.  
-  subroutine calcLDOS(tranas)
-
-    type(TTraNaS) :: tranas
-
-  end subroutine calcLDOS
 
   !------------------------------------------------------------------------------------------------!
   
@@ -919,11 +980,11 @@ contains
     type(Tnegf) :: negf
     !character(3), parameter :: SVNVER= __SVNREVISION 
     !character(3),parameter :: MODIF= __MODIFIED 
-    character(3), parameter :: GITVER= __GITREVISION 
-    character(10),parameter :: DATE= __COMPDATE 
+    !character(3), parameter :: GITVER= __GITREVISION 
+    !character(10),parameter :: DATE= __COMPDATE 
  
-    write(*,'(a21,a20,2x,a10)') '(libnegf) version: 1.',TRIM(GITVER), & 
-                                         TRIM(DATE) 
+    !write(*,'(a21,a20,2x,a10)') '(libnegf) version: 1.',TRIM(GITVER), & 
+    !                                     TRIM(DATE) 
 
   end subroutine negf_version
 
