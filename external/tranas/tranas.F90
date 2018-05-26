@@ -56,8 +56,14 @@ module tranas
   implicit none
   private
 
+  !----------------------------------------------------------------------------!
   ! NEW API
-  public :: calcMBNGF, calcLDOS, calcMeirWingreen
+  !----------------------------------------------------------------------------!
+  public :: calcLandauer
+  public :: calcMBNGF
+  public :: calcLDOS
+  public :: calcMeirWingreen
+  !----------------------------------------------------------------------------!
 
   !Input and work flow procedures
   public :: lnParams
@@ -84,14 +90,9 @@ module tranas
   ! Extract HM and SM
   ! run DM calculation
 
-  public :: compute_current          ! high-level wrapping routines
-  ! Extract HM and SM
-  ! run total current calculation
-
   public ::  write_tunneling_and_dos ! Print tunneling and dot to file
   ! Note: for debug purpose. I/O should be managed 
   ! by calling program
-  public :: compute_ldos             ! wrapping to compute ldos
   public :: return_dos_mat           ! return pointer to LDOS matrix 
 
   public :: compute_phonon_current   ! High-level wrapping to
@@ -188,6 +189,51 @@ contains
 ! NEW TraNaS library API for TTraNaS type container (tranas_types.F)
 !--------------------------------------------------------------------------------------------------!
 
+  !> For coherent transport in noninteracting systems.
+  !> Calculates transmission, current using Landauer formula, and, if specified, density of states.  
+  !> DOS is calculated during the T(E) loop. 
+  subroutine calcLandauer(tranas)
+
+    type(TTraNaS) :: tranas
+
+    integer :: flagbkup, folderbkup
+
+    flagbkup = tranas%negf%readOldSGF
+    folderbkup = tranas%negf%FolderSGF
+    tranas%negf%FolderSGF = 1
+    if (tranas%negf%readOldSGF.ne.1) then
+      tranas%negf%readOldSGF = 1
+    end if
+
+    if (id0.and.tranas%negf%verbose.gt.30) then
+      write(*,*)
+      write(*,'(80("-"))')
+      write(*,*) '                         TraNaS: Current calculation'  
+      write(*,'(80("-"))') 
+    endif
+
+    call extract_device(tranas%negf)
+    call extract_cont(tranas%negf)
+    call tunneling_int_def(tranas%negf)
+    call tunneling_and_dos(tranas%negf)
+    call electron_current(tranas%negf)
+    call destroy_matrices(tranas%negf)
+    
+    if (id0.and.tranas%negf%verbose.gt.30) then
+      write(*,*)
+      write(*,'(80("-"))')
+      write(*,*) '                           TraNaS: Current finished'   
+      write(*,'(80("-"))') 
+      write(*,*)
+    endif
+
+    tranas%negf%readOldSGF = flagbkup
+    tranas%negf%FolderSGF = folderbkup
+
+  end subroutine calcLandauer
+
+  !------------------------------------------------------------------------------------------------!
+
   !> Calculates the (self-consistent) self-energies and Green functions for given Hamiltonian,
   !> Overlap (if any), electrode potentials and temperatures.
   subroutine calcMBNGF(tranas)
@@ -258,11 +304,20 @@ contains
 
     type(TTraNaS) :: tranas
 
+    integer :: flagbkup, folderbkup
+
+    flagbkup = tranas%negf%readOldSGF
+    folderbkup = tranas%negf%FolderSGF
+    tranas%negf%FolderSGF = 1
+    if (tranas%negf%readOldSGF.ne.1) then
+      tranas%negf%readOldSGF = 1
+    end if
+
     if (id0.and.tranas%negf%verbose.gt.30) then
-    write(*,*)
-    write(*,'(80("="))')
-    write(*,*) '                         TraNaS: Current calculation'  
-    write(*,'(80("="))') 
+      write(*,*)
+      write(*,'(80("-"))')
+      write(*,*) '                         TraNaS: Current calculation'  
+      write(*,'(80("-"))') 
     endif
 
     call extract_device(tranas%negf)
@@ -274,120 +329,26 @@ contains
     if(tranas%negf%tMBNGF) call mbngf_destroy(tranas%negf)  !DAR
     
     if (id0.and.tranas%negf%verbose.gt.30) then
-    write(*,*)
-    write(*,'(80("="))')
-    write(*,*) '                           TraNaS: Current finished'   
-    write(*,'(80("="))') 
-    write(*,*)
-    endif  
+      write(*,*)
+      write(*,'(80("-"))')
+      write(*,*) '                           TraNaS: Current finished'   
+      write(*,'(80("-"))') 
+      write(*,*)
+    endif
+
+    tranas%negf%readOldSGF = flagbkup
+    tranas%negf%FolderSGF = folderbkup
 
   end subroutine calcMeirWingreen
 
-  !------------------------------------------------------------------------------------------------!
+!--------------------------------------------------------------------------------------------------!
+!--------------------------------------------------------------------------------------------------!
+!--------------------------------------------------------------------------------------------------!
   
 !--------------------------------------------------------------------------------------------------!
 ! OLD LibNEGF library 
 !--------------------------------------------------------------------------------------------------!  
   
-  subroutine compute_ldos(negf)
-
-    type(Tnegf) :: negf
-
-    call extract_device(negf)
-    call extract_cont(negf)
-    if(negf%tMBNGF) call mbngf_init(negf)    !DAR
-    if(negf%tMBNGF) call mbngf_compute(negf) !DAR
-    call tunneling_int_def(negf)
-    call ldos_int(negf)
-    call destroy_matrices(negf)
-    if(negf%tMBNGF) call mbngf_destroy(negf) !DAR
-
-  end subroutine compute_ldos
-
-  !------------------------------------------------------------------------------------------------!
-
-  !> Wrapper for current calculation (public).
-  subroutine compute_current(negf)
-
-    type(Tnegf) :: negf
-
-    integer :: flagbkup, folderbkup
-
-    flagbkup = negf%readOldSGF
-    folderbkup = negf%FolderSGF
-    negf%FolderSGF = 1
-    if (negf%readOldSGF.ne.1) then
-      negf%readOldSGF = 1
-    end if
-
-    if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
-      call compute_landauer(negf);
-    else
-      call compute_meir_wingreen(negf);
-    endif
-
-    negf%readOldSGF = flagbkup
-    negf%FolderSGF = folderbkup
-
-  end subroutine compute_current
-
-  !------------------------------------------------------------------------------------------------!
-
-  !> For coherent transport in noninteracting systems.
-  !> Calculates transmission, current using Landauer formula, and, if specified, density of states.  
-  !> DOS is calculated during the T(E) loop.  
-  subroutine compute_landauer(negf) 
-
-    type(Tnegf) :: negf
-
-    integer :: i,j1,icont
-    call extract_device(negf)
-    call extract_cont(negf)
-    call tunneling_int_def(negf)
-    ! TODO: need a check on elph here, but how to handle exception and messages
-    call tunneling_and_dos(negf)
-    call electron_current(negf)
-    call destroy_matrices(negf)
-
-    !debug begin
-    !if (id.eq.1) then
-    !do i = 1, size(negf%en_grid)
-    !  do icont=1,negf%str%num_conts  
-    !    !print *, negf%tranas%cont(icont)%tWriteSurfaceGF
-    !    if(negf%tranas%cont(icont)%tWriteSurfaceGF) then
-    !      print *, 'SurfaceGF',icont,'IndexEnergy=',i
-    !      do j1=1,size(negf%tranas%cont(icont)%SurfaceGF,1)
-    !        print *, negf%tranas%cont(icont)%SurfaceGF(j1,1:size(negf%tranas%cont(icont)%SurfaceGF,1),i)
-    !      end do
-    !    end if 
-    !  end do
-    !end do
-    !end if
-    !debug end
-
-  end subroutine compute_landauer
-
-  !------------------------------------------------------------------------------------------------!
-  
-  subroutine compute_meir_wingreen(negf) 
-
-    type(Tnegf) :: negf
-
-    call extract_device(negf)
-    call extract_cont(negf)
-    if(negf%tMBNGF) call mbngf_init(negf)     !DAR
-    if(negf%tMBNGF) call mbngf_compute(negf)  !DAR
-    call tunneling_int_def(negf)
-    call meir_wingreen(negf)
-    call electron_current_meir_wingreen(negf) !DAR
-    call destroy_matrices(negf)
-    if(negf%tMBNGF) call mbngf_destroy(negf)  !DAR
-
-  end subroutine compute_meir_wingreen
-
-!--------------------------------------------------------------------------------------------------!
-!--------------------------------------------------------------------------------------------------!
-!--------------------------------------------------------------------------------------------------!
 
   !--------------------------------------------------------------------
   !>  Init libNEGF

@@ -19,7 +19,7 @@ program dftbplus
   use formatout, only : printDftbHeader
   use parser, only : parseHsdInput
   use initprogram, only : initProgramVariables, &
-                          negf_init_nogeom, negf_init_str, negf_current_nogeom !DAR
+                          negf_init_nogeom, negf_init_str, tranasNoGeom !DAR
   use libmpifx_module !DAR
   use libnegf_vars !DAR
   use periodic !DAR
@@ -71,7 +71,7 @@ program dftbplus
     write(stdOut, "(A)") "-- Initialization is finished                                                 --"
     write(stdout, "(A)") repeat("-", 80)
     !call destroy(input)
-    call negf_current_nogeom(env%mpi%globalComm,input%ginfo%tundos)
+    call tranasNoGeom(env%mpi%globalComm,input%ginfo%tundos)
     !DAR - input%ginfo%tundos is added,
     !      it is necessary for 'call negf_init_elph(tundos%elph)' in negf_int_nogeom)
     write(stdout,*)

@@ -57,7 +57,7 @@ module negf_int
   public :: calcPDOS_green
   public :: calc_current
   public :: local_currents
-  public :: negf_current_nogeom                                             !DAR
+  public :: tranasNoGeom                                                    !DAR
  
 !!$ public :: negf_init_elph, negf_destroy_elph
   
@@ -947,6 +947,8 @@ module negf_int
     real(dp), dimension(:,:), pointer :: ledos
     type(lnParams) :: params
 
+    type(TTraNaS) :: tranas
+
     call get_params(negf, params)
 
     if (id0) then
@@ -969,7 +971,11 @@ module negf_int
     
     call pass_HS(negf,HH,SS)
 
-    call compute_ldos(negf)
+    tranas%negf = negf
+
+    call calcLDOS(tranas)
+
+    negf = tranas%negf
     
     call destroy_matrices(negf)
 
@@ -1019,7 +1025,9 @@ module negf_int
     real(dp), dimension(:), pointer :: currents 
 
     integer :: i
-    type(lnParams) :: params   
+    type(lnParams) :: params
+
+    type(TTraNaS) :: tranas
 
     !DAR begin - Preparation of the Hamiltonian
     !--------------------------------------------------------------------------!
@@ -1070,54 +1078,36 @@ module negf_int
     if(negf%tDephasingVE) call negf_init_elph(tundos%elph)                  
     if(negf%tDephasingBP) call negf_init_bp(tundos%bp)                      
 
-    if(negf%tWrite_ldos) then
+    !--------------------------------------------------------------------------!
+    ! Calculations with TraNaS
+    !--------------------------------------------------------------------------!
 
-       call WriteLDOS
-
-       !open(14,file='EqLDOS.dat')
-       !do i=1,size(negf%en_grid)
-       !   write(14,*)real(negf%en_grid(i)%Ec)*27.21138469,negf%ldos_mat(i,1)
-       !end do
-       !close(14)
-
-    end if   
+    tranas%negf = negf 
     
-    if (id0.and.negf%verbose.gt.30.and.tundos%writeTunn) then
-       write(*,*)
-       write(*,'(80("="))')
-       write(*,*) '                         TraNaS: Current calculation' 
-       write(*,'(80("="))') 
-       !write(*,*)
-    endif
+    if (negf%tMBNGF) call calcMBNGF(tranas)
 
-    if (tundos%writeTunn) call compute_current(negf)  
-    
-    !call write_tunneling_and_dos(negf)
-    
-    !DAR end 
+    if (negf%tWrite_ldos) call calcLDOS(tranas)
+
+    if (tundos%writeTunn) then
+      if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
+        call calcLandauer(tranas)
+      else
+        call calcMeirWingreen(tranas)
+      end if
+    end if
+
+    negf = tranas%negf
     
     if (tundos%writeTunn) call associate_current(negf, currents)
     call associate_ldos(negf, ledos)  
     if (tundos%writeTunn) call associate_transmission(negf, tunn)
-
-    !DAR begin
-    if (id0.and.negf%verbose.gt.30.and.tundos%writeTunn) then
-       write(*,*)
-       write(*,'(80("="))')
-       write(*,*) '                           TraNaS: Current finished'  
-       write(*,'(80("="))') 
-       !write(*,*)
-    endif
-    !DAR end
     
   end subroutine negf_current
 
-  !DAR begin - negf_current_nogeom
-  
   !------------------------------------------------------------------------------------------------!
 
-  !> Subroutine to call current computation without geometry (public)
-  subroutine negf_current_nogeom(mpicomm, tundos) 
+  !> Subroutine to call transport computation without geometry (public)
+  subroutine tranasNoGeom(mpicomm, tundos) 
 
     Type(TGDFTBTunDos), intent(IN) :: tundos                    !DAR
     type(z_CSR) :: HH, SS
@@ -1187,12 +1177,11 @@ module negf_int
     
     if (negf%tMBNGF) call calcMBNGF(tranas)
 
-    !if (negf%tWrite_ldos) call writeLDOS
     if (negf%tWrite_ldos) call calcLDOS(tranas)
 
     if (tundos%writeTunn) then
       if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
-        call compute_current(tranas%negf)
+        call calcLandauer(tranas)
       else
         call calcMeirWingreen(tranas)
       end if
@@ -1396,7 +1385,7 @@ module negf_int
 
     end if
         
-  end subroutine negf_current_nogeom
+  end subroutine tranasNoGeom
   !-----------------------------------------------------------------------------
   !DAR end
 
@@ -2524,29 +2513,6 @@ module negf_int
 
   end subroutine MakeHS_dev
  
-  !------------------------------------------------------------------------------------------------!
-
-  subroutine writeLDOS
-    
-    if (id0.and.negf%verbose.gt.30) then
-    write(*,*)
-    write(*,'(80("-"))')
-    write(*,*) '                        TraNaS: Local DOS calculation'  
-    write(*,'(80("-"))') 
-    !write(*,*)
-    endif
-    call compute_ldos(negf)
-    !call calcLDOS(tranas)
-    if (id0.and.negf%verbose.gt.30) then
-    write(*,*)
-    write(*,'(80("-"))')
-    write(*,*) '                         TraNaS: Local DOS finished'   
-    write(*,'(80("-"))') 
-    !write(*,*)
-    endif
-
-  end subroutine WriteLDOS
-
   !------------------------------------------------------------------------------------------------!
   
   subroutine check_negf_params
