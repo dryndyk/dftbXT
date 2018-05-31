@@ -273,7 +273,7 @@ contains
       end if
  
       if (tNegf) then
-     
+        write(stdout,"(/,'> tNegf = ',L1,/,'> initNegfStuff is started')")tNegf
         call initNegfStuff(negfStr, input%transpar, input%ginfo, neighborList, nNeighbor, &
             & img2CentCell, denseDesc%iAtomStart, orb)
         write(stdout,"('> initNegfStuff is finished',/)")    
@@ -316,7 +316,8 @@ contains
               & nDftbUFunc, UJ, nUJ, iUJ, niUJ, potential)
         end if
         potential%intBlock = potential%intBlock + potential%extBlock
-
+!print *, 'main potential%intBlock' 
+!print *, potential%intBlock
         call getSccHamiltonian(H0, over, nNeighbor, neighborList, species, orb, iSparseStart,&
             & img2CentCell, potential, ham, iHam)
 
@@ -325,8 +326,8 @@ contains
               & nNeighbor, denseDesc%iAtomStart, iSparseStart, img2CentCell, kPoint, iCellVec,&
               & cellVec, ham, iHam)
         end if
-       
-
+!print *, 'main potential%intBlock'      
+!print *, potential%intBlock       
         if(tSccCalc.or.(.not.tTunn)) then !DAR
         if(input%ctrl%verbose.gt.80) write(stdout,"('getDensity is called')") !DAR   
         call getDensity(env, denseDesc, ham, over, neighborList, nNeighbor, iSparseStart,&
@@ -337,8 +338,8 @@ contains
             & eigvecsCplx, rhoSqrReal, mu, input)
         if(input%ctrl%verbose.gt.80) write(stdout,"('getDensity is finished')") !DAR
         end if !DAR    
-
-
+!print *, 'main rhoPrim'       
+!print *,  rhoPrim
         if (tWriteBandDat) then
           call writeBandOut(bandOut, eigen, filling, kWeight)
         end if
@@ -358,6 +359,9 @@ contains
         if (tSccCalc .and. .not. tXlbomd) then
           call resetInternalPotentials(tDualSpinOrbit, xi, orb, species, potential)
           call getChargePerShell(qOutput, orb, species, chargePerShell)
+          if (tUpload) then                                                    !!DAR
+            call overrideUploadedCharges(qOutput, chargeUp, input%transpar)    !!DAR
+          end if                                                               !!DAR
           call addChargePotentials(env, sccCalc, qOutput, q0, chargePerShell, orb, species,&
               & neighborList, img2CentCell, spinW, thirdOrd, potential, tPoisson, tUpload, shiftPerLUp) !!DAR tPoisson, tUpload, shiftPerLUp)
           call addBlockChargePotentials(qBlockOut, qiBlockOut, tDftbU, tImHam, species, orb,&
