@@ -37,6 +37,8 @@ contributed to DFTB+ :
 
 * Dmitry Ryndyk (University of Bremen, Germany)   
   
+* Jan Řezáč (Institute of Organic Chemistry and Biochemistry AS CR, Czech Republic)
+
 * Michael Sternberg (Argonne National Laboratory, USA)
 
 * Frank Stuckenberg (University of Bremen, Germany)
