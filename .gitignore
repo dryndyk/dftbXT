@@ -11,3 +11,7 @@ make.config
 __pycache__
 .idea
 RELEASE
+external/sparskit/
+test/prog/dftb+/tempdir/
+tools/dptools/build/
+
