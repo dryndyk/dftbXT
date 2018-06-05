@@ -47,7 +47,7 @@ module parser
 #:endif
   use wrappedintrinsics
   use poisson_vars
-  use libnegf_vars
+  use tranas_vars
   implicit none
 
   private

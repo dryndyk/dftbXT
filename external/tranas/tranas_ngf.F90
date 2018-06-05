@@ -11,7 +11,7 @@
 !  Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                              !
 !--------------------------------------------------------------------------------------------------!
   
-module tranas_mbngf
+module tranas_ngf
 
   use mpi_globals, only : id, numprocs, id0  
   use libmpifx_module
@@ -20,7 +20,7 @@ module tranas_mbngf
   use mat_def
 
   use tranas_types
-  use integrations
+  use tranas_ngf_integrations
 
   implicit none
   private
@@ -331,7 +331,7 @@ end subroutine mbngf_compute
   !> Deallocation of the many-body self-energies.
   subroutine mbngf_destroy(negf)
 
-    use iterative_dns, only : destroy_blk
+    use tranas_ngf_iterative, only : destroy_blk
     
     type(Tnegf) :: negf
 
@@ -448,5 +448,5 @@ end subroutine set_ref_cont
 !--------------------------------------------------------------------------------------------------!
 !--------------------------------------------------------------------------------------------------!
   
-end module tranas_mbngf
+end module tranas_ngf
   

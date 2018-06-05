@@ -82,13 +82,13 @@ module initprogram
   use potentials
   use taggedoutput
   use formatout
-  use libnegf_vars
-  use negf_int
+  use tranas_vars
+  use tranas_init
   !!DAR begin - use
   use poisson_vars
   use poisson_int
   use blacsfx_module
-  use negf_int 
+  use tranas_init 
   !!DAR end
   implicit none
 

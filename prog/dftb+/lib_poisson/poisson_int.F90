@@ -49,7 +49,7 @@ module poisson_int
   use poisson, only : init_poissbox,mudpack_drv
   use mpi_poisson
   use poisson_vars, only : TPoissonInfo, TPoissonStructure !, TSKdata
-  use libnegf_vars, only : TTransPar, TSKdata
+  use tranas_vars, only : TTransPar, TSKdata
   use CommonTypes, only : TOrbitals
   use libmpifx_module 
   

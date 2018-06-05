@@ -35,7 +35,7 @@
 module tranas
 
   use tranas_types
-  use tranas_mbngf
+  use tranas_ngf
 
   use ln_precision
   use ln_constants
@@ -49,7 +49,7 @@ module tranas
   use mat_def
   use ln_extract
   use sparsekit_drv
-  use integrations
+  use tranas_ngf_integrations
   use interactions                                                          
   use iso_c_binding
 
@@ -165,7 +165,7 @@ module tranas
     integer(c_int) :: np_p(2)
     !> Number of real axis points
     integer(c_int) :: np_real(11)
-    !> ! Number of kT extending integrations
+    !> ! Number of kT extending tranas_ngf_integrations
     integer(c_int) :: n_kt
     !> Number of poles
     integer(c_int) :: n_poles
@@ -235,7 +235,9 @@ contains
   !------------------------------------------------------------------------------------------------!
 
   !> Calculates the (self-consistent) self-energies and Green functions for given Hamiltonian,
-  !> Overlap (if any), electrode potentials and temperatures.
+  !> Overlap (if any), electrode electrical and chemical potentials and temperatures.
+  !> The electrical potential (external or self-consistent from Poisson equation) should be included
+  !> into the Hamiltonian.
   subroutine calcMBNGF(tranas)
 
     type(TTraNaS) :: tranas
@@ -267,7 +269,7 @@ contains
   !> Calculates the energy dependent density of states for groups of sites.
   !> The many-body self-energies must be precalculated, if any.
   !> In the case of ONLY elastic dephasing (no many-body self-energies) the dephasing self-energies
-  !> are calculated at all energies.  
+  !> are calculated inside at all energies.  
   subroutine calcLDOS(tranas)
 
     type(TTraNaS) :: tranas
@@ -299,7 +301,7 @@ contains
   !> Calculates the current spectral density and current using the Meir-Wingreen formula.
   !> The many-body self-energies must be precalculated, if any.
   !> In the case of ONLY elastic dephasing (no many-body self-energies) the dephasing self-energies
-  !> are calculated at all energies.  
+  !> are calculated inside at all energies.  
   subroutine calcMeirWingreen(tranas)
 
     type(TTraNaS) :: tranas
@@ -926,7 +928,7 @@ contains
     end do
     read(101,*) tmp, negf%mu_n(1:ncont)    ! Will be the Electrochemical potential
     read(101,*) tmp, negf%mu_p(1:ncont)    ! hole potentials
-    !! Internally a different mu is used for dft-like integrations
+    !! Internally a different mu is used for dft-like tranas_ngf_integrations
     !! we define it as equal to mu_n in negf.in
     negf%mu(1:ncont) = negf%mu_n(1:ncont)
 

@@ -21,7 +21,7 @@ program dftbplus
   use initprogram, only : initProgramVariables, &
                           negf_init_nogeom, negf_init_str, tranasNoGeom !DAR
   use libmpifx_module !DAR
-  use libnegf_vars !DAR
+  use tranas_vars !DAR
   use periodic !DAR
   implicit none
 
@@ -73,7 +73,7 @@ program dftbplus
     !call destroy(input)
     call tranasNoGeom(env%mpi%globalComm,input%ginfo%tundos)
     !DAR - input%ginfo%tundos is added,
-    !      it is necessary for 'call negf_init_elph(tundos%elph)' in negf_int_nogeom)
+    !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_init_nogeom)
     write(stdout,*)
       
     !call myclock_full%stop()

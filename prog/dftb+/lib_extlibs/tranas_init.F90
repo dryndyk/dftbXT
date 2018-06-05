@@ -15,13 +15,13 @@
 !  Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                              !
 !--------------------------------------------------------------------------------------------------!
 
-module negf_int
+module tranas_init
 
   use Accuracy, only : mc, lc
   use ln_precision
   use ln_constants
   use ln_allocation
-  use libnegf_vars  !, only : TGDFTBstructure, TGDFTBTunDos, &
+  use tranas_vars  !, only : TGDFTBstructure, TGDFTBTunDos, &
                     !       & TGDFTBGreenDensInfo, TTransPar, Telph
   use ln_structure
   use mpi_globals
@@ -2857,5 +2857,5 @@ module negf_int
   !DAR end
   !------------------------------------------------------------------------------------------------!
     
-end module negf_int
+end module tranas_init
 

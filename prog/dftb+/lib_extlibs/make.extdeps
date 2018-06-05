@@ -30,5 +30,5 @@ scalapackfx.o: _extlib_scalapackfx _extlib_lapack
 scalapackfx.o += _extlib_scalapackfx _extlib_lapack
 #:endif
 
-negf_int.o: _extlib_tranas #_extlib_libnegf
-negf_int.o += _extlib_tranas #+= _extlib_libnegf
+tranas_init.o: _extlib_tranas #_extlib_libnegf
+tranas_init.o += _extlib_tranas #+= _extlib_libnegf

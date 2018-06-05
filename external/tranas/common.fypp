@@ -25,7 +25,8 @@
 #:set WITH_ARPACK = defined('WITH_ARPACK')
 #:set EXP_TRAP = defined('EXP_TRAP')
 #:set INTERNAL_ERFC = defined('INTERNAL_ERFC')
-
+#:set SUPERLU = defined('SUPERLU')
+#:set PARDISO = defined('PARDISO')
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #! ASSERT and DEBUG related macros
