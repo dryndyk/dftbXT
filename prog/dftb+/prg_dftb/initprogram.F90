@@ -83,12 +83,12 @@ module initprogram
   use taggedoutput
   use formatout
   use tranas_vars
-  use tranas_init
+  use tranas_interface
   !!DAR begin - use
   use poisson_vars
   use poisson_int
   use blacsfx_module
-  use tranas_init 
+  use tranas_interface 
   !!DAR end
   implicit none
 

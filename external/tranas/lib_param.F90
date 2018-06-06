@@ -45,13 +45,13 @@ module lib_param
   use elph, only : init_elph_1, Telph, destroy_elph, init_elph_2, init_elph_3
   use phph
   use energy_mesh, only : mesh
-  use interactions, only : Interaction, Tmbngf
+  use tranas_types_mbngf, only : Interaction, Tmbngf
   use elphdd, only : ElPhonDephD, ElPhonDephD_create 
   use elphdb, only : ElPhonDephB, ElPhonDephB_create
   use elphds, only : ElPhonDephS, ElPhonDephS_create
   !use libmpifx_module, only : mpifx_comm
   
-  use tranas_types   
+  use tranas_types_main   
 
   implicit none
   private

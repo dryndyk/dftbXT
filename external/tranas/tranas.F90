@@ -34,8 +34,10 @@
 !> The main entries (API) for TraNaS library. All public calls.
 module tranas
 
-  use tranas_types
-  use tranas_ngf
+  use tranas_types_main
+  use tranas_types_mbngf
+  use tranas_ngf_integrations
+  use tranas_ngf_mbngf 
 
   use ln_precision
   use ln_constants
@@ -49,8 +51,6 @@ module tranas
   use mat_def
   use ln_extract
   use sparsekit_drv
-  use tranas_ngf_integrations
-  use interactions                                                          
   use iso_c_binding
 
   implicit none
@@ -165,7 +165,7 @@ module tranas
     integer(c_int) :: np_p(2)
     !> Number of real axis points
     integer(c_int) :: np_real(11)
-    !> ! Number of kT extending tranas_ngf_integrations
+    !> ! Number of kT extending tranas_ngf_mbngf.integrations
     integer(c_int) :: n_kt
     !> Number of poles
     integer(c_int) :: n_poles
@@ -186,7 +186,7 @@ contains
 !--------------------------------------------------------------------------------------------------!
 
 !--------------------------------------------------------------------------------------------------!
-! NEW TraNaS library API for TTraNaS type container (tranas_types.F)
+! NEW TraNaS library API for TTraNaS type container (tranas_types_main.F)
 !--------------------------------------------------------------------------------------------------!
 
   !> For coherent transport in noninteracting systems.
@@ -928,7 +928,7 @@ contains
     end do
     read(101,*) tmp, negf%mu_n(1:ncont)    ! Will be the Electrochemical potential
     read(101,*) tmp, negf%mu_p(1:ncont)    ! hole potentials
-    !! Internally a different mu is used for dft-like tranas_ngf_integrations
+    !! Internally a different mu is used for dft-like tranas_ngf_mbngf.integrations
     !! we define it as equal to mu_n in negf.in
     negf%mu(1:ncont) = negf%mu_n(1:ncont)
 

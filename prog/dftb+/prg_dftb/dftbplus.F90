@@ -73,7 +73,7 @@ program dftbplus
     !call destroy(input)
     call tranasNoGeom(env%mpi%globalComm,input%ginfo%tundos)
     !DAR - input%ginfo%tundos is added,
-    !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_init_nogeom)
+    !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface_nogeom)
     write(stdout,*)
       
     !call myclock_full%stop()

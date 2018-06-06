@@ -15,7 +15,7 @@
 !  Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                              !
 !--------------------------------------------------------------------------------------------------!
 
-module tranas_init
+module tranas_interface
 
   use Accuracy, only : mc, lc
   use ln_precision
@@ -29,7 +29,7 @@ module tranas_init
   use lib_param    !, only : Tnegf, set_defaults,  & 
                    !     set_elph_dephasing, set_elph_block_dephasing, &
                    !     set_elph_s_dephasing, destroy_elph_model
-  use tranas_types                 
+  use tranas_types_main                
   !use libnegf
   use tranas
   use ln_extract
@@ -712,7 +712,7 @@ module tranas_init
   !------------------------------------------------------------------------------
   subroutine negf_init_str(structure, transpar, greendens, iNeigh, nNeigh, img2CentCell)
 
-    use interactions, only : Tmbngf
+    use tranas_types_mbngf, only : Tmbngf
     
     Type(TTranspar), intent(IN) :: transpar
     Type(TGDFTBStructure), intent(IN) :: structure
@@ -2857,5 +2857,5 @@ module tranas_init
   !DAR end
   !------------------------------------------------------------------------------------------------!
     
-end module tranas_init
+end module tranas_interface
 

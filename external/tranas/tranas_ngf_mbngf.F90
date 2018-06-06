@@ -11,7 +11,7 @@
 !  Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                              !
 !--------------------------------------------------------------------------------------------------!
   
-module tranas_ngf
+module tranas_ngf_mbngf
 
   use mpi_globals, only : id, numprocs, id0  
   use libmpifx_module
@@ -19,7 +19,7 @@ module tranas_ngf
   use sparsekit_drv
   use mat_def
 
-  use tranas_types
+  use tranas_types_main
   use tranas_ngf_integrations
 
   implicit none
@@ -448,5 +448,5 @@ end subroutine set_ref_cont
 !--------------------------------------------------------------------------------------------------!
 !--------------------------------------------------------------------------------------------------!
   
-end module tranas_ngf
+end module tranas_ngf_mbngf
   

@@ -32,7 +32,9 @@
 !!--------------------------------------------------------------------------!
 
 !> Module includes types for TraNaS library.
-module tranas_types
+module tranas_types_main
+
+  use tranas_types_mbngf, only : Interaction, TMBNGF
 
   use ln_precision, only : dp
   use globals
@@ -42,7 +44,6 @@ module tranas_types
   use elph, only : init_elph_1, Telph, destroy_elph, init_elph_2, init_elph_3
   use phph
   use energy_mesh, only : mesh
-  use interactions, only : Interaction, Tmbngf
   use libmpifx_module
 
   implicit none
@@ -173,7 +174,7 @@ module tranas_types
     integer :: Np_n(2)            ! Number of points for n 
     integer :: Np_p(2)            ! Number of points for p 
     integer :: Np_real(11)        ! Number of points for integration over real axis
-    integer :: n_kt               ! Number of kT extending tranas_ngf_integrations
+    integer :: n_kt               ! Number of kT extending tranas_ngf_mbngf.integrations
     integer :: n_poles            ! Number of poles 
     real(dp) :: Ec                ! conduction band edge 
     real(dp) :: Ev                ! valence band edge
@@ -312,7 +313,7 @@ module tranas_types
 
   !------------------------------------------------------------------------------------------------!
   
-end module tranas_types
+end module tranas_types_main
  
 
 

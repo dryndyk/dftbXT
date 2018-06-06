@@ -77,7 +77,7 @@ module main
   !! DAR begin - use
   use initprogram 
   use tranas_vars
-  use tranas_init
+  use tranas_interface
   use poisson_int
   use fileid
   !!DAR end
@@ -682,7 +682,7 @@ contains
           & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, writeLDOS,&
           & mu, input%ginfo%tundos)
       !DAR - input%ginfo%tundos is added,
-      !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_init
+      !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface
       call ud2qm(ham)
 
     end if

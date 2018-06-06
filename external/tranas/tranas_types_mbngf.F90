@@ -40,7 +40,7 @@
 !> The module implements an abstract class to interface different
 !! many-body interactions. 
 
-module interactions
+module tranas_types_mbngf
 
   use globals, only : LST
   use ln_precision, only : dp
@@ -286,4 +286,4 @@ contains
   !DAR end
   !-----------------------------------------------------------------------------
 
-end module interactions
+end module tranas_types_mbngf

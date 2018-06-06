@@ -43,7 +43,7 @@ module ContSelfEnergy
  use ln_precision
  use ln_constants
  use lib_param
- use tranas_types
+ use tranas_types_main
  use ln_structure, only : Tstruct_info
  use ln_allocation
  use mat_def
