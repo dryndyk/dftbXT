@@ -25,9 +25,9 @@ module tranas_ngf_mbngf
   implicit none
   private
 
-  public :: mbngf_init
-  public :: mbngf_compute
-  public :: mbngf_destroy
+  public :: mbngfInit
+  public :: mbngfCompute
+  public :: mbngfDestroy
   
 !--------------------------------------------------------------------------------------------------!
 contains
@@ -37,12 +37,15 @@ contains
 !> Allocation of the many-body self-energies.
 !--------------------------------------------------------------------------------------------------!  
 
-subroutine mbngf_init(negf)
+subroutine mbngfInit(tranas)
 
+  type(TTraNaS) :: tranas
   type(Tnegf) :: negf
 
   integer :: n,nbl,ierr
 
+  negf = tranas%negf
+  
   ! Allocation of self-energies
     
   if(negf%mbngf%tHartreeFock) then
@@ -68,20 +71,25 @@ subroutine mbngf_init(negf)
   if(negf%mbngf%tRPA) then
     
   end if
+
+  tranas%negf = negf
     
-end subroutine mbngf_init
+end subroutine mbngfInit
     
 !--------------------------------------------------------------------------------------------------!
 !> Calculation of the many-body self-energies.
 !--------------------------------------------------------------------------------------------------!
   
-subroutine mbngf_compute(negf)
+subroutine mbngfCompute(tranas)
 
+  type(TTraNaS) :: tranas
   type(Tnegf) :: negf
   type(z_DNS) :: rho_dense,rho_dense_previous,sigma_dense
 
   integer :: n,m,ii,jj,nbl,ierr,scba_iter
   real(dp) :: scba_error
+
+  negf = tranas%negf
 
   scba_error = 0.0_dp
   
@@ -160,7 +168,9 @@ subroutine mbngf_compute(negf)
     write(*,"('>>> The MBNGF calculation is ended.')")
   end if
 
-  CONTAINS  
+  tranas%negf = negf
+  
+CONTAINS  
 
   !------------------------------------------------------------------------------------------------!
 
@@ -324,23 +334,28 @@ subroutine mbngf_compute(negf)
 
   !------------------------------------------------------------------------------------------------!
   
-end subroutine mbngf_compute
+end subroutine mbngfCompute
 
   !------------------------------------------------------------------------------------------------!
 
   !> Deallocation of the many-body self-energies.
-  subroutine mbngf_destroy(negf)
+  subroutine mbngfDestroy(tranas)
 
     use tranas_ngf_iterative, only : destroy_blk
-    
+
+    type(TTraNaS) :: tranas
     type(Tnegf) :: negf
 
+    negf = tranas%negf
+    
     if (negf%mbngf%tHartreeFock) then
       call destroy_blk(negf%mbngf%SelfEnergyR_HF)
       deallocate(negf%mbngf%SelfEnergyR_HF)
     end if
-      
-  end subroutine mbngf_destroy
+
+    tranas%negf = negf
+    
+  end subroutine mbngfDestroy
 
 !--------------------------------------------------------------------------------------------------!
 !--------------------------------------------------------------------------------------------------!  

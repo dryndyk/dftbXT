@@ -251,8 +251,8 @@ contains
    
     call extract_device(tranas%negf)
     call extract_cont(tranas%negf)
-    call mbngf_init(tranas%negf)
-    call mbngf_compute(tranas%negf)
+    call mbngfInit(tranas)
+    call mbngfCompute(tranas)
     call destroy_matrices(tranas%negf)
 
     if (id0.and.tranas%negf%verbose.gt.30) then
@@ -328,7 +328,7 @@ contains
     call meir_wingreen(tranas%negf)
     call electron_current_meir_wingreen(tranas%negf) !DAR
     call destroy_matrices(tranas%negf)
-    if(tranas%negf%tMBNGF) call mbngf_destroy(tranas%negf)  !DAR
+    if(tranas%negf%tMBNGF) call mbngfDestroy(tranas)  !DAR
     
     if (id0.and.tranas%negf%verbose.gt.30) then
       write(*,*)

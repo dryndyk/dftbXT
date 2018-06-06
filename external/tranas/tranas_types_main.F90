@@ -288,28 +288,39 @@ module tranas_types_main
   end type Tnegf
 
   !------------------------------------------------------------------------------------------------!
-  
-  !> General TraNaS container.
-  !> Contains all input data, runtime quantities and output data used by the TraNaS library.
-  type Ttranas
 
-    !> Old LibNEGF container. For DFT+NEGF and consistency with LibNEGF in future. 
-    type(TNEGF) :: negf
-
-    !> Input container. Is not changed in the library.
-    !type(TInput), intend(in) :: input    
+  !> Container for Green function methods.
+  !> Contains all new Green function runtime quantities.
+  type TNGF
 
     !> Container for many-body nonequilibrium Green function method.
     !> Classes for many-body self-energies.
-    !type(TMBNGF) :: mbngf
+    type(TMBNGF) :: mbngf
 
     !> Container for time-dependent nonequilibrium Green function method.
     !type(TTDNGF) :: tdngf
 
-    !> Container for many-body quantum master equation method.
+  end type TNGF
+  
+  !------------------------------------------------------------------------------------------------!
+  
+  !> General TraNaS container.
+  !> Contains all input data, runtime quantities and output data used by the TraNaS library.
+  type TTraNaS
+
+    !> Old LibNEGF container. For DFT+NEGF and consistency with LibNEGF in future. 
+    type(TNEGF) :: negf
+
+    !> Input container. Is not changed inside the library.
+    !type(TInput), intend(in) :: input    
+
+    !> Container for Green function methods.
+    type(TNGF) :: ngf
+
+    !> Container for many-body quantum master equation methods.
     !type(TQME) :: qme
      
-  end type Ttranas
+  end type TTraNaS
 
   !------------------------------------------------------------------------------------------------!
   
