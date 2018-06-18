@@ -318,39 +318,39 @@ contains
     !> release year
     integer, intent(in) :: year, outunit
 
-    character, parameter :: vbar = '|'
-    character, parameter :: hbar = '='
+    character, parameter :: vBar = '|'
+    character, parameter :: hBar = '='
     integer, parameter :: headerWidth = 80
 
     write(outunit,*)
-    write(outunit, '(A)') repeat(hbar, headerWidth)
-    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,'                                DFTB+XT 1.02                                ',hbar,hbar 
-    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,'            open software package for quantum nanoscale modeling            ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' DFTB+ eXTended version for model and atomistic quantum transport,          ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' many-body nonequilibrium phenomena, material & device modeling             ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' Copyright (C) 2017-2018 DFTB+ developers group                             ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' Copyright (C) 2018 Dmitry A. Ryndyk                                        ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
-    write(outunit, '(A)') repeat(hbar, headerWidth)
-    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' Please cite as: DFTB+XT package [1], based on the DFTB+ [2,3] source code  ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' [1] Dmitry A. Ryndyk, DFTB+XT, http://quantranspro.org/dftb+xt/            ',hbar,hbar 
-    write(outunit, '(5A)') hbar,hbar,' [2] B. Aradi, B. Hourahine and T. Frauenheim,                              ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,'     J. Phys. Chem. A 111, 5678 (2007); http://dftbplus.org/                ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' [3] A. Pecchia, G. Penazzi, L. Salvucci and A. Di Carlo,                   ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,'     New Journal of Physics 10, 065022 (2008) [for transport calculations]  ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' You should also cite additional publications crediting the parametrization ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' data you use. Please consult the documentation of the SK-files for the     ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' references. Other references to the particular methods are given in the    ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,' manual and in the end of the output file.                                  ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar, repeat(' ', headerWidth - 4),hbar,hbar
-    write(outunit, '(A)') repeat(hbar, headerWidth)
-  
+    write(outunit, '(A)') repeat(hBar, headerWidth)
+    write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.02                                ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,'            open software package for quantum nanoscale modeling            ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for model and atomistic quantum transport,          ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' many-body nonequilibrium phenomena, material & device modeling             ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2017-2018 DFTB+ developers group                             ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2018 Dmitry A. Ryndyk                                        ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(A)') repeat(hBar, headerWidth)
+    write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' Please cite as: DFTB+XT package [1], based on the DFTB+ [2,3] source code  ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' [1] Dmitry A. Ryndyk, DFTB+XT, http://quantranspro.org/dftb+xt/            ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,' [2] B. Aradi, B. Hourahine and T. Frauenheim,                              ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,'     J. Phys. Chem. A 111, 5678 (2007); http://dftbplus.org/                ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' [3] A. Pecchia, G. Penazzi, L. Salvucci and A. Di Carlo,                   ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,'     New Journal of Physics 10, 065022 (2008) [for transport calculations]  ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' You should also cite additional publications crediting the parametrization ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' data you use. Please consult the documentation of the SK-files for the     ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' references. Other references to the particular methods are given in the    ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' manual and in the end of the output file.                                  ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(A)') repeat(hBar, headerWidth)
+
   end subroutine printDFTBHeader
 
 
