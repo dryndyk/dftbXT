@@ -23,7 +23,7 @@
 module elphds
 
   use ln_precision, only : dp
-  use interactions, only : interaction
+  use tranas_types_mbngf, only : interaction
   use ln_allocation, only : log_allocate, log_deallocate
   use ln_structure, only : TStruct_info
   use mat_def, only : z_csr, z_dns, create, destroy

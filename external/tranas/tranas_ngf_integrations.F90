@@ -35,20 +35,20 @@
 !!  <http://www.gnu.org/licenses/>.                                         !  
 !!--------------------------------------------------------------------------!
 
-module integrations 
+module tranas_ngf_integrations 
 
 use ln_precision
 use ln_constants
 use ln_allocation
 use lib_param
-use tranas_types_negf
+use tranas_types_main
 use mpi_globals, only : id, numprocs, id0
 use input_output
 use ln_structure
 use distributions 
 use sparsekit_drv
 use inversions
-use iterative_dns
+use tranas_ngf_iterative
 !use iterative_ph
 use mat_def
 use ln_extract
@@ -2672,4 +2672,4 @@ end subroutine WriteRead_SGF_SE
 
   end subroutine swap
 
-end module integrations 
+end module tranas_ngf_integrations 

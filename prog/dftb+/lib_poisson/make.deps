@@ -65,8 +65,8 @@ poisson.o = poisson.o $(_mod_gewald) $(_mod_gclock) $(_mod_gprecision) $(_mod_st
 _mod_poisson: poisson.o
 _mod_poisson = $(poisson.o)
 
-poisson_int.o: _mod_libnegf_vars _mod_commontypes _mod_gprecision _mod_structure _mod_mpi_poisson _mod_poisson_vars _mod_parameters _mod_libmpifx_module _mod_gallocation _mod_gconstants _mod_parcheck _mod_poisson
-poisson_int.o = poisson_int.o $(_mod_libnegf_vars) $(_mod_commontypes) $(_mod_gprecision) $(_mod_structure) $(_mod_mpi_poisson) $(_mod_poisson_vars) $(_mod_parameters) $(_mod_libmpifx_module) $(_mod_gallocation) $(_mod_gconstants) $(_mod_parcheck) $(_mod_poisson)
+poisson_int.o: _mod_tranas_vars _mod_commontypes _mod_gprecision _mod_structure _mod_mpi_poisson _mod_poisson_vars _mod_parameters _mod_libmpifx_module _mod_gallocation _mod_gconstants _mod_parcheck _mod_poisson
+poisson_int.o = poisson_int.o $(_mod_tranas_vars) $(_mod_commontypes) $(_mod_gprecision) $(_mod_structure) $(_mod_mpi_poisson) $(_mod_poisson_vars) $(_mod_parameters) $(_mod_libmpifx_module) $(_mod_gallocation) $(_mod_gconstants) $(_mod_parcheck) $(_mod_poisson)
 _mod_poisson_int: poisson_int.o
 _mod_poisson_int = $(poisson_int.o)
 

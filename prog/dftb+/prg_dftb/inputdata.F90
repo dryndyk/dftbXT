@@ -25,7 +25,7 @@ module inputdata_module
 #:endif
   use pmlocalisation, only : TPipekMezeyInp
   use elstatpot, only : TElStatPotentialsInp
-  use libnegf_vars  !!DAR
+  use tranas_vars  !!DAR
   use poisson_vars  !!DAR
   
   implicit none

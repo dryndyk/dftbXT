@@ -3,7 +3,7 @@
 !  Copyright (C) 2018  DFTB+ developers group                                                      !
 !--------------------------------------------------------------------------------------------------!
 !  DFTB+XT open software package for quantum nanoscale modeling                                    !
-!  Copyright (C) 2018 Dmitry A. Ryndyk.                                                            !
+!  Copyright (C) 2018 Dmitry A. Ryndyk                                                             !
 !--------------------------------------------------------------------------------------------------!
 !  GNU Lesser General Public License version 3 or (at your option) any later version.              !
 !  See the LICENSE file for terms of usage and distribution.                                       !
@@ -19,9 +19,9 @@ program dftbplus
   use formatout, only : printDftbHeader
   use parser, only : parseHsdInput
   use initprogram, only : initProgramVariables, &
-                          negf_init_nogeom, negf_init_str, negf_current_nogeom !DAR
+                          negf_init_nogeom, negf_init_str, tranasNoGeom !DAR
   use libmpifx_module !DAR
-  use libnegf_vars !DAR
+  use tranas_vars !DAR
   use periodic !DAR
   implicit none
 
@@ -50,6 +50,7 @@ program dftbplus
   !------------------------------------------------------------------------------------------------!
 
   if(input%transpar%tNoGeometry) then
+
     call mpifx_barrier(env%mpi%globalComm) 
     write(stdout, "(A)") repeat("-", 80)
     write(stdOut, "(A)") "-- Initialization is started (without geometry)                               --"
@@ -70,9 +71,9 @@ program dftbplus
     write(stdOut, "(A)") "-- Initialization is finished                                                 --"
     write(stdout, "(A)") repeat("-", 80)
     !call destroy(input)
-    call negf_current_nogeom(env%mpi%globalComm,input%ginfo%tundos)
+    call tranasNoGeom(env%mpi%globalComm,input%ginfo%tundos)
     !DAR - input%ginfo%tundos is added,
-    !      it is necessary for 'call negf_init_elph(tundos%elph)' in negf_int_nogeom)
+    !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface_nogeom)
     write(stdout,*)
       
     !call myclock_full%stop()

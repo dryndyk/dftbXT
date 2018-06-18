@@ -10,21 +10,22 @@ TARGET = libtranas.a
 MYCPPOPT = $(CPPOPT)
 MYCPPOPT += -D__GITREVISION='"0.2"'
 MYCPPOPT += -D__COMPDATE='"$(shell date +'%F')"'
+FYPP = $(ROOT)/external/fypp/bin/fypp
+#WITH_MPI := 1
 
 %.o: %.F90
 	#$(FXX) $(FXXOPT) -I$(MPIFX_PATH) -o $@ -c $<
-	$(FPP) $(CPP) $(MYCPPOPT) $(SRCDIR)/$*.F90 > $*.f90
+	#$(FPP) $(CPP) $(MYCPPOPT) $(SRCDIR)/$*.F90 > $*.f90
+	$(FYPP) -DWITH_MPI=0 $(SRCDIR)/$*.F90 > $*.f90
 	$(FXX) $(FXXOPT) -I$(MPIFX_PATH)  -c $*.f90 # -o $@
 
-
-
 SOURCES = globals.F90 sparsekit_drv.F90 mat_def.F90 clock.F90 ln_structure.F90 ln_constants.F90 ln_allocation.F90 \
-          tranas_types_negf.F90 \
-          ln_precision.F90 interactions.F90 elphdd.F90 elphdb.F90 elphds.F90 \
+          tranas_types_main.F90 \
+          ln_precision.F90 tranas_types_mbngf.F90 elphdd.F90 elphdb.F90 elphds.F90 \
           elph.F90 phph.F90 input_output.F90 energy_mesh.F90 lib_param.F90 ln_extract.F90 \
-          inversions.F90 complexbands.F90 mpi_globals.F90 contselfenergy.F90  tranas.F90 tranas_mbngf.F90  \
-          outmatrix.F90 rcm_module.F90 distributions.F90 load.F90 integrations.F90 \
-          iterative_dns.F90 population.F90    \
+          inversions.F90 complexbands.F90 mpi_globals.F90 contselfenergy.F90  tranas.F90 \
+          outmatrix.F90 rcm_module.F90 distributions.F90 load.F90 tranas_ngf_integrations.F90 \
+          tranas_ngf_iterative.F90 population.F90 tranas_ngf_mbngf.F90  
       
 
 OBJS = $(SOURCES:.F90=.o)
@@ -40,6 +41,7 @@ $(TARGET): $(OBJS)
 clean:
 	rm -f *.o *__genmod*
 
+
 ######################################################################
 # include deps
 ######################################################################
@@ -47,34 +49,34 @@ $(BUILDDIR)ln_allocation.o:    $(BUILDDIR)ln_precision.o
 $(BUILDDIR)ln_constants.o:     $(BUILDDIR)ln_precision.o
 $(BUILDDIR)lib_param.o:  $(BUILDDIR)ln_precision.o $(BUILDDIR)globals.o $(BUILDDIR)mat_def.o $(BUILDDIR)ln_structure.o  
 $(BUILDDIR)lib_param.o:  $(BUILDDIR)energy_mesh.o  $(BUILDDIR)input_output.o $(BUILDDIR)elph.o 
-$(BUILDDIR)lib_param.o:  $(BUILDDIR)interactions.o $(BUILDDIR)elphdd.o $(BUILDDIR)elphdb.o $(BUILDDIR)elphds.o $(BUILDDIR)phph.o
-$(BUILDDIR)tranas_types_negf.o:  $(BUILDDIR)ln_precision.o $(BUILDDIR)globals.o $(BUILDDIR)mat_def.o $(BUILDDIR)ln_structure.o  
-$(BUILDDIR)tranas_types_negf.o:  $(BUILDDIR)energy_mesh.o  $(BUILDDIR)input_output.o $(BUILDDIR)elph.o 
-$(BUILDDIR)tranas_types_negf.o:  $(BUILDDIR)interactions.o $(BUILDDIR)phph.o
+$(BUILDDIR)lib_param.o:  $(BUILDDIR)tranas_types_mbngf.o $(BUILDDIR)elphdd.o $(BUILDDIR)elphdb.o $(BUILDDIR)elphds.o $(BUILDDIR)phph.o
+$(BUILDDIR)tranas_types_main.o:  $(BUILDDIR)ln_precision.o $(BUILDDIR)globals.o $(BUILDDIR)mat_def.o $(BUILDDIR)ln_structure.o  
+$(BUILDDIR)tranas_types_main.o:  $(BUILDDIR)energy_mesh.o  $(BUILDDIR)input_output.o $(BUILDDIR)elph.o 
+$(BUILDDIR)tranas_types_main.o:  $(BUILDDIR)tranas_types_mbngf.o $(BUILDDIR)phph.o
 $(BUILDDIR)mat_def.o:       $(BUILDDIR)ln_allocation.o
-$(BUILDDIR)iterative_dns.o: $(BUILDDIR)ln_allocation.o  $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
-$(BUILDDIR)iterative_dns.o: $(BUILDDIR)inversions.o $(BUILDDIR)ln_structure.o
+$(BUILDDIR)tranas_ngf_iterative.o: $(BUILDDIR)ln_allocation.o  $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
+$(BUILDDIR)tranas_ngf_iterative.o: $(BUILDDIR)inversions.o $(BUILDDIR)ln_structure.o
 #$(BUILDDIR)iterative_ph.o: $(BUILDDIR)ln_allocation.o  $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
 #$(BUILDDIR)iterative_ph.o: $(BUILDDIR)inversions.o $(BUILDDIR)ln_structure.o
 $(BUILDDIR)ln_extract.o: $(BUILDDIR)ln_precision.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o
-$(BUILDDIR)ln_extract.o: $(BUILDDIR)ln_structure.o $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_negf.o $(BUILDDIR)ln_constants.o
+$(BUILDDIR)ln_extract.o: $(BUILDDIR)ln_structure.o $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_main.o $(BUILDDIR)ln_constants.o
 $(BUILDDIR)input_output.o:  $(BUILDDIR)ln_precision.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
 $(BUILDDIR)inversions.o:    $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o
 $(BUILDDIR)complexbands.o:    $(BUILDDIR)ln_precision.o $(BUILDDIR)ln_constants.o $(BUILDDIR)inversions.o	
-$(BUILDDIR)contselfenergy.o: $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_negf.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
+$(BUILDDIR)contselfenergy.o: $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_main.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)mat_def.o $(BUILDDIR)sparsekit_drv.o 
 $(BUILDDIR)contselfenergy.o: $(BUILDDIR)outmatrix.o $(BUILDDIR)clock.o $(BUILDDIR)complexbands.o $(BUILDDIR)mpi_globals.o
 $(BUILDDIR)contselfenergy.o: $(BUILDDIR)ln_structure.o
 $(BUILDDIR)sparsekit_drv.o:  $(BUILDDIR)mat_def.o $(BUILDDIR)ln_allocation.o
-$(BUILDDIR)tranas.o:    $(BUILDDIR)ln_precision.o $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_negf.o $(BUILDDIR)input_output.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)tranas_mbngf.o
-$(BUILDDIR)tranas.o:    $(BUILDDIR)rcm_module.o $(BUILDDIR)integrations.o $(BUILDDIR)ln_extract.o  $(BUILDDIR)ln_structure.o
-$(BUILDDIR)tranas_mbngf.o: $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_negf.o $(BUILDDIR)sparsekit_drv.o $(BUILDDIR)integrations.o
-$(BUILDDIR)integrations.o: $(BUILDDIR)sparsekit_drv.o $(BUILDDIR)inversions.o $(BUILDDIR)iterative_dns.o
-$(BUILDDIR)integrations.o: $(BUILDDIR)energy_mesh.o $(BUILDDIR)distributions.o $(BUILDDIR)contselfenergy.o 
-#$(BUILDDIR)integrations.o: $(BUILDDIR)iterative_ph.o	
+$(BUILDDIR)tranas.o:    $(BUILDDIR)ln_precision.o $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_main.o $(BUILDDIR)input_output.o $(BUILDDIR)ln_allocation.o $(BUILDDIR)tranas_ngf_mbngf.o
+$(BUILDDIR)tranas.o:    $(BUILDDIR)rcm_module.o $(BUILDDIR)tranas_ngf_integrations.o $(BUILDDIR)ln_extract.o  $(BUILDDIR)ln_structure.o
+$(BUILDDIR)tranas_ngf_mbngf.o: $(BUILDDIR)lib_param.o $(BUILDDIR)tranas_types_main.o $(BUILDDIR)sparsekit_drv.o $(BUILDDIR)tranas_ngf_integrations.o
+$(BUILDDIR)tranas_ngf_integrations.o: $(BUILDDIR)sparsekit_drv.o $(BUILDDIR)inversions.o $(BUILDDIR)tranas_ngf_iterative.o
+$(BUILDDIR)tranas_ngf_integrations.o: $(BUILDDIR)energy_mesh.o $(BUILDDIR)distributions.o $(BUILDDIR)contselfenergy.o 
+#$(BUILDDIR)tranas_ngf_integrations.o: $(BUILDDIR)iterative_ph.o	
 $(BUILDDIR)population.o:    $(BUILDDIR)ln_precision.o $(BUILDDIR)mat_def.o 
 $(BUILDDIR)energy_mesh.o:   $(BUILDDIR)ln_precision.o
 $(BUILDDIR)elph.o:      $(BUILDDIR)ln_precision.o
-$(BUILDDIR)interactions.o : $(BUILDDIR)globals.o $(BUILDDIR)ln_precision.o $(BUILDDIR)ln_structure.o
+$(BUILDDIR)tranas_types_mbngf.o : $(BUILDDIR)globals.o $(BUILDDIR)ln_precision.o $(BUILDDIR)ln_structure.o
 $(BUILDDIR)elphdd.o : 	$(BUILDDIR)ln_precision.o $(BUILDDIR)globals.o $(BUILDDIR)mat_def.o $(BUILDDIR)ln_structure.o
 $(BUILDDIR)elphdb.o : 	$(BUILDDIR)ln_precision.o $(BUILDDIR)globals.o $(BUILDDIR)mat_def.o $(BUILDDIR)ln_structure.o
 $(BUILDDIR)elphds.o : 	$(BUILDDIR)ln_precision.o $(BUILDDIR)globals.o $(BUILDDIR)mat_def.o $(BUILDDIR)ln_structure.o 

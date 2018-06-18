@@ -1,27 +1,21 @@
 !--------------------------------------------------------------------------------------------------!
-! DFTB+: general package for performing fast atomistic simulations.                                !
-! Copyright (C) 2017-2018  DFTB+ developers group.                                                 !
-! DFTB+XT: DFTB+ eXTended version for model and atomistic quantum transport at nanoscale.          !
-! Copyright (C) 2018 Dmitry A. Ryndyk.                                                             !
-!                                                                                                  !
-! GNU Lesser General Public License version 3 or (at your option) any later version.               !
-! See the LICENSE file for terms of usage and distribution.                                        !
+!  DFTB+XT open software package for quantum nanoscale modeling                                    !
+!  Copyright (C) 2018 Dmitry A. Ryndyk                                                             !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the DFTB+XT/TraNaS interface.                                               !
-!                                                                                                  !
-! Developer: Dmitry A. Ryndyk.                                                                     !
-!                                                                                                  !
-! Based on the DFTB+/LibNEGF interface.                                                            !
+!  GNU Lesser General Public License version 3 or (at your option) any later version.              !
+!  See the LICENSE file for terms of usage and distribution.                                       !
 !--------------------------------------------------------------------------------------------------!
-! TraNaS is the library for quantum transport at nanoscale.                                        !
-!                                                                                                  !
-! Developer: Dmitry A. Ryndyk.                                                                     !
-!                                                                                                  !
-! Based on the LibNEGF library developed by                                                        !
-! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
+!  This file is part of the DFTB+XT/TraNaS interface.                                              !
+!  Developer: Dmitry A. Ryndyk.                                                                    !
+!  Based on the DFTB+/LibNEGF interface.                                                           !
+!--------------------------------------------------------------------------------------------------!
+!  TraNaS is the library for quantum transport at nanoscale.                                       !
+!  Developer: Dmitry A. Ryndyk.                                                                    !
+!  Based on the LibNEGF library developed by                                                       !
+!  Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                              !
 !--------------------------------------------------------------------------------------------------!
 
-module libnegf_vars
+module tranas_vars
 
   use Accuracy, only : mc, lc
   use ln_precision
@@ -215,4 +209,4 @@ module libnegf_vars
     
   end type TTransPar
     
-end module libnegf_vars
+end module tranas_vars

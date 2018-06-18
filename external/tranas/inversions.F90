@@ -18,6 +18,7 @@
 !!  <http://www.gnu.org/licenses/>.                                         !  
 !!--------------------------------------------------------------------------!
 
+#:include 'common.fypp'
 
 !****************************************************
 !                                                   |
@@ -38,12 +39,12 @@ LOGICAL, PARAMETER :: timing=.FALSE.
 
 public :: ZMSKINVP_LA,  ZMSKINVP_MA, zINVP_MA
 public :: zINV_LAPACK
-#ifdef __SUPERLU
+#:if SUPERLU
 public :: zINV_LU
-#endif
-#ifdef __PARDISO
+#:endif
+#:if PARDISO
 public :: zINV_PARDISO
-#endif
+#:endif
 
 public :: compGreen ! wrapper to different type of computations
 public :: inverse, block2Green, block3Green
@@ -410,7 +411,7 @@ write(*,*) "Allocations and initializations for PGMRES solver"
 
 end subroutine zINVP_MA
 
-#ifdef __SUPERLU
+#:if SUPERLU
 !*********************************************
 !                                            |
 !  SuperLU based inversion without masking   |
@@ -475,7 +476,7 @@ subroutine zINV_LU(A_csr, INV)
 
 end subroutine zINV_LU
 
-#endif
+#:endif
 
 !!$!************************************************
 !!$!                                               |
@@ -547,7 +548,7 @@ end subroutine zINV_LU
 !!$
 !!$end subroutine zINV_LU
 
-#ifdef __PARDISO 
+#:if PARDISO 
 !***********************************************************
 !
 !  PARDISO Direct inversion
@@ -739,7 +740,7 @@ SUBROUTINE zINV_PARDISO(A_csr, ndim, INV)
 
 END SUBROUTINE zINV_PARDISO
 
-#endif
+#:endif
 
 !---------- INTERFACE FOR LAPACK INVERSION (Complex MATRICES) -------------
 subroutine zINV_LAPACK(A_csr, INV)

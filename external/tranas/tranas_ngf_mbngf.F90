@@ -1,70 +1,51 @@
-!--------------------------------------------------------------------------------------------------!                              
-! DFTB+XT: DFTB+ eXTended version for model and atomistic quantum transport at nanoscale.          !
-!                                                                                                  !
-! Copyright (C) 2017-2018 DFTB+ developers group.                                                  !
-! Copyright (C) 2018 Dmitry A. Ryndyk.                                                             !
-!                                                                                                  !
-! GNU Lesser General Public License version 3 or (at your option) any later version.               !
-! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the TraNaS library for quantum transport at nanoscale.                      !
-!                                                                                                  !
-! Developer: Dmitry A. Ryndyk.                                                                     !
-!                                                                                                  !
-! Based on the LibNEGF library developed by                                                        !
-! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
+!  DFTB+XT open software package for quantum nanoscale modeling                                    !
+!  Copyright (C) 2018 Dmitry A. Ryndyk                                                             !
 !--------------------------------------------------------------------------------------------------!
-
-!!--------------------------------------------------------------------------!
-!! libNEGF: a general library for Non-Equilibrium Green's functions.        !
-!! Copyright (C) 2012                                                       !
-!!                                                                          ! 
-!! This file is part of libNEGF: a library for                              !
-!! Non Equilibrium Green's Function calculation                             ! 
-!!                                                                          !
-!! Developers: Alessandro Pecchia, Gabriele Penazzi                         !
-!! Former Conctributors: Luca Latessa, Aldo Di Carlo                        !
-!!                                                                          !
-!! libNEGF is free software: you can redistribute it and/or modify          !
-!! it under the terms of the GNU Lesser General Public License as published !
-!! by the Free Software Foundation, either version 3 of the License, or     !
-!! (at your option) any later version.                                      !
-!!                                                                          !
-!!  You should have received a copy of the GNU Lesser General Public        !
-!!  License along with libNEGF.  If not, see                                !
-!!  <http://www.gnu.org/licenses/>.                                         !  
-!!--------------------------------------------------------------------------!
+!  GNU Lesser General Public License version 3 or (at your option) any later version.              !
+!  See the LICENSE file for terms of usage and distribution.                                       !
+!--------------------------------------------------------------------------------------------------!
+!  This file is part of the TraNaS library for quantum transport at nanoscale.                     !
+!  Developer: Dmitry A. Ryndyk.                                                                    !
+!  Based on the LibNEGF library developed by                                                       !
+!  Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                              !
+!--------------------------------------------------------------------------------------------------!
   
-module tranas_mbngf
+module tranas_ngf_mbngf
 
-use mpi_globals, only : id, numprocs, id0  
-use libmpifx_module
-use ln_precision
-use sparsekit_drv
-use mat_def
+  use mpi_globals, only : id, numprocs, id0  
+  use libmpifx_module
+  use ln_precision
+  use sparsekit_drv
+  use mat_def
 
-use tranas_types_negf
-use integrations
+  use tranas_types_main
+  use tranas_ngf_integrations
 
-implicit none
-private
+  implicit none
+  private
 
-public :: mbngf_init
-public :: mbngf_compute
-public :: mbngf_destroy
+  public :: mbngfInit
+  public :: mbngfCompute
+  public :: mbngfDestroy
   
+!--------------------------------------------------------------------------------------------------!
 contains
+!--------------------------------------------------------------------------------------------------!
 
 !--------------------------------------------------------------------------------------------------!
 !> Allocation of the many-body self-energies.
 !--------------------------------------------------------------------------------------------------!  
 
-subroutine mbngf_init(negf)
+subroutine mbngfInit(tranas)
 
+  type(TTraNaS) :: tranas
   type(Tnegf) :: negf
 
   integer :: n,nbl,ierr
 
+  negf = tranas%negf
+  
   ! Allocation of self-energies
     
   if(negf%mbngf%tHartreeFock) then
@@ -90,20 +71,25 @@ subroutine mbngf_init(negf)
   if(negf%mbngf%tRPA) then
     
   end if
+
+  tranas%negf = negf
     
-end subroutine mbngf_init
+end subroutine mbngfInit
     
 !--------------------------------------------------------------------------------------------------!
 !> Calculation of the many-body self-energies.
 !--------------------------------------------------------------------------------------------------!
   
-subroutine mbngf_compute(negf)
+subroutine mbngfCompute(tranas)
 
+  type(TTraNaS) :: tranas
   type(Tnegf) :: negf
   type(z_DNS) :: rho_dense,rho_dense_previous,sigma_dense
 
   integer :: n,m,ii,jj,nbl,ierr,scba_iter
   real(dp) :: scba_error
+
+  negf = tranas%negf
 
   scba_error = 0.0_dp
   
@@ -182,7 +168,9 @@ subroutine mbngf_compute(negf)
     write(*,"('>>> The MBNGF calculation is ended.')")
   end if
 
-  CONTAINS  
+  tranas%negf = negf
+  
+CONTAINS  
 
   !------------------------------------------------------------------------------------------------!
 
@@ -346,24 +334,28 @@ subroutine mbngf_compute(negf)
 
   !------------------------------------------------------------------------------------------------!
   
-end subroutine mbngf_compute
+end subroutine mbngfCompute
 
-!--------------------------------------------------------------------------------------------------!
-!> Deallocation of the many-body self-energies.
-!--------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
 
-subroutine mbngf_destroy(negf)
+  !> Deallocation of the many-body self-energies.
+  subroutine mbngfDestroy(tranas)
 
-  use iterative_dns, only : destroy_blk
+    use tranas_ngf_iterative, only : destroy_blk
+
+    type(TTraNaS) :: tranas
+    type(Tnegf) :: negf
+
+    negf = tranas%negf
     
-  type(Tnegf) :: negf
+    if (negf%mbngf%tHartreeFock) then
+      call destroy_blk(negf%mbngf%SelfEnergyR_HF)
+      deallocate(negf%mbngf%SelfEnergyR_HF)
+    end if
 
-  if (negf%mbngf%tHartreeFock) then
-    call destroy_blk(negf%mbngf%SelfEnergyR_HF)
-    deallocate(negf%mbngf%SelfEnergyR_HF)
-  end if
-      
-end subroutine mbngf_destroy
+    tranas%negf = negf
+    
+  end subroutine mbngfDestroy
 
 !--------------------------------------------------------------------------------------------------!
 !--------------------------------------------------------------------------------------------------!  
@@ -471,5 +463,5 @@ end subroutine set_ref_cont
 !--------------------------------------------------------------------------------------------------!
 !--------------------------------------------------------------------------------------------------!
   
-end module tranas_mbngf
+end module tranas_ngf_mbngf
   

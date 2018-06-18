@@ -20,12 +20,12 @@ all: libtranas
 
 libtranas:
 	$(MAKE) -C $(OBJDIR) -f $(SRCDIR)/Makefile.lib \
-	    FXX="$(FXX)" FXXOPT="$(FXXOPT)" SRCDIR="$(SRCDIR)" \
+	    FXX="$(FXX)" FXXOPT="$(FXXOPT)" M4="$(M4)" M4OPT="$(M4OPT)" SRCDIR="$(SRCDIR)" \
 	    OBJDIR="$(OBJDIR)" INCLUDES="$(INCLUDES)" MPIFX_PATH="../mpifx/"
 
 clean:
 	$(MAKE) -C $(OBJDIR) -f $(SRCDIR)/Makefile.lib \
-	    FXX="$(FXX)" FXXOPT="$(FXXOPT)" SRCDIR="$(SRCDIR)" clean
+	    FXX="$(FXX)" FXXOPT="$(FXXOPT)" M4="$(M4)" M4OPT="$(M4OPT)"  SRCDIR="$(SRCDIR)" clean
 
 
 ### Local Variables:

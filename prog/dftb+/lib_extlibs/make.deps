@@ -23,10 +23,10 @@ lapack.o = lapack.o $(_mod_accuracy)
 _mod_lapack: lapack.o
 _mod_lapack = $(lapack.o)
 
-libnegf_vars.o: _mod_wrappedintrinsics _mod_commontypes _mod_accuracy _mod_xmlf90
-libnegf_vars.o = libnegf_vars.o $(_mod_wrappedintrinsics) $(_mod_commontypes) $(_mod_accuracy) $(_mod_xmlf90)
-_mod_libnegf_vars: libnegf_vars.o
-_mod_libnegf_vars = $(libnegf_vars.o)
+tranas_vars.o: _mod_wrappedintrinsics _mod_commontypes _mod_accuracy _mod_xmlf90
+tranas_vars.o = tranas_vars.o $(_mod_wrappedintrinsics) $(_mod_commontypes) $(_mod_accuracy) $(_mod_xmlf90)
+_mod_tranas_vars: tranas_vars.o
+_mod_tranas_vars = $(tranas_vars.o)
 
 mat_conv.o: _mod_commontypes _mod_assert _mod_accuracy _mod_libnegf _mod_constants
 mat_conv.o = mat_conv.o $(_mod_commontypes) $(_mod_assert) $(_mod_accuracy) $(_mod_libnegf) $(_mod_constants) 
@@ -45,10 +45,10 @@ _mod_mpifx: mpifx.o
 _mod_mpifx = $(mpifx.o)
 #:endif
 
-negf_int.o: _mod_charmanip _mod_libnegf_vars _mod_commontypes _mod_libnegf _mod_libmpifx_module _mod_mat_conv _mod_formatout _mod_globals _mod_accuracy _mod_unitconversion _mod_taggedoutput
-negf_int.o = negf_int.o $(_mod_charmanip) $(_mod_libnegf_vars) $(_mod_commontypes) $(_mod_libnegf) $(_mod_libmpifx_module) $(_mod_mat_conv) $(_mod_formatout) $(_mod_globals) $(_mod_accuracy) $(_mod_unitconversion) $(_mod_taggedoutput)
-_mod_negf_int: negf_int.o
-_mod_negf_int = $(negf_int.o)
+tranas_interface.o: _mod_charmanip _mod_tranas_vars _mod_commontypes _mod_libnegf _mod_libmpifx_module _mod_mat_conv _mod_formatout _mod_globals _mod_accuracy _mod_unitconversion _mod_taggedoutput
+tranas_interface.o = tranas_interface.o $(_mod_charmanip) $(_mod_tranas_vars) $(_mod_commontypes) $(_mod_libnegf) $(_mod_libmpifx_module) $(_mod_mat_conv) $(_mod_formatout) $(_mod_globals) $(_mod_accuracy) $(_mod_unitconversion) $(_mod_taggedoutput)
+_mod_tranas_interface: tranas_interface.o
+_mod_tranas_interface = $(tranas_interface.o)
 
 #:if WITH_SCALAPACK
 scalapackfx.o: common.fypp _mod_libscalapackfx_module

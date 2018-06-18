@@ -3,7 +3,7 @@
 !  Copyright (C) 2018  DFTB+ developers group                                                      !
 !--------------------------------------------------------------------------------------------------!
 !  DFTB+XT open software package for quantum nanoscale modeling                                    !
-!  Copyright (C) 2018 Dmitry A. Ryndyk.                                                            !
+!  Copyright (C) 2018 Dmitry A. Ryndyk                                                             !
 !--------------------------------------------------------------------------------------------------!
 !  GNU Lesser General Public License version 3 or (at your option) any later version.              !
 !  See the LICENSE file for terms of usage and distribution.                                       !
@@ -82,13 +82,13 @@ module initprogram
   use potentials
   use taggedoutput
   use formatout
-  use libnegf_vars
-  use negf_int
+  use tranas_vars
+  use tranas_interface
   !!DAR begin - use
   use poisson_vars
   use poisson_int
   use blacsfx_module
-  use negf_int 
+  use tranas_interface 
   !!DAR end
   implicit none
 

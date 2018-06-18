@@ -52,7 +52,7 @@
 
 
 
-MODULE iterative_dns
+MODULE tranas_ngf_iterative
 
   USE ln_precision
   USE ln_constants, only : pi
@@ -63,7 +63,7 @@ MODULE iterative_dns
   USE elph
   USE ln_structure, only : TStruct_Info
   !USE lib_param, only : MAXNCONT, Tnegf, intarray
-  use tranas_types_negf, only : MAXNCONT, Tnegf, intarray
+  use tranas_types_main, only : MAXNCONT, Tnegf, intarray
   use mpi_globals, only : id, numprocs, id0                                 !DAR
   USE outmatrix, only : outmat_c, inmat_c, direct_out_c, direct_in_c 
   USE clock
@@ -159,7 +159,7 @@ CONTAINS
     INTEGER :: i,ierr, nbl, ncont,ii,n                                !DAR +ii,n
     INTEGER, DIMENSION(:), POINTER :: cblk, indblk
 
-    if (id0.and.pnegf%verbose.gt.130) print *, 'debug: iterative_dns: calls_eq_mem_dns is started'
+    if (id0.and.pnegf%verbose.gt.130) print *, 'debug: tranas_ngf_mbngf.iterative: calls_eq_mem_dns is started'
 
     nbl = pnegf%str%num_PLs
     ncont = pnegf%str%num_conts
@@ -218,7 +218,7 @@ CONTAINS
     CALL destroy_blk(Gr)
     DEALLOCATE(Gr)
 
-    if (id0.and.pnegf%verbose.gt.130) print *, 'debug: iterative_dns: calls_eq_mem_dns is finished'
+    if (id0.and.pnegf%verbose.gt.130) print *, 'debug: tranas_ngf_mbngf.iterative: calls_eq_mem_dns is finished'
 
   end subroutine calls_eq_mem_dns
   
@@ -433,7 +433,7 @@ CONTAINS
 !    type(z_dns), dimension(:,:), allocatable :: Gr_previous !, Gn_previous !DAR
 !    save Gr_previous !, Gn_previous !DAR
 
-    if (id0.and.pnegf%verbose.gt.130) print *, 'debug: iterative_dns: calls_neq_elph is started'
+    if (id0.and.pnegf%verbose.gt.130) print *, 'debug: tranas_ngf_mbngf.iterative: calls_neq_elph is started'
 
     nbl = pnegf%str%num_PLs
     ncont = pnegf%str%num_conts
@@ -641,7 +641,7 @@ CONTAINS
 
     call destroy(Gl)
 
-    if (id0.and.pnegf%verbose.gt.130) print *, 'debug: iterative_dns: calls_neq_elph is finished'
+    if (id0.and.pnegf%verbose.gt.130) print *, 'debug: tranas_ngf_mbngf.iterative: calls_neq_elph is finished'
 
   END SUBROUTINE calls_neq_elph
 
@@ -4092,7 +4092,7 @@ CONTAINS
 
 
 
-END MODULE iterative_dns
+END MODULE tranas_ngf_iterative
 
 
 
