@@ -240,13 +240,6 @@ end subroutine init_poissbox
 ! -----------------------------------------------------------------------------------  
 subroutine mudpack_drv(SCC_in,V_L_atm,grad_V)
 
-!**********************************************************************
-! This subroutine is a driver for the mudpack (c) solver (see mud3.f) *
-!                                                                     *
-! Users of mudpack should obtain their personal licence from UCAR     *
-! As permission to distribute the packedge is not given.              *
-!**********************************************************************
-
  integer :: SCC_in                         !Control flag:
  integer, parameter :: GetPOT=0            !potential in SCC
  integer, parameter :: GetGRAD=1           !atomic shift component of gradient

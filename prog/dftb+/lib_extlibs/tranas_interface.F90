@@ -21,7 +21,7 @@ module tranas_interface
   use ln_precision
   use ln_constants
   use ln_allocation
-  use tranas_vars  !, only : TGDFTBstructure, TGDFTBTunDos, &
+  use tranas_vars   !, only : TGDFTBstructure, TGDFTBTunDos, &
                     !       & TGDFTBGreenDensInfo, TTransPar, Telph
   use ln_structure
   use mpi_globals
