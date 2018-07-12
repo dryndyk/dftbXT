@@ -1,0 +1,238 @@
+\begin{thebibliography}{10}
+
+\bibitem{DFTBXT}
+D.~A. Ryndyk, ``{\textsc{DFTB$^{\text{+}}\,$XT}} open software package for
+  quantum nanoscale modeling,'', http://quantranspro.org/dftb+xt/.
+
+\bibitem{dftbp-paper}
+B. Aradi, B. Hourahine, and T. Frauenheim, ``{DFTB+}, a Sparse Matrix-Based
+  Implementation of the {DFTB} Method,'' J{.} Phys{.} Chem{.} A {\bf 111,} 5678
+  (2007), http://dftbplus.org/.
+
+\bibitem{Pecchia_NJP}
+A. Pecchia, G. Penazzi, L. Salvucci, and A.~D. Carlo, ``Non-equilibrium Green's
+  functions in density functional tight binding: method and applications,'' New
+  Journal of Physics {\bf 10,} 065022 (2008).
+
+\bibitem{frauenheim-JPCM-14-3015}
+T. Frauenheim, G. Seifert, M. Elstner, T. Niehaus, C. Kohler, M. Amkreutz, M.
+  Sternberg, Z. Hajnal, A. Di~Carlo, and S. Suhai, ``Atomistic simulations of
+  complex materials: ground-state and excited-state properties,'' J{.} Phys{.}
+  Cond{.} Matter {\bf 14,} 3015--3047 (2002).
+
+\bibitem{kovalenko-JCC-20-928}
+A. Kovalenko, S. Ten-no, and F. Hirata, ``Solution of three-dimensional
+  reference interaction site model and hypernetted chain equations for simple
+  point charge water by modified method of direct inversion in iterative
+  subspace,'' J{.} Comp{.} Chem{.} {\bf 20,} 928--936 (1999).
+
+\bibitem{andersen-JCP-72-2384}
+H.~C. Andersen, ``Molecular dynamics at constant pressure and/or temperature,''
+  J{.} Chem{.} Phys{.} {\bf 72,} 2384 (1980).
+
+\bibitem{berendsen-JCP-81-3684}
+H.~J.~C. Berendsen, J.~P.~M. Postma, W.~F. Van~Gunsteren, A. Dinola, and J.~R.
+  Haak, ``Molecular-Dynamics with Coupling to an External Bath,'' J{.} Chem{.}
+  Phys{.} {\bf 81,} 3684--3690 (1984).
+
+\bibitem{harvey-JCC-19-726}
+S.~C. Harvey, R.~K.~Z. Tan, and T.~E. Cheatham, ``The flying ice cube: Velocity
+  rescaling in molecular dynamics leads to violation of energy equipartition,''
+  J{.} Comp{.} Chem{.} {\bf 19,} 726--740 (1998).
+
+\bibitem{martyna-mp-87-1117}
+G.~J. Martyna, M.~E. Tuckerman, D.~J. Tobias, and M.~L. Klein, ``Explicit
+  reversible integrators for extended systems dynamics,'' Molecular Phys{.}
+  {\bf 87,} 1117--1157 (1996).
+
+\bibitem{aradi-jctc-11-3357}
+B. Aradi, A.~M.~N. Niklasson, and T. Frauenheim, ``Extended Lagrangian Density
+  Functional Tight-Binding Molecular Dynamics for Molecules and Solids,'' J.
+  Chem. Theory Comput. {\bf 11,} 3357--3363 (2015).
+
+\bibitem{Ceriotti20141019}
+M. Ceriotti, J. More, and D.~E. Manolopoulos, ``i-PI: A Python interface for ab
+  initio path integral molecular dynamics simulations,'' Computer Phys{.}
+  Comm{.} {\bf 185,} 1019--1026 (2014).
+
+\bibitem{johnson-PRB-38-12807}
+D.~D. Johnson, ``Modified {B}royden's method for accelerating convergence in
+  self consistent calculations,'' Phys{.} Rev{.} B {\bf 38,} 12807 (2003).
+
+\bibitem{eyert-JCP-124-271}
+V. Eyert, ``A Comparative Study on Methods for Convergence Acceleration of
+  Iterative Vector Sequences,'' J{.} Comp{.} Phys{.} {\bf 124,} 271 (1996).
+
+\bibitem{han-PRB-73-045110}
+M.~J. Han, T. Ozaki, and J. Yu, ``\mbox{O($N$) LDA+$U$} electronic structure
+  calculation method based on the nonorthogonal pseudoatomic orbital basis,''
+  Phys{.} Rev{.} B {\bf 73,} 045110 (2006).
+
+\bibitem{lapack3}
+E. Anderson {\it et~al.}, {\em {LAPACK} Users' Guide}, 3rd  ed. (Society for
+  Industrial and Applied Mathematics, Philadelphia, PA, 1999).
+
+\bibitem{methfessel-PRB-40-3616}
+M. Methfessel and A.~T. Paxton, ``High-precision sampling for {B}rillouin-zone
+  integration in metals,'' Phys{.} Rev{.} B {\bf 40,} 3616 (1989).
+
+\bibitem{monkhorst-prb-13-5188}
+H.~J. Monkhorst and J.~D. Pack, ``Special points for {B}rillouin-zone
+  integrations,'' Phys{.} Rev{.} B {\bf 13,} 5188 (1976).
+
+\bibitem{monkhorst-prb-16-1748}
+H.~J. Monkhorst and J.~D. Pack, ``"Special points for {B}rillouin-zone
+  integrations"--a reply,'' Phys{.} Rev{.} B {\bf 16,} 1748 (1977).
+
+\bibitem{hourahine07}
+B. Hourahine, S. Sanna, B. Aradi, C. K\"ohler, T. Niehaus, and T. Frauenheim,
+  ``Self-Interaction and Strong Correlation in {DFTB},'' J{.} Phys{.} Chem{.} A
+  {\bf 111,} 5671 (2007).
+
+\bibitem{petukhov-PRB-67-153106}
+A.~G. Petukhov, I.~I. Mazin, L. Chioncel, and A.~I. Lichtenstein, ``Correlated
+  metals and the \mbox{LDA+U} method,'' Phys{.} Rev{.} B {\bf 67,} 153106--4
+  (2003).
+
+\bibitem{rappe-JACS-114-10024}
+A.~K. Rappe, C.~J. Casewit, K.~S. Colwell, W.~A. {Goddard III}, and W.~M.
+  Skiff, ``\mbox{UFF}, a full periodic table force field for molecular
+  mechanics and molecular dynamics simulations,'' J{.} Am{.} Chem{.} Soc{.}
+  {\bf 114,} 10024--10035 (1992).
+
+\bibitem{elstner-jcp-114-5149}
+M. Elstner, P. Hobza, T. Frauenheim, S. Suhai, and E. Kaxiras, ``Hydrogen
+  bonding and stacking interactions of nucleic acid base pairs: a
+  density-functional-theory based treatment,'' J{.} Chem{.} Phys{.} {\bf 114,}
+  5149 (2001).
+
+\bibitem{grimme-jcp-132-154104}
+S. Grimme, J. Antony, S. Ehrlich, and H. Krieg, ``A consistent and accurate ab
+  initio parametrization of density functional dispersion correction
+  (\mbox{DFT-D}) for the 94 elements {H}-{P}u,'' J{.} Chem{.} Phys{.} {\bf
+  132,} 154104 (2010).
+
+\bibitem{grimme-jcp-32-1456-1465}
+S. Grimme, S. Ehrlich, and L. Goerigk, ``Effect of the Damping Function in
+  Dispersion Corrected Density Functional Theory,'' J{.} Chem{.} Phys{.} {\bf
+  32,} 1456--1465 (2011).
+
+\bibitem{zhechkov-JCTC-1-841}
+L. Zhechkov, T. Heine, S. Patchkovskii, G. Seifert, and H.~A. Duarte, ``An
+  Efficient a Posteriori Treatment for Dispersion Interaction in
+  Density-Functional-Based Tight Binding,'' J{.} of Chem{.} Theory Comput{.}
+  {\bf 1,} 841--847 (2005).
+
+\bibitem{rezac-jctc-13-2017}
+J. {\v R}ez{\'a}{\v c}, ``Empirical {Self}-{Consistent} {Correction} for the
+  {Description} of {Hydrogen} {Bonds} in {DFTB}3,'' J. Chem{.} Theory Comput{.}
+  {\bf 13,} 4804--4817 (2017).
+
+\bibitem{rezac-jctc-8-2012}
+J. {\v R}ez{\'a}{\v c} and P. Hobza, ``Advanced Corrections of Hydrogen Bonding
+  and Dispersion for Semiempirical Quantum Mechanical Methods,'' J. Chem{.}
+  Theory Comput{.} {\bf 8,} 141--151 (2012).
+
+\bibitem{gauss-jctc-7-931}
+M. Gaus, Q. Cui, and M. Elstner, ``\mbox{DFTB}3: {E}xtension of the
+  {S}elf-{C}onsistent-{C}harge {D}ensity-{F}unctional {T}ight-{B}inding
+  {M}ethod (\mbox{SCC-DFTB}),'' J{.} of Chem{.} Theory Comput{.} {\bf 7,}
+  931--948 (2011).
+
+\bibitem{yang-JPCA-111-10861}
+Y. Yang, H. Yu, D. York, Q. Cui, and M. Elstner, ``Extension of the
+  Self-Consistent-Charge Density-Functional Tight-Binding Method: Third-Order
+  Expansion of the Density Functional Theory Total Energy and Introduction of a
+  Modified Effective Coulomb Interaction,'' J{.} Phys{.} Chem{.} A {\bf 111,}
+  10861 (2007).
+
+\bibitem{elstner-prb-58-7260}
+M. Elstner, D. Porezag, G. Jungnickel, J. Elsner, M. Haugk, T. Frauenheim, S.
+  Suhai, and G. Seifert, ``Self-consistent-charge density-functional
+  tight-binding method for simulations of complex materials properties,''
+  Phys{.} Rev{.} B {\bf 58,} 7260 (1998).
+
+\bibitem{pipek-JCP-90-4916}
+J. Pipek and P.~G. Mezey, ``A fast intrinsic localization procedure applicable
+  for {\it ab initio} and semiempirical linear combination of atomic orbital
+  wave functions,'' J{.} Chem{.} Phys{.} {\bf 90,} 4916 (1989).
+
+\bibitem{niehaus-prb-63-085108}
+T.~A. Niehaus, S. Suhai, F. Della~Sala, P. Lugli, M. Elstner, G. Seifert, and
+  T. Frauenheim, ``Tight-binding approach to time-dependent density-functional
+  response theory,'' Phys{.} Rev{.} B {\bf 63,} 085108 (2001).
+
+\bibitem{Lehoucq97arpackusers}
+R.~B. Lehoucq, D.~C. Sorensen, and C. Yang, ``ARPACK Users Guide: Solution of
+  Large Scale Eigenvalue Problems by Implicitly Restarted Arnoldi Methods.,'',
+  1997.
+
+\bibitem{ARPACK-ng}
+https://github.com/opencollab/arpack-ng.
+
+\bibitem{heringer2007aes}
+D. Heringer, T.~A. Niehaus, M. Wanko, and T. Frauenheim, ``Analytical excited
+  state forces for the time-dependent density-functional tight-binding
+  method.,'' J{.} Comp{.} Chem{.} {\bf 28,} 2589 (2007).
+
+\bibitem{Pecchia_RPP}
+A. Pecchia and A.~D. Carlo, ``Atomistic theory of transport in organic and
+  inorganic nanostructures,'' Reports on Progress in Physics {\bf 67,} 1497
+  (2004).
+
+\bibitem{Pecchia_spring}
+A. Di~Carlo, A. Pecchia, L. Latessa, T. Frauenheim, and G. Seifert,  in {\em
+  Introducing Molecular Electronics}, G. Cuniberti, K. Richter, and G. Fagas,
+  eds., (Springer Berlin Heidelberg, Berlin, Heidelberg, 2005), \ pp.\
+  153--184.
+
+\bibitem{garcia14Thesis}
+A.~D. Garcia, Ph.D. thesis, Universit\"at Bremen, 2014,
+  http://elib.suub.uni-bremen.de/edocs/00103868-1.pdf.
+
+\bibitem{KoehlerThesis}
+C. K\"ohler, Ph.D. thesis, Department Physik der Fakult\"at fur
+  Naturwissenschaften an der Universit\"at Paderborn, 2004,
+  http://ubdata.uni-paderborn.de/ediss/06/2004/koehler/.
+
+\bibitem{miller-JAmChemSoc-112-8533}
+K.~J. Miller, ``Additivity methods in molecular polarizability,'' J{.} Am{.}
+  Chem{.} Soc{.} {\bf 112,} 8533 (1990).
+
+\bibitem{kang-TheorChimActa-61-41}
+Y.~K. Kang and M.~S. Jhon, ``Additivity of atomic static polarizabilities and
+  dispersion coefficients,'' Theoretica Chimica Acta {\bf 61,} 41 (1982).
+
+\bibitem{porezag-PRB-51-12947}
+D. Porezag, T. Frauenheim, T. K\"ohler, G. Seifert, and R. Kaschner,
+  ``Construction of tight-binding-like potentials on the basis of
+  density-functional theory: Application to carbon,'' Phys{.} Rev{.} B {\bf
+  51,} 12947 (1995).
+
+\bibitem{seifert-ijqc-58-185}
+G. Seifert, D. Porezag, and T. Frauenheim, ``Calculations of molecules,
+  clusters, and solids with a simplified \mbox{LCAO-DFT-LDA} scheme,'' Int{.}
+  J{.} Quant{.} Chem{.} {\bf 58,} 185 (1996).
+
+\bibitem{koehler-cp-309-23}
+C. K\"ohler, G. Seifert, and T. Frauenheim, ``Density-Functional based
+  calculations for {F}e(n), (n$\le$32),'' Chem{.} Phys{.} {\bf 309,} 23 (2005).
+
+\bibitem{koehler-JPCA-111-5622}
+C. K\"ohler, T. Frauenheim, B. Hourahine, G. Seifert, and M. Sternberg,
+  ``Treatment of Collinear and Noncollinear Electron Spin within an Approximate
+  Density Functional Based Method,'' J{.} Phys{.} Chem{.} A {\bf 111,} 5622
+  (2007).
+
+\bibitem{cui-jpcb-105-569}
+Q. Cui, M. Elstner, T. Frauenheim, E. Kaxiras, and M. Karplus, ``Combined
+  self-consistent charge density functional tight-binding (\mbox{SCC-DFTB}) and
+  \mbox{CHARMM},'' J{.} Phys{.} Chem{.} B {\bf 105,} 569 (2001).
+
+\bibitem{han-ijqc-78-459}
+W. Han, M. Elstner, K.~J. Jalkanen, T. Frauenheim, and S. Suhai, ``Hybrid
+  \mbox{SCC-DFTB}/Molecular Mechanical Studies of {H}-Bonded Systems and of
+  {N}-acetyl-({L}-{A}la)$_\mathrm{n}$-{N}'-Methylamide Helices in Water
+  Solution,'' Int{.} J{.} Quant{.} Chem{.} {\bf 78,} 459 (2000).
+
+\end{thebibliography}

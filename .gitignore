@@ -14,4 +14,12 @@ RELEASE
 *.[oa]
 tempdir
 tools/dptools/build/
+*.aux
+doc/dftb+/manual/manual.blg
+doc/dftb+/manual/manual.brf
+doc/dftb+/manual/manual.ilg
+doc/dftb+/manual/manual.log
+doc/dftb+/manual/manual.out
+doc/dftb+/manual/manual.synctex.gz
+doc/dftb+/manual/manual.toc
 
