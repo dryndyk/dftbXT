@@ -148,7 +148,7 @@
 \indexentry{InitialCharges@\textsf  {InitialCharges}|hyperpage}{26}
 \indexentry{ElectricField@\textsf  {ElectricField}|hyperpage}{26}
 \indexentry{Dispersion@\textsf  {Dispersion}|hyperpage}{26}
-\indexentry{HBondCorrection@\textsf  {HBondCorrection}|hyperpage}{26}
+\indexentry{HCorrection@\textsf  {HCorrection}|hyperpage}{26}
 \indexentry{ThirdOrder@\textsf  {ThirdOrder}|hyperpage}{26}
 \indexentry{ThirdOrderFull@\textsf  {ThirdOrderFull}|hyperpage}{26}
 \indexentry{HubbardDerivs@\textsf  {HubbardDerivs}|hyperpage}{26}

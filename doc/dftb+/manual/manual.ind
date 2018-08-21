@@ -139,7 +139,7 @@
   \item \textsf  {HamiltonianFile}, \hyperpage{72}
   \item hamreal.dat, \hyperpage{77}
   \item hamsqr.dat, \hyperpage{77}
-  \item \textsf  {HBondCorrection}, \hyperpage{26}
+  \item \textsf  {HCorrection}, \hyperpage{26}
   \item Hessian, \hyperpage{14}, \hyperpage{17}, \hyperpage{84}
   \item \textsf  {Hessian}, \hyperpage{83}
   \item \textsf  {HHRepulsion}, \hyperpage{47}
