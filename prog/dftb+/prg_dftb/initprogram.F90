@@ -444,6 +444,9 @@ module initprogram
   !> Do we need forces?
   logical :: tForces
 
+  !> Is the contribution from an excited state needed for the forces
+  logical :: tCasidaForces
+
   !> are forces being returned
   logical :: tPrintForces
 
@@ -1476,6 +1479,11 @@ contains
 
     tPrintForces = input%ctrl%tPrintForces
     tForces = input%ctrl%tForces .or. tPrintForces
+    if (tForces) then
+      tCasidaForces = input%ctrl%tCasidaForces
+    else
+      tCasidaForces = .false.
+    end if
     if (tSccCalc) then
       forceType = input%ctrl%forceType
     else
@@ -1690,9 +1698,9 @@ contains
       end if
       if (nspin > 2) then
         call error("Linear reponse does not work with non-colinear spin polarization yet")
-      elseif (tSpin .and. tForces) then
+      elseif (tSpin .and. tCasidaForces) then
         call error("excited state relaxation is not implemented yet for spin-polarized systems")
-      elseif (tPeriodic .and. tForces) then
+      elseif (tPeriodic .and. tCasidaForces) then
         call error("excited state relaxation is not implemented yet periodic systems")
       elseif (tPeriodic .and. .not.tRealHS) then
         call error("Linear response only works with non-periodic or gamma-point molecular crystals")
@@ -1703,14 +1711,14 @@ contains
       elseif (input%ctrl%tOrbResolved) then
         call error("Linear response does not support orbital resolved scc yet")
       end if
-      if (tempElec > 0.0_dp .and. tForces) then
+      if (tempElec > 0.0_dp .and. tCasidaForces) then
         write(tmpStr, "(A,E12.4,A)")"Excited state forces are not implemented yet for fractional&
             & occupations, kT=", tempElec/Boltzmann,"K"
         call warning(tmpStr)
       end if
 
       if (input%ctrl%lrespini%nstat == 0) then
-        if (tForces) then
+        if (tCasidaForces) then
           call error("Excited forces only available for StateOfInterest non zero.")
         end if
         if (input%ctrl%lrespini%tPrintEigVecs .or. input%ctrl%lrespini%tCoeffs) then
@@ -1752,10 +1760,10 @@ contains
       end select
 
       tPrintExcitedEigVecs = input%ctrl%lrespini%tPrintEigVecs
-      tLinRespZVect = (input%ctrl%lrespini%tMulliken .or. tForces .or. input%ctrl%lrespini%tCoeffs&
-          & .or. tPrintExcitedEigVecs)
+      tLinRespZVect = (input%ctrl%lrespini%tMulliken .or. tCasidaForces .or.&
+          & input%ctrl%lrespini%tCoeffs .or. tPrintExcitedEigVecs)
 
-      call init(lresp, input%ctrl%lrespini, nAtom, nEl(1), orb)
+      call init(lresp, input%ctrl%lrespini, nAtom, nEl(1), orb, tCasidaForces)
 
     end if
 
@@ -1944,7 +1952,8 @@ contains
       if (tReadChrg) then
         if (tDFTBU) then
           if (nSpin == 2) then
-            if (tFixEf) then ! do not check charge or magnetisation from file
+            if (tFixEf .or. input%ctrl%tSkipChrgChecksum) then
+              ! do not check charge or magnetisation from file
               call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb, qBlock=qBlockIn)
             else
               call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb, nEl = sum(nEl),&
@@ -1952,7 +1961,8 @@ contains
             end if
           else
             if (tImHam) then
-              if (tFixEf) then
+              if (tFixEf .or. input%ctrl%tSkipChrgChecksum) then
+                ! do not check charge or magnetisation from file
                 call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb,&
                     & qBlock=qBlockIn,qiBlock=qiBlockIn)
               else
@@ -1960,7 +1970,8 @@ contains
                     & qBlock=qBlockIn,qiBlock=qiBlockIn)
               end if
             else
-              if (tFixEf) then
+              if (tFixEf .or. input%ctrl%tSkipChrgChecksum) then
+                ! do not check charge or magnetisation from file
                 call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb,&
                     & qBlock=qBlockIn)
               else
@@ -1972,14 +1983,16 @@ contains
         else
           ! hack again caused by going from up/down to q and M
           if (nSpin == 2) then
-            if (tFixEf) then
+            if (tFixEf .or. input%ctrl%tSkipChrgChecksum) then
+              ! do not check charge or magnetisation from file
               call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb)
             else
               call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb, nEl = sum(nEl),&
                   & magnetisation=nEl(1)-nEl(2))
             end if
           else
-            if (tFixEf) then
+            if (tFixEf .or. input%ctrl%tSkipChrgChecksum) then
+              ! do not check charge or magnetisation from file
               call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb)
             else
               call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb, nEl = nEl(1))
@@ -1999,8 +2012,10 @@ contains
         else
           qInput(:,:,:) = q0
         end if
-        ! Rescaling to ensure correct number of electrons in the system
-        qInput(:,:,1) = qInput(:,:,1) *  sum(nEl) / sum(qInput(:,:,1))
+        if (.not. input%ctrl%tSkipChrgChecksum) then
+          ! Rescaling to ensure correct number of electrons in the system
+          qInput(:,:,1) = qInput(:,:,1) *  sum(nEl) / sum(qInput(:,:,1))
+        end if
 
         select case (nSpin)
         case (1)
@@ -2015,10 +2030,12 @@ contains
                   & * input%ctrl%initialSpins(1,ii) / sum(qInput(1:orb%nOrbAtom(ii),ii,1))
             end do
           else
-            do ii = 1, nAtom
-              qInput(1:orb%nOrbAtom(ii),ii,2) = qInput(1:orb%nOrbAtom(ii),ii,1)&
-                  & * (nEl(1)-nEl(2))/sum(qInput(:,:,1))
-            end do
+            if (.not. input%ctrl%tSkipChrgChecksum) then
+              do ii = 1, nAtom
+                qInput(1:orb%nOrbAtom(ii),ii,2) = qInput(1:orb%nOrbAtom(ii),ii,1)&
+                    & * (nEl(1)-nEl(2))/sum(qInput(:,:,1))
+              end do
+            end if
           end if
         case (4)
           if (tSpin) then
@@ -2028,12 +2045,14 @@ contains
             if (any(shape(input%ctrl%initialSpins)/=(/3,nAtom/))) then
               call error("Incorrect shape initialSpins array!")
             end if
-            do ii = 1, nAtom
-              do jj = 1, 3
-                qInput(1:orb%nOrbAtom(ii),ii,jj+1) = qInput(1:orb%nOrbAtom(ii),ii,1)&
-                    & * input%ctrl%initialSpins(jj,ii) / sum(qInput(1:orb%nOrbAtom(ii),ii,1))
+            if (.not. input%ctrl%tSkipChrgChecksum) then
+              do ii = 1, nAtom
+                do jj = 1, 3
+                  qInput(1:orb%nOrbAtom(ii),ii,jj+1) = qInput(1:orb%nOrbAtom(ii),ii,1)&
+                      & * input%ctrl%initialSpins(jj,ii) / sum(qInput(1:orb%nOrbAtom(ii),ii,1))
+                end do
               end do
-            end do
+            end if
           end if
         end select
         if (tDFTBU) then
