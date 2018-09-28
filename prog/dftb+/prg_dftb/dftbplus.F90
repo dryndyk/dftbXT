@@ -1,17 +1,16 @@
 !--------------------------------------------------------------------------------------------------!
-!  DFTB+: general package for performing fast atomistic simulations                                !
-!  Copyright (C) 2018  DFTB+ developers group                                                      !
+! DFTB+XT open software package for quantum nanoscale modeling                                     !
+! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
 !--------------------------------------------------------------------------------------------------!
-!  DFTB+XT open software package for quantum nanoscale modeling                                    !
-!  Copyright (C) 2018 Dmitry A. Ryndyk                                                             !
-!--------------------------------------------------------------------------------------------------!
-!  GNU Lesser General Public License version 3 or (at your option) any later version.              !
-!  See the LICENSE file for terms of usage and distribution.                                       !
+! GNU Lesser General Public License version 3 or (at your option) any later version.               !
+! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
 
 #:include 'common.fypp'
 
 program dftbplus
+  
   use globalenv
   use environment
   use main, only : runDftbPlus
@@ -43,14 +42,13 @@ program dftbplus
   call parseHsdInput(input)
   call TEnvironment_init(env)
  
-  call env%initMpi(1) !!DAR
- 
   !------------------------------------------------------------------------------------------------!
   !DAR begin - NoGeometry
   !------------------------------------------------------------------------------------------------!
 
   if(input%transpar%tNoGeometry) then
 
+    call env%initMpi(1)
     call mpifx_barrier(env%mpi%globalComm) 
     write(stdout, "(A)") repeat("-", 80)
     write(stdOut, "(A)") "-- Initialization is started (without geometry)                               --"

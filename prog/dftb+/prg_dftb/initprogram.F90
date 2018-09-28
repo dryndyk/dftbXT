@@ -1,18 +1,17 @@
 !--------------------------------------------------------------------------------------------------!
-!  DFTB+: general package for performing fast atomistic simulations                                !
-!  Copyright (C) 2018  DFTB+ developers group                                                      !
+! DFTB+XT open software package for quantum nanoscale modeling                                     !
+! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
 !--------------------------------------------------------------------------------------------------!
-!  DFTB+XT open software package for quantum nanoscale modeling                                    !
-!  Copyright (C) 2018 Dmitry A. Ryndyk                                                             !
-!--------------------------------------------------------------------------------------------------!
-!  GNU Lesser General Public License version 3 or (at your option) any later version.              !
-!  See the LICENSE file for terms of usage and distribution.                                       !
+! GNU Lesser General Public License version 3 or (at your option) any later version.               !
+! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
 
 #:include 'common.fypp'
 
 !> Global variables and initialization for the main program.
 module initprogram
+  
   use omp_lib
   use mainio, only : initOutputFile
   use assert

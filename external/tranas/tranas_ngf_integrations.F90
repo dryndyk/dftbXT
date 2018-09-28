@@ -1,16 +1,13 @@
-!--------------------------------------------------------------------------------------------------!                              
-! DFTB+XT: DFTB+ eXTended version for model and atomistic quantum transport at nanoscale.          !
-!                                                                                                  !
-! Copyright (C) 2017-2018 DFTB+ developers group.                                                  !
-! Copyright (C) 2018 Dmitry A. Ryndyk.                                                             !
-!                                                                                                  !
+!--------------------------------------------------------------------------------------------------!
+! DFTB+XT open software package for quantum nanoscale modeling                                     !
+! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+!--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the TraNaS library for quantum transport at nanoscale.                      !
-!                                                                                                  !
+! This file is part of the TraNaS is the library for quantum transport at nanoscale.               !
 ! Developer: Dmitry A. Ryndyk.                                                                     !
-!                                                                                                  !
 ! Based on the LibNEGF library developed by                                                        !
 ! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
 !--------------------------------------------------------------------------------------------------!
