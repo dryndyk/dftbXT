@@ -27,9 +27,10 @@
   {\normalfont\sffamily\huge\bfseries\color{black}}
   {\partname\ \thepart}{20pt}{\Huge}
 
-\title{DFTB$^{\text{+}}$XT Guide \\ version 1.01}
+\title{DFTB$^{\text{+}}$XT Guide \\ version 1.02}
 
-\release{\today}
+\release{(Development) \today} 
+%\release{January 18, 2018}
 \author{}
 \newcommand{\sphinxlogo}{}
 \renewcommand{\releasename}{Release}
@@ -2996,6 +2997,53 @@ an armchair ribbon.
 
 \part{Examples}
 
+\part{Developer guide}
+
+\chapter{{\bf\sffamily TraNaS} library}
+
+\section{{\sffamily TTraNaS} type}
+
+Here we describe the structure of the global container {\sffamily TTraNaS}.
+
+\begin{itemize}
+
+  \item {\sf Type(TTraNaSInput) :: input} -- Input container. Is not changed inside the library.
+  \begin{itemize} 
+    \item {\sf logical :: tPhotons = .false.}
+    \item {\sf type(TPhotons) :: photons}
+    \begin{itemize} 
+      \item {\sf integer :: NumberModes = 0}
+      \item {\sf real, dimension(:), allocatable :: Frequencies}
+    \end{itemize}
+  \end{itemize}
+  
+  \item {\sf Type(TNGF) :: ngf} -- Container for Green function methods.
+
+  \begin{itemize} 
+    \item {\sf type(TMBNGF) :: mbngf}
+    \begin{itemize} 
+      \item {\sf logical :: tHartreeFock = .false.}
+      \item {\sf logical :: tRPA = .false.}
+      \item {\sf type(TStruct\_info) :: str} -- System partitioning (as in negf{\%}str).
+      \item {\sf type(z\_DNS), dimension(:,:), allocatable :: SelfEnergyR\_HF}
+      \item {\sf type(z\_CSR), dimension(:), allocatable :: GreenFunctionR}
+      \item {\sf type(z\_CSR), dimension(:), allocatable :: PolarizationOperatorR}
+      \item {\sf real(dp) :: scc\_tol = 1.0d-7} -- SCC Tolerance.
+      \item {\sf procedure :: add\_SelfEnergyR}
+      \item {\sf procedure :: add\_SelfEnergyR\_HF}
+      \item {\sf procedure :: get\_SelfEnergyR\_HF}
+      \item {\sf procedure :: get\_SelfEnergyR\_RHF}
+    \end{itemize}
+    \item {\sf type(TTDNGF) :: tdngf}
+  \end{itemize} 
+    
+  \item {\sf Type(TQME) :: qme}
+
+  \item {\sf Type(TNEGF) :: negf} -- global container of the {\sf LibNEGF} library. 
+    
+\end{itemize}
+}  
+
 \part{Appendices}
 
 \chapter*{\Large\bf\sffamily License}
@@ -3038,8 +3086,8 @@ license permits.
 \let\oldaddcontentsline\addcontentsline% Store \addcontentsline
 \renewcommand{\addcontentsline}[3]{}% Make \addcontentsline a no-op
 
-%\bibliographystyle{osa}
-%\bibliography{../../../../../../Database/database}
+\bibliographystyle{osa}
+\bibliography{../manual/manual}
 
 \let\addcontentsline\oldaddcontentsline% Restore \addcontentsline
 \addcontentsline{toc}{chapter}{Bibliography}
