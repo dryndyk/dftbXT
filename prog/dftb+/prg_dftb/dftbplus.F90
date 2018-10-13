@@ -1,7 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
 ! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 ! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+: general package for performing fast atomistic simulations                                 !
+! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -41,7 +42,7 @@ program dftbplus
   allocate(input)
   call parseHsdInput(input)
   call TEnvironment_init(env)
- 
+
   !------------------------------------------------------------------------------------------------!
   !DAR begin - NoGeometry
   !------------------------------------------------------------------------------------------------!
@@ -68,8 +69,8 @@ program dftbplus
     write(stdout, "(A)") repeat("-", 80)
     write(stdOut, "(A)") "-- Initialization is finished                                                 --"
     write(stdout, "(A)") repeat("-", 80)
-    !call destroy(input)
-    call tranasNoGeom(env%mpi%globalComm,input%ginfo%tundos)
+    !call destroy(input)    
+    call tranasNoGeom(env%mpi%globalComm,input%ginfo%tundos, input%transpar)
     !DAR - input%ginfo%tundos is added,
     !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface_nogeom)
     write(stdout,*)

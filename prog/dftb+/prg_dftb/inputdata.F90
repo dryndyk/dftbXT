@@ -27,6 +27,7 @@ module inputdata_module
   use elstatpot, only : TElStatPotentialsInp
   use tranas_vars  !!DAR
   use poisson_vars  !!DAR
+  use tranas_types_main, only : TTraNaSInput
   
   implicit none
   private
@@ -474,6 +475,7 @@ module inputdata_module
     type(TTransPar) :: transpar
     type(TNEGFInfo) :: ginfo
     type(TPoissonInfo) :: poisson
+    type(TTraNaSInput) :: tranas !Container for TraNaS input. !DAR
     logical :: tInitialized = .false.
   end type inputData
 

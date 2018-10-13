@@ -6,7 +6,7 @@
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the TraNaS is the library for quantum transport at nanoscale.               !
+! This file is a part of the TraNaS library for quantum transport at nanoscale.                    !
 ! Developer: Dmitry A. Ryndyk.                                                                     !
 ! Based on the LibNEGF library developed by                                                        !
 ! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
@@ -32,22 +32,18 @@
 !!  <http://www.gnu.org/licenses/>.                                         !  
 !!--------------------------------------------------------------------------!
 
-
-#ifdef __PARDISO
-#  undef __LAPACK
-#  undef __SUPERLU
-#endif
-#ifdef __LAPACK
-#  undef __PARDISO
-#  undef __SUPERLU
-#endif
-#ifdef __SUPERLU
-#  undef __PARDISO
-#  undef __LAPACK
-#endif
-
-
-
+!#ifdef __PARDISO
+!#  undef __LAPACK
+!#  undef __SUPERLU
+!#endif
+!#ifdef __LAPACK
+!#  undef __PARDISO
+!#  undef __SUPERLU
+!#endif
+!#ifdef __SUPERLU
+!#  undef __PARDISO
+!#  undef __LAPACK
+!#endif
 
 MODULE tranas_ngf_iterative
 
@@ -839,7 +835,8 @@ CONTAINS
        end do
     end if
   
-    if(pnegf%tMBNGF.and.pnegf%mbngf%tHartreeFock) call pnegf%mbngf%add_SelfEnergyR_HF(ESH)
+    !if(pnegf%tMBNGF.and.pnegf%mbngf%tHartreeFock) call pnegf%mbngf%add_SelfEnergyR_HF(ESH) - OLD, REMOVE
+    if(pnegf%tMBNGF) call pnegf%mbngf%add_SelfEnergyR(ESH)
        
   end subroutine add_sigma_r
   !------------------------------------------------------------------------------!  

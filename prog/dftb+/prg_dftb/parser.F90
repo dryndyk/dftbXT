@@ -1,7 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
 ! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 ! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+: general package for performing fast atomistic simulations                                 !
+! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -142,17 +143,9 @@ contains
         &list=.true., allowEmptyValue=.true., dummyValue=.true.)
     call readParserOptions(child, root, parserFlags)
     
-    !---------------------------------------------------------------------------
+    !----------------------------------------------------------------------------------------------!
     !DAR begin - NoGeometry parser
-    !---------------------------------------------------------------------------
-
-    !DAR Undocumented input -- to be removed
-!    call getChildValue(root, "Hamiltonian", tmp)                                  
-!    call getChild(tmp, "External", child, requested=.false.)
-!    if(associated(child)) then
-!      call getChildValue(child, "NoGeometry", input%transpar%tNoGeometry,.false.)
-!    end if
-    !DAR --
+    !----------------------------------------------------------------------------------------------!
     
     call getChild(root, "Geometry", tmp)
     call getChildValue(tmp, "", value, child=child)    
@@ -163,8 +156,15 @@ contains
       write(stdout,*)
       write(stdout,"('-NoGeometry- option is activated.')")
       write(stdout,"('Only transport with the external Hamiltonian [and overlap].')")
-      write(stdout,"('Reading transport options.')")  
+      write(stdout,"('Reading transport options.')")
 
+      ! Options for calculation
+      call getChildValue(root, "Options", dummy, "", child=child, list=.true., &
+        & allowEmptyValue=.true., dummyValue=.true.)
+      call readOptions(child, input%ctrl)
+      input%transpar%verbose = input%ctrl%verbose
+
+      !> Read in all new functionalities for transport.
       call readTransport(root,input%transpar)
 
       call getChild(root, "Transport", dummy, requested=.false.)
@@ -211,11 +211,6 @@ contains
            input%ctrl%iSolver/=onlyTransport)) then
          call detailedError(value, "Solver not allowed for transport calculations")
       end if
-
-      ! Options for calculation
-      call getChildValue(root, "Options", dummy, "", child=child, list=.true., &
-        & allowEmptyValue=.true., dummyValue=.true.)
-      call readOptions(child, input%ctrl)
       
       !! Some post-assignment in negf input containers
       call finalizeNegf(input)
@@ -253,7 +248,8 @@ contains
     ! Geometry driver
     call getChildValue(root, "Driver", tmp, "", child=child, allowEmptyValue=.true.)
     call readDriver(tmp, child, input%geom, input%ctrl)
-   
+
+    !> Read in all new functionalities for transport.
     call readTransport(root,input%transpar) !DAR
 
     ! Analysis of properties
@@ -4980,41 +4976,100 @@ contains
     
   end subroutine readPDOSRegions
 
-    !---------------------------------------------------------------------------
-    !DAR begin - readTransport and NoGeometry subroutines
-    !---------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
+  !DAR begin - readTransport and NoGeometry subroutines
+  !------------------------------------------------------------------------------------------------!
    
-    subroutine readTransport(root,tp)
-    type(fnode), pointer :: root,node,value,dummy,dummy1
+  subroutine readTransport(root,tp)
+
+    type(fnode), pointer, intent(in) :: root
+    type(fnode), pointer :: node,value,dummy,dummy1,field
     type(TTransPar), intent(inout)  :: tp
     type(string) :: buffer, modif
 
+    integer :: i
+    real(dp), dimension(:,:), allocatable :: Coupling
+    
     ! New in Hamiltonian
 
     call getChildValue(root, "Hamiltonian", node)
 
+      call getChildValue(node, "NumStates", tp%NumStates, 0)      
+        if(tp%tNoGeometry.and.tp%NumStates==0) call detailedError(node, "NumStates must be given for 'NoGeometry' option!")
+      call getChildValue(node, "NumCenter", tp%NumCenter, 0)
+        
       call getNodeName(node, buffer)
       select case (char(buffer))
+
       case ("model")
         tp%tModel = .true.
-        call getChildValue(node, "HamiltonianFile", buffer, "H.mtr", modifier=modif)
-        tp%HamiltonianFile = char(buffer)
-        tp%units_energy = char(modif)
-        write(stdout,"('Hamiltonian File Name  = ',A)")tp%HamiltonianFile
-        write(stdout,"('Energy units           = ',A)")tp%units_energy
+        write(stdout,"('Number of states (with electrodes)      = ',I5)")tp%NumStates
+        write(stdout,"('Number of states in the central region  = ',I5)")tp%NumCenter
+
+        call getChild(node, "HamiltonianMatrix", value, modifier=modif, requested=.false.)
+          if(associated(value)) then
+            allocate(tp%H_all(tp%NumStates,tp%NumStates))
+            tp%H_all=0.0_dp 
+            call getChildValue(node, "HamiltonianMatrix", tp%H_all, modifier=modif, child=field)
+            tp%units_energy = char(modif)
+            if (tp%verbose.gt.90) then
+              write(stdout,"('Read Hamiltonian from the input file:')") 
+              do i=1,tp%NumStates
+                write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
+              end do
+            end if
+            write(stdout,"('Energy units = ',A75)")tp%units_energy 
+            call convertByMul(char(modif), energyUnits, field, tp%H_all)
+            if (tp%verbose.gt.90) then
+              write(stdout,"('Hamiltonian in internal units:')") 
+              do i=1,tp%NumStates
+                write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
+              end do
+            end if
+          end if          
+
+        call getChild(node, "HamiltonianFile", value, modifier=modif, requested=.false.)
+          if(associated(value)) then
+            allocate(tp%H_all(tp%NumStates,tp%NumStates))
+            tp%H_all=0.0_dp 
+            call getChildValue(node, "HamiltonianFile", buffer, "H.mtr", modifier=modif, child=field)
+            tp%HamiltonianFile = char(buffer)
+            tp%units_energy = char(modif)
+            write(stdout,"('Hamiltonian File Name  = ',A75)")tp%HamiltonianFile
+            write(stdout,"('Energy units           = ',A75)")tp%units_energy
+            open(11,file=tp%HamiltonianFile,action="read")
+            do i=1,tp%NumStates
+              read(11,*)tp%H_all(1:tp%NumStates,i)
+            end do
+            close(11)
+            if (tp%verbose.gt.90) then
+              write(stdout,"('Read Hamiltonian from the external file')") 
+              do i=1,tp%NumStates
+                write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
+              end do
+            end if
+            call convertByMul(char(modif), energyUnits, field, tp%H_all)
+            if (tp%verbose.gt.90) then
+              write(stdout,"('Hamiltonian in internal units:')") 
+              do i=1,tp%NumStates
+                write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
+              end do
+            end if 
+          end if
+
         call getChildValue(node, "ReadOverlap", tp%tReadOverlap,.false.)
-        if (tp%tReadOverlap) then
-          call getChildValue(node, "OverlapFile", buffer, "S.mtr")
-          tp%OverlapFile = char(buffer)
-          write(stdout,"('Overlap File Name      = ',A)")tp%OverlapFile
-        end if  
+          if (tp%tReadOverlap) then
+            call getChildValue(node, "OverlapFile", buffer, "S.mtr")
+            tp%OverlapFile = char(buffer)
+            write(stdout,"('Overlap File Name      = ',A)")tp%OverlapFile
+          end if  
+
       case default
-      if(tp%tNoGeometry) & 
-           call detailedError(node, "Invalid Hamiltonian type! Must be 'Model' for 'NoGeometry' option! ")
+        if(tp%tNoGeometry) & 
+          call detailedError(node, "Invalid Hamiltonian type! Must be 'Model' for 'NoGeometry' option! ")
+
       end select
 
-      call getChildValue(node, "NumStates", tp%NumStates, 0)      
-      if(tp%tNoGeometry.and.tp%NumStates==0) call detailedError(node, "NumStates must be given for 'NoGeometry' option! ")
       call getChildValue(node, "SpinDegeneracy", tp%tSpinDegeneracy,.false.)
       call getChildValue(node, "Orthonormal", tp%tOrthonormal,.false.)
       call getChildValue(node, "OrthonormalDevice", tp%tOrthonormalDevice,.false.)
@@ -5047,19 +5102,77 @@ contains
       if(associated(value)) then
         !call getChildValue(value, "ManyBody", tp%tManyBody,.false.) -- to be removed 
         !call getChildValue(value, "Elastic", tp%tElastic,.not.tp%tManyBody) -- to be removed
-        call getChildValue(value, "MBNGF", tp%tMBNGF,.false.)
+        call getChildValue(value, "MBNGF", tp%tMBNGF,.true.)
         call getChildValue(value, "Mixing", tp%Mixing,1.0_dp)
         call getChildValue(value, "MaxNumIter", tp%MaxIter,100)
         call getChildValue(value, "Tolerance", tp%Tolerance,0.00001_dp)
+        !------------------------------------------------------------------------------------------!
         call getChildValue(value, "ElectronElectron", dummy, "", allowEmptyValue=.true.)
+        if(associated(dummy)) then
+          write(stdout,"('Electron-electron interaction is switched on!')")
           call getNodeName(dummy, buffer)
           select case (char(buffer))
           case ("hubbard")
-             call getChildValue(dummy, "HartreeFock", tp%tHartreeFock,.false.)
-             call getChildValue(dummy, "RPA", tp%tRPA,.false.)
+            write(stdout,"('Hubbard model is activated.')") 
+            call getChildValue(dummy, "HartreeFock", tp%tHartreeFock,.false.)
+            call getChildValue(dummy, "RPA", tp%tRPA,.false.)
           case default
             call detailedError(node, "Invalid type of electron-electron interaction!")
           end select
+        end if
+        !------------------------------------------------------------------------------------------!
+        call getChildValue(value, "ElectronPhoton", dummy, "", allowEmptyValue=.true.)
+        if(associated(dummy)) then
+          write(stdout,"('> Electron-photon interaction is switched on!')")
+          call getNodeName(dummy, buffer)
+          select case (char(buffer))
+          case ("matrix")
+            write(stdout,"('Matrix electron-photon coupling is activated.')") 
+            tp%tranas_input%tPhotons = .true.
+            call getChildValue(dummy, "NumberModes", tp%tranas_input%photons%NumModes, 0)
+            write(stdout,"('Number of photon modes        =   ',I0)")tp%tranas_input%photons%NumModes
+            allocate(tp%tranas_input%photons%Frequencies(tp%tranas_input%photons%NumModes))
+            call getChildValue(dummy, "Frequencies", tp%tranas_input%photons%Frequencies, modifier=modif, child=field)
+            write(stdout,"('Frequencies                   = ',1000ES16.8)")tp%tranas_input%photons%Frequencies
+            write(stdout,"('Frequency units = ',A)")char(modif)
+            call convertByMul(char(modif), energyUnits, field, tp%tranas_input%photons%Frequencies)
+            write(stdout,"('Frequencies in internal units = ',1000ES16.8)")tp%tranas_input%photons%Frequencies
+            call getChild(dummy, "CouplingMatrix", value, modifier=modif) !, requested=.false.)
+            if(associated(value)) then
+              allocate(tp%tranas_input%photons%Coupling(tp%tranas_input%photons%NumModes,tp%NumCenter,tp%NumCenter))
+              tp%tranas_input%photons%Coupling = 0.0_dp
+              allocate(Coupling(tp%NumCenter,tp%tranas_input%photons%NumModes*tp%NumCenter))
+              call getChildValue(dummy, "CouplingMatrix", Coupling, modifier=modif, child=field)
+              tp%units_energy = char(modif)
+              if (tp%verbose.gt.90) then
+                write(stdout,"('Read couplings from the input file:')") 
+                do i=1,tp%tranas_input%photons%NumModes
+                  tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter) = &
+                       Coupling(1:tp%NumCenter,tp%NumCenter*(i-1)+1:tp%NumCenter*i)
+                  write(stdout,"('  Frequency                   = ',ES16.8)")tp%tranas_input%photons%Frequencies(i) 
+                  write(stdout,"(10000ES16.8)")tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter)
+                end do
+              end if
+              write(stdout,"('Coupling units = ',A)")char(modif) 
+              call convertByMul(char(modif), energyUnits, field, Coupling)
+              do i=1,tp%tranas_input%photons%NumModes
+                  tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter) = &
+                       Coupling(1:tp%NumCenter,tp%NumCenter*(i-1)+1:tp%NumCenter*i)
+                end do
+              if (tp%verbose.gt.90) then
+                write(stdout,"('Couplings in internal units:')") 
+                do i=1,tp%tranas_input%photons%NumModes
+                  write(stdout,"('  Frequency                   = ',ES16.8)")tp%tranas_input%photons%Frequencies(i) 
+                  write(stdout,"(10000ES16.8)")tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter)
+                end do
+              end if
+            end if
+          case default
+            call detailedError(node, "Invalid type of electron-photon interaction! &
+                 Only ElectronPhoton = matrix{} is implemented.")
+          end select
+        end if
+        !------------------------------------------------------------------------------------------! 
       end if
 
     ! New in TunnelingAndDOS
@@ -5077,7 +5190,7 @@ contains
        
     end subroutine readTransport
 
-    !---------------------------------------------------------------------------
+    !----------------------------------------------------------------------------------------------!
 
     subroutine readTransportGeometry_NoGeom(root, tp)
     type(fnode), pointer :: root
@@ -5228,7 +5341,7 @@ contains
 
     end subroutine readTransportGeometry_NoGeom
 
-    !----------------------------------------------------------------------------
+    !----------------------------------------------------------------------------------------------!
   
     subroutine readContacts_NoGeom(pNodeList, contacts, upload)
     type(ContactInfo), allocatable, dimension(:), intent(inout) :: contacts
@@ -5343,7 +5456,7 @@ contains
 
     end subroutine readContacts_NoGeom
 
-    !---------------------------------------------------------------------------
+    !----------------------------------------------------------------------------------------------!
 
     subroutine readAnalysis_NoGeom(node, orb, geo, ctrl, tundos, transpar)
     type(fnode), pointer :: node
@@ -5385,7 +5498,7 @@ contains
    
     end subroutine readAnalysis_NoGeom
 
-    !---------------------------------------------------------------------------
+    !----------------------------------------------------------------------------------------------!
 
     subroutine readTunAndDos_NoGeom(root, orb, geo, tundos, transpar, temperature)
     type(fnode), pointer :: root
@@ -5573,7 +5686,7 @@ contains
    
     end subroutine readPDOSRegions_NoGeom
 
-    !---------------------------------------------------------------------------
+    !----------------------------------------------------------------------------------------------!
     
     subroutine finalizeNegf(input)
     !! Some assignment and consistency check in negf/poisson 
@@ -5632,9 +5745,9 @@ contains
    
     end subroutine finalizeNegf
 
-    !---------------------------------------------------------------------------
+    !----------------------------------------------------------------------------------------------!
     !DAR end
-    !---------------------------------------------------------------------------
+    !----------------------------------------------------------------------------------------------!
 
 
   !> Reads the parallel block.

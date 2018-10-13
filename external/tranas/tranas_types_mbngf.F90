@@ -6,7 +6,7 @@
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the TraNaS is the library for quantum transport at nanoscale.               !
+! This file is a part of the TraNaS library for quantum transport at nanoscale.                    !
 ! Developer: Dmitry A. Ryndyk.                                                                     !
 ! Based on the LibNEGF library developed by                                                        !
 ! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
@@ -47,7 +47,7 @@ module tranas_types_mbngf
   implicit none
   private
 
-  public :: interaction, Tmbngf
+  public :: interaction, TMBNGF
 
   !-----------------------------------------------------------------------------
 
@@ -146,39 +146,54 @@ module tranas_types_mbngf
   !-----------------------------------------------------------------------------
   !DAR begin - class Tmbngf
   !-----------------------------------------------------------------------------
-  type :: Tmbngf
+  type :: TMBNGF
 
-    !> System partitioning (as in Tnegf%str)
+    !> Logical switches. 
+    logical :: tHartreeFock = .false.
+    logical :: tRPA = .false.
+     
+    !> System partitioning (as in Tnegf%str).
     type(TStruct_info) :: str
 
-    !> Block retarded self-energy for HF approximation
+    !> Block retarded self-energy for HF approximation.
     type(z_DNS), dimension(:,:), allocatable :: SelfEnergyR_HF
 
-    !> Retarded Green functions and self-energies
+    !> Retarded Green functions and self-energies.
     type(z_CSR), dimension(:), allocatable :: GreenFunctionR
     type(z_CSR), dimension(:), allocatable :: PolarizationOperatorR
 
-    !> Lesser Green functions and self-energies
+    !> Lesser Green functions and self-energies.
 
-    !> SCC Tolerance
+    !> SCC Tolerance.
     real(dp) :: scc_tol = 1.0d-7
-
-    logical :: tHartreeFock = .false.
-    logical :: tRPA = .false.
 
   contains
 
+    procedure :: add_SelfEnergyR
     procedure :: add_SelfEnergyR_HF
     procedure :: get_SelfEnergyR_HF
     procedure :: get_SelfEnergyR_RHF
 
-  end type Tmbngf
+  end type TMBNGF
 
 contains
 
   !-----------------------------------------------------------------------------  
 
   !> Append the retarded self-energy to ESH
+  !!
+  subroutine add_SelfEnergyR(mbngf,ESH)
+
+    class(Tmbngf) :: mbngf
+    type(z_DNS), dimension(:,:), allocatable, intent(inout) :: ESH
+
+    if(mbngf%tHartreeFock) call mbngf%add_SelfEnergyR_HF(ESH)
+
+  end subroutine add_SelfEnergyR
+
+  !-----------------------------------------------------------------------------
+  
+  !> Append the retarded HF self-energy to ESH
   !! Hartree-Fock approximation
   subroutine add_SelfEnergyR_HF(mbngf,ESH)
 

@@ -1,7 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
 ! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 ! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+: general package for performing fast atomistic simulations                                 !
+! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -17,6 +18,8 @@
 !--------------------------------------------------------------------------------------------------!
 
 module tranas_vars
+
+  use tranas_types_main, only : TTraNaSInput
 
   use Accuracy, only : mc, lc
   use ln_precision
@@ -34,7 +37,9 @@ module tranas_vars
   public :: TTransPar
   public :: ContactInfo
   public :: Telph
-
+  
+  !------------------------------------------------------------------------------------------------!
+  
   type TGDFTBStructure
     integer               :: nAtom          ! number of atoms in central cell 
     integer               :: nSpecies       ! number of species
@@ -47,6 +52,7 @@ module tranas_vars
     logical               :: isperiodic     ! tells whether the system is periodic    
   end type TGDFTBStructure
 
+  !------------------------------------------------------------------------------------------------! 
   
   type TSKdata
     type(TOrbitals), pointer :: orb        !* Information about orbitals
@@ -54,6 +60,8 @@ module tranas_vars
     real(dp)             :: mCutoff        !* longest pair interaction
   end type TSKdata
 
+  !------------------------------------------------------------------------------------------------!
+  
   type IntArray
     integer, allocatable, dimension(:) :: indexes
   end type IntArray
@@ -69,7 +77,6 @@ module tranas_vars
     real(kind=dp) :: Mixing = 0.5
     real(dp) :: scba_tol = 1.0d-7
   end type TElPh
-
 
   type TGDFTBTunDos
     !Option for Landauer (Tunneling and Dos) calculation
@@ -94,6 +101,8 @@ module tranas_vars
     type(Telph) :: bp
   end type TGDFTBTunDos
 
+  !------------------------------------------------------------------------------------------------!
+  
   type TGDFTBGreenDensInfo
     ! Information for Green's function charge density section
     logical            :: defined = .false.    ! true only if filling block is
@@ -118,6 +127,9 @@ module tranas_vars
     type(Telph) :: elph
     real(dp), dimension(:), allocatable :: kbT ! contact temperatures
   end type TGDFTBGreenDensInfo
+
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
   
   !Structure for contact information in transport calculation
   type ContactInfo
@@ -150,6 +162,8 @@ module tranas_vars
     
     !DAR end
   end type ContactInfo
+ 
+  !------------------------------------------------------------------------------------------------!
   
   ! Options from Transport section (geometry and task)  
   type TTransPar
@@ -160,6 +174,9 @@ module tranas_vars
     
     !DAR begin - type TTransPar new items
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    type(TTraNaSInput) :: tranas_input
+    
     logical :: tNoGeometry = .false.
     logical :: tReadOverlap = .false.
     logical :: tWriteDFTB = .false.
@@ -171,10 +188,13 @@ module tranas_vars
     logical :: tReadU = .false.
     logical :: tRead_negf_in = .false.
     integer :: NumStates = 0
+    integer :: NumCenter = 0
     integer, allocatable :: cblk(:)
+    integer :: verbose              ! global verbosity level
     character(lc) :: HamiltonianFile
     character(lc) :: OverlapFile
     character(lc) :: units_energy
+    real(kind=dp), dimension(:,:), allocatable :: H_all
     logical :: tManyBody =.false.
     logical :: tElastic =.true.
     logical :: tDephasingVE = .false.
@@ -209,5 +229,7 @@ module tranas_vars
     logical :: tPeriodic1D = .false.
     
   end type TTransPar
-    
+
+  !------------------------------------------------------------------------------------------------! 
+  
 end module tranas_vars

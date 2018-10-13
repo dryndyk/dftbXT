@@ -6,7 +6,7 @@
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the TraNaS is the library for quantum transport at nanoscale.               !
+! This file is a part of the TraNaS library for quantum transport at nanoscale.                    !
 ! Developer: Dmitry A. Ryndyk.                                                                     !
 ! Based on the LibNEGF library developed by                                                        !
 ! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
@@ -57,14 +57,14 @@ module tranas
   implicit none
   private
 
-  !----------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
   ! NEW API
-  !----------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
   public :: calcLandauer
   public :: calcMBNGF
   public :: calcLDOS
   public :: calcMeirWingreen
-  !----------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
 
   !Input and work flow procedures
   public :: lnParams
@@ -187,7 +187,7 @@ contains
 !--------------------------------------------------------------------------------------------------!
 
 !--------------------------------------------------------------------------------------------------!
-! NEW TraNaS library API for TTraNaS type container (tranas_types_main.F)
+! NEW TraNaS library API for TTraNaS type container (tranas_types_main.F90)
 !--------------------------------------------------------------------------------------------------!
 
   !> For coherent transport in noninteracting systems.
@@ -235,7 +235,7 @@ contains
 
   !------------------------------------------------------------------------------------------------!
 
-  !> Calculates the (self-consistent) self-energies and Green functions for given Hamiltonian,
+  !> Calculates the (self-consistent) self-energies and Green functions for given Hamiltonian and
   !> Overlap (if any), electrode electrical and chemical potentials and temperatures.
   !> The electrical potential (external or self-consistent from Poisson equation) should be included
   !> into the Hamiltonian.
@@ -243,19 +243,33 @@ contains
 
     type(TTraNaS) :: tranas
 
+    integer :: i
+ 
     if (id0.and.tranas%negf%verbose.gt.30) then
       write(*,*)
       write(*,'(80("-"))')
       write(*,*) '                          TraNaS: MBNGF calculation'  
       write(*,'(80("-"))') 
-    endif
+      if(tranas%input%tPhotons) then
+        write(*,"(/,'Calculation with photons:')")
+        write(*,"('Number of photon modes        =   ',I0)")tranas%input%photons%NumModes
+        write(*,"('Frequencies                   = ',1000ES16.8)")tranas%input%photons%Frequencies
+        if (tranas%negf%verbose.gt.90) then
+          write(*,"('Couplings:')") 
+          do i=1,tranas%input%photons%NumModes
+            write(*,"('  Frequency                   = ',ES16.8)")tranas%input%photons%Frequencies(i) 
+            write(*,"(10000ES16.8)")tranas%input%photons%Coupling(i,1:tranas%negf%str%central_dim,1:tranas%negf%str%central_dim)
+          end do
+        end if
+      endif
+    endif  
    
     call extract_device(tranas%negf)
     call extract_cont(tranas%negf)
     call mbngfInit(tranas)
     call mbngfCompute(tranas)
     call destroy_matrices(tranas%negf)
-
+ 
     if (id0.and.tranas%negf%verbose.gt.30) then
       write(*,*)
       write(*,'(80("-"))')

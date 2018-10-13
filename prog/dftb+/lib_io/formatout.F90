@@ -1,7 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
 ! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 ! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+: general package for performing fast atomistic simulations                                 !
+! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -327,9 +328,11 @@ contains
     write(outunit,*)
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.02                                ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,'          TraNaS open software suite for quantum nanoscale modeling         ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'            open software package for quantum nanoscale modeling            ',hBar,hBar
+    write(outunit, '(A)') repeat(hBar, headerWidth)
+    write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.02                                ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for model and atomistic quantum transport,          ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' many-body nonequilibrium phenomena, material & device modeling             ',hBar,hBar

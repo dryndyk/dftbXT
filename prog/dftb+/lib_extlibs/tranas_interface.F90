@@ -1,7 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
 ! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 ! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+: general package for performing fast atomistic simulations                                 !
+! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -1108,9 +1109,10 @@ module tranas_interface
   !------------------------------------------------------------------------------------------------!
 
   !> Subroutine to call transport computation without geometry (public)
-  subroutine tranasNoGeom(mpicomm, tundos) 
+  subroutine tranasNoGeom(mpicomm, tundos, transpar) 
 
-    Type(TGDFTBTunDos), intent(IN) :: tundos                    !DAR
+    Type(TGDFTBTunDos), intent(IN) :: tundos
+    Type(TTransPar), intent(in) :: transpar
     type(z_CSR) :: HH, SS
     type(mpifx_comm), intent(in) :: mpicomm
     real(dp), dimension(:,:), pointer :: tunn
@@ -1134,8 +1136,9 @@ module tranas_interface
       write(*,*) '                            COMPUTATION OF TRANSPORT         '
       write(*,'(80("="))') 
       write(*,*)
-      write(*,*)'Transport is started'
-      write(*,"(' Number of States = ',I0)")negf%NumStates
+      write(*,"('Transport is started.')")
+      write(*,"('Number of states (with electrodes)      = ',I5)")negf%NumStates
+      write(*,"('Number of states in the central region  = ',I5)")negf%str%central_dim
     endif   
 
     !--------------------------------------------------------------------------!
@@ -1144,7 +1147,37 @@ module tranas_interface
     
     if(negf%tReadDFTB) call ReadDFTB
       
-    if(negf%tModel) call ReadModel
+    !if(negf%tModel) call ReadModel ! Is done now from parser! -- REMOVE
+    if(.not.allocated(negf%H_all)) allocate(negf%H_all(negf%NumStates,negf%NumStates))
+    negf%H_all=transpar%H_all
+    if (id0.and.negf%verbose.gt.90) then
+    write(*,"('Hamiltonian:')")   
+    do i=1,negf%NumStates
+       write(*,"(10000ES16.8)")negf%H_all(i,1:negf%NumStates)
+    end do
+    end if    
+    if (negf%tReadOverlap) then
+      if (id0.and.negf%verbose.gt.50) write(*,"(' Overlap is red from the file ',A)")trim(negf%OverlapFile)
+      open(11,file=negf%OverlapFile,action="read")
+      if(.not.allocated(negf%S_all)) allocate(negf%S_all(negf%NumStates,negf%NumStates))
+      negf%S_all=0.0_dp
+      do i=1,negf%NumStates
+        read(11,*)negf%S_all(i,1:negf%NumStates)
+      end do
+      close(11)
+    else   
+      if (.not.allocated(negf%S_all)) allocate(negf%S_all(negf%NumStates,negf%NumStates))
+      negf%S_all=0.0_dp
+      do i=1,negf%NumStates
+        negf%S_all(i,i)=1._dp
+      end do
+    end if
+    if (id0.and.negf%verbose.gt.90) then
+    write(*,"('Overlap:')")   
+    do i=1,negf%NumStates
+       write(*,"(10000ES16.8)")negf%S_all(i,1:negf%NumStates)
+    end do
+    end if
 
     if(negf%tReadU) call ReadU
 
@@ -1174,8 +1207,9 @@ module tranas_interface
     ! Calculations with TraNaS
     !--------------------------------------------------------------------------!
 
-    tranas%negf = negf 
-    
+    tranas%negf = negf
+    tranas%input = transpar%tranas_input
+   
     if (negf%tMBNGF) call calcMBNGF(tranas)
 
     if (negf%tWrite_ldos) call calcLDOS(tranas)
@@ -2310,13 +2344,13 @@ module tranas_interface
        read(11,*)negf%H_all(i,1:NumStates)
     end do
     close(11)
-    !debug begin
-    !if (id0.and.negf%verbose.gt.100) then
-    !do i=1,NumStates
-    !   write(*,"(10000F9.3)")negf%H_all(i,1:NumStates)
-    !end do
-    !end if
-    !debug end
+    !extended output
+    if (id0.and.negf%verbose.gt.100) then
+    do i=1,NumStates
+       write(*,"(10000F9.3)")negf%H_all(i,1:NumStates)
+    end do
+    end if
+    !end
     call convertByMul_NoNode(negf%units_energy, energyUnits, negf%H_all)
 
     if (negf%tReadOverlap) then
@@ -2409,13 +2443,13 @@ module tranas_interface
        read(11,*)negf%U(i,1:NumStates)
     end do
     close(11)
-    !debug begin
+    !extended output
     if (id0.and.negf%verbose.gt.100) then
     do i=1,NumStates
        write(*,"(10000F9.3)")negf%U(i,1:NumStates)
     end do
     end if
-    !debug end
+    !end
     !call convertByMul_NoNode(negf%units_energy, energyUnits, negf%U)
     negf%U=negf%U/27.21138469
     

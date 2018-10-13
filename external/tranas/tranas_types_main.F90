@@ -6,7 +6,7 @@
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
-! This file is part of the TraNaS is the library for quantum transport at nanoscale.               !
+! This file is a part of the TraNaS library for quantum transport at nanoscale.                    !
 ! Developer: Dmitry A. Ryndyk.                                                                     !
 ! Based on the LibNEGF library developed by                                                        !
 ! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
@@ -31,7 +31,7 @@
 !!  <http://www.gnu.org/licenses/>.                                         !  
 !!--------------------------------------------------------------------------!
 
-!> Module includes types for TraNaS library.
+!> Module includes main container types for TraNaS library.
 module tranas_types_main
 
   use tranas_types_mbngf, only : Interaction, TMBNGF
@@ -50,6 +50,7 @@ module tranas_types_main
   private
 
   public :: TTraNaS
+  public :: TTraNaSInput
   public :: Tnegf, intArray, TEnGrid
 
   integer, public, parameter :: MAXNCONT=10
@@ -141,7 +142,7 @@ module tranas_types_main
   
   !> General LibNEGF container.
   !> Contains input data, runtime quantities and output data used by LibNEGF.
-  !> Is included now in the general Ttranas container.
+  !> Is included now in the general TTraNaS container.
   type Tnegf
      
     !! Input parameters: set by library user
@@ -240,7 +241,7 @@ module tranas_types_main
 
     !! Many Body Interactions
     class(Interaction), allocatable :: inter
-    class(Tmbngf), allocatable :: mbngf                                      !DAR
+    class(TMBNGF), allocatable :: mbngf                                      !DAR
 
     !! Output variables: these are filled by internal subroutines to stor
     !! library output
@@ -288,6 +289,29 @@ module tranas_types_main
   end type Tnegf
 
   !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
+
+  type TPhotons
+
+    integer :: NumModes = 0 
+    real(dp), dimension(:), allocatable :: Frequencies
+    real(dp), dimension(:,:,:), allocatable :: Coupling
+    
+  end type TPhotons
+
+  !----------------------------------------------------------------------------!
+
+  !> Container for TraNaS input.
+  !> Contains input data. Is not changed inside the library.
+  type TTraNaSInput
+
+    logical :: tPhotons = .false.          
+    type(TPhotons) :: photons
+    
+  end type TTraNaSInput
+
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
 
   !> Container for Green function methods.
   !> Contains all new Green function runtime quantities.
@@ -303,23 +327,24 @@ module tranas_types_main
   end type TNGF
   
   !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
   
   !> General TraNaS container.
   !> Contains all input data, runtime quantities and output data used by the TraNaS library.
   type TTraNaS
 
-    !> Old LibNEGF container. For DFT+NEGF and consistency with LibNEGF in future. 
-    type(TNEGF) :: negf
-
     !> Input container. Is not changed inside the library.
-    !type(TInput), intend(in) :: input    
+    type(TTraNaSInput) :: input    
 
     !> Container for Green function methods.
     type(TNGF) :: ngf
 
     !> Container for many-body quantum master equation methods.
     !type(TQME) :: qme
-     
+
+    !> Old LibNEGF container. For DFT+NEGF and consistency with LibNEGF in future. 
+    type(TNEGF) :: negf
+    
   end type TTraNaS
 
   !------------------------------------------------------------------------------------------------!
