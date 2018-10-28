@@ -34,144 +34,143 @@ module tranas_ngf_mbngf
 contains
 !--------------------------------------------------------------------------------------------------!
 
-!--------------------------------------------------------------------------------------------------!
-!> Allocation of the many-body self-energies.
-!--------------------------------------------------------------------------------------------------!  
+  !------------------------------------------------------------------------------------------------!
+  !> Allocation of the many-body self-energies.
+  !------------------------------------------------------------------------------------------------!  
+  subroutine mbngfInit(tranas)
 
-subroutine mbngfInit(tranas)
+    type(TTraNaS) :: tranas
+    type(Tnegf) :: negf
 
-  type(TTraNaS) :: tranas
-  type(Tnegf) :: negf
+    integer :: n,nbl,ierr
 
-  integer :: n,nbl,ierr
-
-  negf = tranas%negf
+    negf = tranas%negf
   
-  ! Allocation of self-energies
+    ! Allocation of self-energies
     
-  if(negf%mbngf%tHartreeFock) then
-    nbl = negf%str%num_PLs
-    allocate(negf%mbngf%SelfEnergyR_HF(nbl,nbl),stat=ierr)
-    if (ierr.ne.0) stop 'ALLOCATION ERROR: could not allocate negf%mbngf%SelfEnergyR_HF(nbl,nbl)'
-    do n=1,nbl
-      associate(pl_number => negf%str%mat_PL_end(n)-negf%str%mat_PL_start(n)+1)
-        allocate(negf%mbngf%SelfEnergyR_HF(n,n)%val(pl_number,pl_number))
-      end associate
-      negf%mbngf%SelfEnergyR_HF(n,n)%val = 0.0_dp
-    end do
-    !DAR! Add later the allocation for non-diagonal block elements.
-    !DAR! At the moment only interactions inside every PL are taken into account.     
+    if(negf%mbngf%tHartreeFock) then
+      nbl = negf%str%num_PLs
+      allocate(negf%mbngf%SelfEnergyR_HF(nbl,nbl),stat=ierr)
+      if (ierr.ne.0) stop 'ALLOCATION ERROR: could not allocate negf%mbngf%SelfEnergyR_HF(nbl,nbl)'
+      do n=1,nbl
+        associate(pl_number => negf%str%mat_PL_end(n)-negf%str%mat_PL_start(n)+1)
+          allocate(negf%mbngf%SelfEnergyR_HF(n,n)%val(pl_number,pl_number))
+        end associate
+        negf%mbngf%SelfEnergyR_HF(n,n)%val = 0.0_dp
+      end do
+      !DAR! Add later the allocation for non-diagonal block elements.
+      !DAR! At the moment only interactions inside every PL are taken into account.     
     
-    ! Computation of the density matrix and the HF self-energy
-    !negf%readOldSGF=2
-    negf%iteration=1
-    negf%DorE = 'D'
-    negf%outer=0
-  end if
-
-  if(negf%mbngf%tRPA) then
-    
-  end if
-
-  tranas%negf = negf
-    
-end subroutine mbngfInit
-    
-!--------------------------------------------------------------------------------------------------!
-!> Calculation of the many-body self-energies.
-!--------------------------------------------------------------------------------------------------!
-  
-subroutine mbngfCompute(tranas)
-
-  type(TTraNaS) :: tranas
-  type(Tnegf) :: negf
-  type(z_DNS) :: rho_dense,rho_dense_previous,sigma_dense
-
-  integer :: n,m,ii,jj,nbl,ierr,scba_iter
-  real(dp) :: scba_error
-
-  negf = tranas%negf
-
-  scba_error = 0.0_dp
-  
-  if (id0.and.negf%verbose.gt.50) then
-    write(*,*)   
-    write(*,"('>>> The MBNGF calculation is started.')")
-  end if
-
-  call allocation
-
-  if (id0.and.negf%verbose.gt.50.and.(negf%MaxIter.gt.0)) then
-     !write(*,*)   
-     write(*,"('>> Self-Consistent cycle is started.')")
-  end if
-    
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! Here the SC cycle is started. !
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   
-  do scba_iter = 1,negf%MaxIter
-       
-    if (id0.and.negf%verbose.gt.50) write(*,"('> SC iteration',I6)")scba_iter
-
-    !------------------------------------------------------------------------
-    ! GreenRetarded calculation
-    !------------------------------------------------------------------------
-
-    if (negf%mbngf%tRPA) call GreenRetarded
-
-    !------------------------------------------------------------------------
-    ! Density calculation
-    !------------------------------------------------------------------------
-
-    if (negf%mbngf%tHartreeFock) call density
-
-    !------------------------------------------------------------------------
-    ! Hartree-Fock calculation
-    !------------------------------------------------------------------------
-
-    call sigma
-
-    !------------------------------------------------------------------------
-    ! Convergency check
-    !------------------------------------------------------------------------
-
-    call error
-       
-    if (id0.and.negf%verbose.gt.50) write(*,"('Error at SC iteration ',I6,' : ',E12.6)") scba_iter, scba_error
-    if (scba_error .lt. negf%Tolerance) then !negf%inter%scba_tol) then 
-      if (id0.and.negf%verbose.gt.50) write(*,"('SC exit succesfully after ',I6,' iterations')")scba_iter
-      exit
+      ! Computation of the density matrix and the HF self-energy
+      !negf%readOldSGF=2
+      negf%iteration=1
+      negf%DorE = 'D'
+      negf%outer=0
     end if
 
-    call new_cycle
-
-  end do
-
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! Here the SC cycle is finished. !
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  if (scba_error.gt.negf%Tolerance) then 
-    if (id0.and.negf%verbose.gt.0) write(*,"('WARNING : SC exit with error ',E12.6, &
-         & ' above reference tolerance ',E12.6)") scba_error, negf%Tolerance
-  end if
-
-  call deallocation
-
-  if (id0.and.negf%verbose.gt.50.and.(negf%MaxIter.gt.0)) then
-    !write(*,*)   
-    write(*,"('>> Self-Consistent cycle is finished.')")
-  end if
+    if(negf%mbngf%tRPA) then
     
-  if (id0.and.negf%verbose.gt.50) then
-    !write(*,*)
-    write(*,"('>>> The MBNGF calculation is ended.')")
-  end if
+    end if
 
-  tranas%negf = negf
+    tranas%negf = negf
+    
+  end subroutine mbngfInit
+    
+  !------------------------------------------------------------------------------------------------!
+  !> Calculation of the many-body self-energies.
+  !------------------------------------------------------------------------------------------------!  
+  subroutine mbngfCompute(tranas)
+
+    type(TTraNaS) :: tranas
+    type(Tnegf) :: negf
+    type(z_DNS) :: rho_dense,rho_dense_previous,sigma_dense
+
+    integer :: n,m,ii,jj,nbl,ierr,scba_iter
+    real(dp) :: scba_error
+
+    negf = tranas%negf
+
+    scba_error = 0.0_dp
   
-CONTAINS  
+    if (id0.and.negf%verbose.gt.50) then
+      write(*,*)   
+      write(*,"('>>> The MBNGF calculation is started.')")
+      if (negf%MaxIter==0) write(*,"('>> Calculation is skipped because MaxNumIter = 0.')")
+      if (negf%MaxIter==1) write(*,"('>> First-order calculation is started.')")
+      if (negf%MaxIter>1) then
+        write(*,"('>> Self-Consistent cycle is started.')")
+        write(*,"('Maximum number of iterations  =   ',I0)")negf%MaxIter
+      end if   
+    end if
+
+    call allocation
+  
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! Here the SC cycle is started. !
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   
+    do scba_iter = 1,negf%MaxIter
+       
+      if (id0.and.negf%verbose.gt.50) write(*,"('> SC iteration',I6)")scba_iter
+
+      !------------------------------------------------------------------------
+      ! GreenRetarded calculation
+      !------------------------------------------------------------------------
+
+      if (negf%mbngf%tRPA) call GreenRetarded
+
+      !------------------------------------------------------------------------
+      ! Density calculation
+      !------------------------------------------------------------------------
+
+      if (negf%mbngf%tHartreeFock) call density
+
+      !------------------------------------------------------------------------
+      ! Hartree-Fock calculation
+      !------------------------------------------------------------------------
+
+      call sigma
+
+      !------------------------------------------------------------------------
+      ! Convergency check
+      !------------------------------------------------------------------------
+
+      call error
+       
+      if (id0.and.negf%verbose.gt.50) write(*,"('Error at SC iteration ',I6,' : ',E12.6)") scba_iter, scba_error
+      if (scba_error .lt. negf%Tolerance) then !negf%inter%scba_tol) then 
+        if (id0.and.negf%verbose.gt.50) write(*,"('SC exit succesfully after ',I6,' iterations')")scba_iter
+        exit
+      end if
+
+      call new_cycle
+
+    end do
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! Here the SC cycle is finished. !
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    if (scba_error.gt.negf%Tolerance) then 
+      if (id0.and.negf%verbose.gt.0) write(*,"('WARNING : SC exit with error ',E12.6, &
+           & ' above reference tolerance ',E12.6)") scba_error, negf%Tolerance
+    end if
+
+    call deallocation
+
+    if (id0.and.negf%verbose.gt.50.and.(negf%MaxIter.gt.0)) then
+      !write(*,*)   
+      write(*,"('>> Self-Consistent cycle is finished.')")
+    end if
+    
+    if (id0.and.negf%verbose.gt.50) then
+      !write(*,*)
+      write(*,"('>>> The MBNGF calculation is ended.')")
+    end if
+
+    tranas%negf = negf
+  
+  CONTAINS  
 
   !------------------------------------------------------------------------------------------------!
 
@@ -335,11 +334,11 @@ CONTAINS
 
   !------------------------------------------------------------------------------------------------!
   
-end subroutine mbngfCompute
+  end subroutine mbngfCompute
 
   !------------------------------------------------------------------------------------------------!
-
   !> Deallocation of the many-body self-energies.
+  !------------------------------------------------------------------------------------------------!
   subroutine mbngfDestroy(tranas)
 
     use tranas_ngf_iterative, only : destroy_blk
