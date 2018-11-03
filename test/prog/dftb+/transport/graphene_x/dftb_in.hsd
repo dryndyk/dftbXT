@@ -57,7 +57,7 @@ Hamiltonian = DFTB {
     SavePotential = Yes 
     PoissonAccuracy = 1e-5
     Verbosity=110
-    BoxBufferLength [Angstrom]= 1.71
+    BoxExtension [Angstrom]= 1.71
     BoundaryRegion = Square{
       BufferLength [Angstrom] = 3.0
     }
@@ -69,8 +69,8 @@ Hamiltonian = DFTB {
   }
 
   Eigensolver = GreensFunction {
-    ContourPoints = 30 40
-    RealAxisPoints = 10
+    ContourPoints = 30 42
+    RealAxisPoints = 12
     LowestEnergy [eV] = -60.0
   }
 
@@ -80,17 +80,21 @@ Hamiltonian = DFTB {
 
 Analysis{
   TunnelingAndDOS{
-    EnergyRange [eV] = -6.00  -4.0
+    EnergyRange [eV] = -5.90  -4.00
     EnergyStep [eV] = 0.02
   }
 }
 
 Options = {
-  #MullikenAnalysis = Yes
   WriteAutotestTag = Yes
 }
 
+Parallel = {
+  # Allow OMP threads explicitely to test for hybrid parallelisation with
+  # MPI-binary. (Check the manual before using this in production runs!)
+  UseOmpThreads = Yes
+}
 
 ParserOptions = {
-  ParserVersion = 3
+  ParserVersion = 6
 }

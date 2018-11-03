@@ -182,21 +182,21 @@ Transport = {
     Contact = {
       Id = "drain"
       AtomRange = {69 108}
-      ShiftAccuracy = 1.000000000000000E-008
+      PLShiftTolerance = 1.000000000000000E-008
       FermiLevel = -0.220836613440231
       potential = 0.0
     }
     Contact = {
       Id = "extra"
       AtomRange = {109 132 }
-      ShiftAccuracy = 1.000000000000000E-008
+      PLShiftTolerance = 1.000000000000000E-008
       FermiLevel = -0.241593366923318
       potential = 0.0
     }
     Contact = {
       Id = "source"
       AtomRange = {133 172}
-      ShiftAccuracy = 1.000000000000000E-008
+      PLShiftTolerance = 1.000000000000000E-008
       FermiLevel = -0.220836613440231
       potential = 0.0
     }
@@ -276,28 +276,25 @@ Analysis {
     #DumpHS = No
     #WriteTunneling = Yes 
   }
+  CalculateForces = Yes
 }
 
 Options = {
-  CalculateForces = Yes
-  WriteEigenvectors = No
-  WriteDetailedXML = No
   WriteAutotestTag = Yes
-  WriteResultsTag = No 
   WriteDetailedOut = Yes
-  WriteBandOut = No
-  AtomResolvedEnergies = No
-  RestartFrequency = 20
-  RandomSeed = 0
-  WriteHS = No
-  WriteRealHS = No
-  MinimiseMemoryUsage = No
+  ReadChargesAsText = Yes
+}
+
+Parallel = {
+  # Allow OMP threads explicitely to test for hybrid parallelisation with
+  # MPI-binary. (Check the manual before using this in production runs!)
+  UseOmpThreads = Yes
 }
 
 ParserOptions = {
   WriteHSDInput = Yes
   WriteXMLInput = No
   StopAfterParsing = No
-  ParserVersion = 3
+  ParserVersion = 6
   IgnoreUnprocessedNodes = No
 }

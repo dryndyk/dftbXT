@@ -44,10 +44,16 @@ Hamiltonian = DFTB {
     H = "s"
   }  
   SlaterKosterFiles = Type2FileNames {
-    #Prefix = "../../../slako/mio-0-1/"
+    Prefix = ""
     Separator = "-"    
     Suffix = ".skf"
   }
+  Eigensolver = TransportOnly{}
+}
+
+# ************************************
+# NOTE: Dephasing is not working yet
+# ************************************   
   Dephasing {
     BuettikerProbes = ZeroPotential {
     #BuettikerProbes = ZeroCurrent {
@@ -72,8 +78,12 @@ Options = {
   WriteAutotestTag = Yes
 }
 
+ParserOptions = {
+  ParserVersion = 6
+}
 
-
-
-
-
+Parallel = {
+  # Allow OMP threads explicitely to test for hybrid parallelisation with
+  # MPI-binary. (Check the manual before using this in production runs!)
+  UseOmpThreads = Yes
+}

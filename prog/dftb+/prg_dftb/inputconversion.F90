@@ -40,18 +40,19 @@ contains
     character(lc), allocatable, intent(out) :: regionLabels(:)
 
     integer, allocatable :: iAtomStart(:)
-    integer :: nRegion, nRegionShell
+    integer :: nRegion, nRegionShell, nAtom
     integer :: iREg, iRegShell
 
     nRegion = size(iAtInRegion)
     nRegionShell = countRegionsWithShellResolution(iAtInRegion, &
-        & tShellResInRegion, specie0, orb)       
-    allocate(iOrbRegion(nRegionShell))  
+        & tShellResInRegion, specie0, orb)
+    nAtom = size(orb%nOrbAtom)
+    allocate(iOrbRegion(nRegionShell))
     allocate(regionLabels(nRegionShell))
-
+    allocate(iAtomStart(nAtom+1))
     call buildSquaredAtomIndex(iAtomStart, orb)
-    iRegShell = 1
 
+    iRegShell = 1
     do iReg = 1, nRegion
       if (tShellResInRegion(iReg)) then
         call addShellResolvedRegions(iAtInRegion(iReg)%data, &

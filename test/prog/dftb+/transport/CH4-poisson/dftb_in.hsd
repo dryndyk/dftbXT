@@ -31,6 +31,7 @@ Hamiltonian = DFTB {
     readoldbulkpotential = no
     boundaryregion = global {}
     poissonaccuracy = 1e-7
+    recomputeafterdensity = no 
   }
   
 
@@ -43,13 +44,24 @@ Hamiltonian = DFTB {
     LowestEnergy = -2.0
     FermiCutoff = 10
   }
+
 } 
 
-Options = {
+Parallel{
+  Blacs{ BlockSize=2}
+  # Allow OMP threads explicitely to test for hybrid parallelisation with
+  # MPI-binary. (Check the manual before using this in production runs!)
+  UseOmpThreads = Yes
+}
+
+Analysis = {
   CalculateForces = Yes
+}
+
+Options = {
   WriteAutotestTag = Yes
 }
 
 ParserOptions = {
-  ParserVersion = 3
+  ParserVersion = 6
 }

@@ -37,6 +37,9 @@ module typegeometryhsd
   !> makes public subroutines from typegeometry
   public :: reduce, setlattice
 
+  !> makes public subroutines from typegeometry
+  public :: reduce, setlattice
+
 contains
 
 

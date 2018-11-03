@@ -50,14 +50,21 @@ Analysis {
    #     Atoms = 2:4
    #   }
    #}
+   CalculateForces = Yes
+}
+
+Parallel{
+  Blacs{BlockSize = 2}
+  # Allow OMP threads explicitely to test for hybrid parallelisation with
+  # MPI-binary. (Check the manual before using this in production runs!)
+  UseOmpThreads = Yes  
 }
 
 Options = {
-  CalculateForces = Yes
   WriteAutotestTag = Yes
 }
 
 ParserOptions = {
-  ParserVersion = 3
+  ParserVersion = 6
   WriteXMLInput = Yes
 }

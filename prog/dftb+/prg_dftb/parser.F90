@@ -16,6 +16,7 @@ module parser
   use assert
   use accuracy
   use constants
+  use solvertypes
   use inputdata_module
   use typegeometryhsd
   use hsdparser, only : dumpHSD, dumpHSDAsXML, getNodeHSDName
@@ -47,6 +48,10 @@ module parser
   use wrappedintrinsics
   use poisson_vars
   use tranas_vars
+#:if WITH_TRANSPORT
+  use poisson_init
+  use libnegf_vars
+#:endif
   implicit none
 
   private
@@ -244,10 +249,46 @@ contains
     ! Electronic Hamiltonian
     call getChildValue(root, "Hamiltonian", hamNode)
     call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako, input%transpar, input%ginfo%greendens,  input%ginfo%poisson)
+    call getChild(root, "Transport", child, requested=.false.)
+
+  #:if WITH_TRANSPORT
+
+    ! Read in transport and modify geometry if it is only a contact calculation
+    if (associated(child)) then
+      call readTransportGeometry(child, input%geom, input%transpar)
+    else
+      input%transpar%ncont=0
+      allocate(input%transpar%contacts(0))
+      ! set range of atoms in the 'device', as there are no contacts
+      input%transpar%idxdevice(1) = 1
+      input%transpar%idxdevice(2) = input%geom%nAtom
+    end if
+
+    call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako, input%transpar,&
+        & input%ginfo%greendens, input%poisson)
+
+    call getChild(root, "Dephasing", child, requested=.false.)
+    if (associated(child)) then
+      call detailedError(child, "Be patient... Dephasing feature will be available soon!")    
+      !call readDephasing(child, input%slako%orb, input%geom, input%transpar, input%ginfo%tundos)
+    end if
+
+  #:else
+
+    if (associated(child)) then
+      call detailedError(child, "Program had been compiled without transport enabled")
+    end if
+
+
+  #:endif
 
     ! Geometry driver
     call getChildValue(root, "Driver", tmp, "", child=child, allowEmptyValue=.true.)
+  #:if WITH_TRANSPORT
+    call readDriver(tmp, child, input%geom, input%ctrl, input%transpar)
+  #:else
     call readDriver(tmp, child, input%geom, input%ctrl)
+  #:endif
 
     !> Read in all new functionalities for transport.
     call readTransport(root,input%transpar) !DAR
@@ -258,6 +299,12 @@ contains
  
     call readAnalysis(child, input%ctrl, input%geom, input%slako%orb, input%transpar, &
         & input%ginfo%tundos)
+        & input%ginfo%tundos)
+
+    call finalizeNegf(input)
+  #:else
+    call readAnalysis(child, input%ctrl, input%geom, input%slako%orb)
+  #:endif
 
     ! excited state options
     call getChildValue(root, "ExcitedState", dummy, "", child=child, list=.true., &
@@ -274,7 +321,6 @@ contains
     
     call finalizeNegf(input) !!DAR
 
-    call readParallel(root, input%ctrl%parallelOpts)
 
     ! input data strucutre has been initialised
     input%tInitialized = .true.
@@ -385,7 +431,11 @@ contains
 
 
   !> Read in driver properties
+#:if WITH_TRANSPORT
+  subroutine readDriver(node, parent, geom, ctrl, transpar)
+#:else
   subroutine readDriver(node, parent, geom, ctrl)
+#:endif
 
     !> Node to get the information from
     type(fnode), pointer :: node
@@ -399,12 +449,28 @@ contains
     !> Nr. of atoms in the system
     type(control), intent(inout) :: ctrl
 
+  #:if WITH_TRANSPORT
+    !> Transport parameters
+    type(TTransPar), intent(in) :: transpar
+  #:endif
+
     type(fnode), pointer :: child, child2, child3, value, value2, field
 
     type(string) :: buffer, buffer2, modifier
-#:if WITH_SOCKETS
+  #:if WITH_SOCKETS
     character(lc) :: sTmp
-#:endif
+  #:endif
+
+    ! range of default atoms to move
+    character(mc) :: atomsRange
+
+    atomsRange = "1:-1"
+  #:if WITH_TRANSPORT
+    if (transpar%defined) then
+      ! only those atoms in the device region
+      write(atomsRange,"(I0,':',I0)")transpar%idxdevice
+    end if
+  #:endif
 
     ctrl%tGeoOpt = .false.
     ctrl%tCoordOpt = .false.
@@ -425,7 +491,7 @@ contains
     case ("steepestdescent")
       ! Steepest downhill optimisation
 
-      ctrl%iGeoOpt = 1
+      ctrl%iGeoOpt = optSD
       ctrl%tForces = .true.
       ctrl%restartFreq = 1
 
@@ -444,7 +510,7 @@ contains
         end if
         call getChildValue(node, "MaxLatticeStep", ctrl%maxLatDisp, 0.2_dp)
       end if
-      call getChildValue(node, "MovedAtoms", buffer2, "1:-1", child=child, &
+      call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
       call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
           &child, ctrl%indMovedAtom)
@@ -482,7 +548,7 @@ contains
     case ("conjugategradient")
       ! Conjugate gradient location optimisation
 
-      ctrl%iGeoOpt = 2
+      ctrl%iGeoOpt = optCG
       ctrl%tForces = .true.
       ctrl%restartFreq = 1
       call getChildValue(node, "LatticeOpt", ctrl%tLatOpt, .false.)
@@ -500,7 +566,7 @@ contains
         end if
         call getChildValue(node, "MaxLatticeStep", ctrl%maxLatDisp, 0.2_dp)
       end if
-      call getChildValue(node, "MovedAtoms", buffer2, "1:-1", child=child, &
+      call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
       call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
           &child, ctrl%indMovedAtom)
@@ -535,7 +601,7 @@ contains
     case("gdiis")
       ! Gradient DIIS optimisation, only stable in the quadratic region
 
-      ctrl%iGeoOpt = 3
+      ctrl%iGeoOpt = optDIIS
       ctrl%tForces = .true.
       ctrl%restartFreq = 1
       call getChildValue(node, "alpha", ctrl%deltaGeoOpt, 1.0E-1_dp)
@@ -555,7 +621,7 @@ contains
         end if
         call getChildValue(node, "MaxLatticeStep", ctrl%maxLatDisp, 0.2_dp)
       end if
-      call getChildValue(node, "MovedAtoms", buffer2, "1:-1", child=child, &
+      call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
       call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
           &child, ctrl%indMovedAtom)
@@ -605,7 +671,7 @@ contains
         end if
         call getChildValue(node, "MaxLatticeStep", ctrl%maxLatDisp, 0.2_dp)
       end if
-      call getChildValue(node, "MovedAtoms", buffer2, "1:-1", child=child, &
+      call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
       call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
           &child, ctrl%indMovedAtom)
@@ -645,7 +711,7 @@ contains
 
       ctrl%tDerivs = .true.
       ctrl%tForces = .true.
-      call getChildValue(node, "Atoms", buffer2, "1:-1", child=child, &
+      call getChildValue(node, "Atoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
       call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
           &child, ctrl%indMovedAtom)
@@ -665,7 +731,7 @@ contains
       ctrl%tMD = .true.
 
       call getChildValue(node, "MDRestartFrequency", ctrl%restartFreq, 1)
-      call getChildValue(node, "MovedAtoms", buffer2, "1:-1", child=child, &
+      call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
       call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species,&
           &child, ctrl%indMovedAtom)
@@ -882,7 +948,7 @@ contains
 
     case ("socket")
       ! external socket control of the run (once initialised from input)
-#:if WITH_SOCKETS
+    #:if WITH_SOCKETS
       ctrl%tForces = .true.
       allocate(ctrl%socketInput)
       call getChild(node, 'File', child=child2, requested=.false.)
@@ -925,9 +991,9 @@ contains
       call getChildValue(node, "Verbosity", ctrl%socketInput%verbosity, 0)
       call getChildValue(node, "MaxSteps", ctrl%maxRun, 200)
 
-#:else
+    #:else
       call detailedError(node, "Program had been compiled without socket support")
-#:endif
+    #:endif
 
     case default
       call getNodeHSDName(node, buffer)
@@ -1013,6 +1079,9 @@ contains
       input%nTransientSteps = 0
       call getChildValue(pRoot, 'MinSccIterations', input%minSCCIter, 1)
       call getChildValue(pRoot, 'MaxSccIterations', input%maxSCCIter, 200)
+      if (input%maxSCCIter <= 0) then
+        call detailedError(pRoot,"MaxSccIterations must be >= 1");
+      end if
       call getChildValue(pRoot, 'SccTolerance', input%sccTol, 1e-5_dp)
       input%scale = 1.0_dp
       input%useInverseJacobian = .false.
@@ -1163,6 +1232,9 @@ contains
 
   !> Reads Hamiltonian
   subroutine readHamiltonian(node, ctrl, geo, slako, tp, greendens, poisson)
+  subroutine readHamiltonian(node, ctrl, geo, slako, tp, greendens, poisson)
+#:else
+#:endif
 
     !> Node to get the information from
     type(fnode), pointer :: node
@@ -1180,21 +1252,33 @@ contains
     type(TGDFTBGreenDensInfo), intent(inout) :: greendens !DAR
     type(TPoissonInfo), intent(inout) :: poisson          !DAR
 
+    !> Green's function paramenters
+    type(TNEGFGreenDensInfo), intent(inout) :: greendens
+
+    !> Poisson solver paramenters
+    type(TPoissonInfo), intent(inout) :: poisson
+  #:endif
+
     type(string) :: buffer
 
     call getNodeName(node, buffer)
     select case (char(buffer))
     case ("dftb")
       call readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
+      call readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
+  #:else
+  #:endif
     case default
       call detailedError(node, "Invalid Hamiltonian")
     end select
 
   end subroutine readHamiltonian
 
-
   !> Reads DFTB-Hamiltonian
   subroutine readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
+  subroutine readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
+#:else
+#:endif
 
     !> Node to get the information from
     type(fnode), pointer :: node
@@ -1211,6 +1295,13 @@ contains
     type(TTransPar), intent(inout)  :: tp                       !DAR
     type(TGDFTBGreenDensInfo), intent(inout) :: greendens       !DAR
     type(TPoissonInfo), intent(inout) :: poisson                !DAR
+
+    !> Green's function paramenters
+    type(TNEGFGreenDensInfo), intent(inout) :: greendens
+
+    !> Poisson solver paramenters
+    type(TPoissonInfo), intent(inout) :: poisson
+  #:endif
 
     type(fnode), pointer :: value, value2, child, child2, child3, field
     type(fnodeList), pointer :: children
@@ -1491,12 +1582,17 @@ contains
         call getInitialCharges(node, geo, ctrl%initialCharges)
       end if
       call getChildValue(node, "SCCTolerance", ctrl%sccTol, 1.0e-5_dp)
+
+      ! temporararily removed until debugged
+      !call getChildValue(node, "WriteShifts", ctrl%tWriteShifts, .false.)
+      ctrl%tWriteShifts = .false.
+
       call getChildValue(node, "Mixer", value, "Broyden", child=child)
       call getNodeName(value, buffer)
       select case(char(buffer))
 
       case ("broyden")
-        ctrl%iMixSwitch = 3
+        ctrl%iMixSwitch = mixerBroyden
         call getChildValue(value, "MixingParameter", ctrl%almix, 0.2_dp)
         call getChildValue(value, "InverseJacobiWeight", ctrl%broydenOmega0, &
             &0.01_dp)
@@ -1508,7 +1604,7 @@ contains
             &1.0e-2_dp)
 
       case ("anderson")
-        ctrl%iMixSwitch = 2
+        ctrl%iMixSwitch = mixerAnderson
         call getChildValue(value, "MixingParameter", ctrl%almix, 0.05_dp)
         call getChildValue(value, "Generations", ctrl%iGenerations, 4)
         call getChildValue(value, "InitMixingParameter", &
@@ -1534,11 +1630,11 @@ contains
             &1.0e-2_dp)
 
       case ("simple")
-        ctrl%iMixSwitch = 1
+        ctrl%iMixSwitch = mixerSimple
         call getChildValue(value, "MixingParameter", ctrl%almix, 0.05_dp)
 
       case("diis")
-        ctrl%iMixSwitch = 4
+        ctrl%iMixSwitch = mixerDIIS
         call getChildValue(value, "InitMixingParameter", ctrl%almix, 0.2_dp)
         call getChildValue(value, "Generations", ctrl%iGenerations, 6)
         call getChildValue(value, "UseFromStart", ctrl%tFromStart, .true.)
@@ -1552,43 +1648,57 @@ contains
         call getChildValue(node, "EwaldTolerance", ctrl%tolEwald, 1.0e-9_dp)
       end if
 
+      ctrl%tMulliken = .true.
       call readHCorrection(node, geo, ctrl)
 
-      ! spin
-      call getChildValue(node, "SpinPolarisation", value, "", child=child, &
-          &allowEmptyValue=.true.)
-      call getNodeName2(value, buffer)
-      select case(char(buffer))
-      case ("")
-        ctrl%tSpin = .false.
-        ctrl%t2Component = .false.
-        ctrl%nrSpinPol = 0.0_dp
-
-      case ("colinear")
-        ctrl%tSpin = .true.
-        ctrl%t2Component = .false.
-        call getChildValue(value, 'UnpairedElectrons', ctrl%nrSpinPol, 0.0_dp)
-        call getChildValue(value, 'RelaxTotalSpin', ctrl%tSpinSharedEf, .false.)
-        if (.not. ctrl%tReadChrg) then
-          call getInitialSpins(value, geo, 1, ctrl%initialSpins)
-        end if
-
-      case ("noncolinear")
-        ctrl%tSpin = .true.
-        ctrl%t2Component = .true.
-        if (.not. ctrl%tReadChrg) then
-          call getInitialSpins(value, geo, 3, ctrl%initialSpins)
-        end if
-
-      case default
-        call getNodeHSDName(value, buffer)
-        call detailedError(child, "Invalid spin polarisation type '" //&
-            & char(buffer) // "'")
-      end select
-
-      ctrl%tMulliken = .true.
-
     end if ifSCC
+
+    ! Spin calculation
+    call getChildValue(node, "SpinPolarisation", value, "", child=child, &
+        &allowEmptyValue=.true.)
+    call getNodeName2(value, buffer)
+    select case(char(buffer))
+    case ("")
+      ctrl%tSpin = .false.
+      ctrl%t2Component = .false.
+      ctrl%nrSpinPol = 0.0_dp
+
+    case ("colinear", "collinear")
+      ctrl%tSpin = .true.
+      ctrl%t2Component = .false.
+      call getChildValue(value, 'UnpairedElectrons', ctrl%nrSpinPol, 0.0_dp)
+      call getChildValue(value, 'RelaxTotalSpin', ctrl%tSpinSharedEf, .false.)
+      if (.not. ctrl%tReadChrg) then
+        call getInitialSpins(value, geo, 1, ctrl%initialSpins)
+      end if
+
+    case ("noncolinear", "noncollinear")
+      ctrl%tSpin = .true.
+      ctrl%t2Component = .true.
+      if (.not. ctrl%tReadChrg) then
+        call getInitialSpins(value, geo, 3, ctrl%initialSpins)
+      end if
+
+    case default
+      call getNodeHSDName(value, buffer)
+      call detailedError(child, "Invalid spin polarisation type '" //&
+          & char(buffer) // "'")
+    end select
+
+#:if WITH_TRANSPORT
+    if (ctrl%tSpin .and. tp%ncont > 0) then
+       call detailedError(child, "Spin-polarized transport is under development" //&
+             & "and not currently available")
+    end if
+#:endif
+
+    ! temporararily removed until debugged
+    !if (.not. ctrl%tscc) then
+    !  !! In a non-SCC calculation it is possible to upload charge shifts
+    !  !! This is useful if the calculation can jump directly to the Analysis block
+    !  call getChildValue(node, "ReadShifts", ctrl%tReadShifts, .false.)
+    !end if
+    ctrl%tReadShifts = .false.
 
     ! External electric field
     call getChildValue(node, "ElectricField", value, "", child=child, &
@@ -1732,16 +1842,6 @@ contains
       end do
     end if
 
-    ! Solver
-    call getChildValue(node, "Eigensolver", value, "RelativelyRobust")
-    call getNodeName(value, buffer)
-    select case(char(buffer))
-    case ("qr")
-      ctrl%iSolver = 1
-    case ("divideandconquer")
-      ctrl%iSolver = 2
-    case ("relativelyrobust")
-      ctrl%iSolver = 3
     case ("greensfunction")
       ctrl%iSolver = 5 !solverGF
       ! find the maximum temperature between contacts or device
@@ -1759,8 +1859,6 @@ contains
      & (tp%taskUpload .and. ctrl%iSolver /= onlyTransport .and. (.not.ctrl%tScc))) then
       call detailedError(value, "Solver not allowed for transport calculations")
     end if  
-    end select
-
     ! Filling (temperature only read, if AdaptFillingTemp was not set for the selected MD
     ! thermostat.)
     call getChildValue(node, "Filling", value, "Fermi", child=child)
@@ -1792,26 +1890,65 @@ contains
       end if
     end if
 
-    call getChild(value, "FixedFermiLevel", child=child2, modifier=modifier, &
-        & requested=.false.)
-    if (associated(child2)) then
+    call getChild(value, "FixedFermiLevel", child=child2, modifier=modifier, requested=.false.)
+    ctrl%tFixEf = associated(child2)
+    if (ctrl%tFixEf) then
       if (ctrl%tSpin .and. .not.ctrl%t2Component) then
-        call getChildValue(child2, "", ctrl%Ef(:2), &
-            & modifier=modifier, child=child3)
+        allocate(ctrl%Ef(2))
       else
-        call getChildValue(child2, "", ctrl%Ef(:1), &
-            & modifier=modifier, child=child3)
+        allocate(ctrl%Ef(1))
       end if
-      call convertByMul(char(modifier), energyUnits, child3, &
-          & ctrl%Ef)
-      ctrl%tFixEf = .true.
-    else
-      ctrl%tFixEf = .false.
+      call getChildValue(child2, "", ctrl%Ef, modifier=modifier, child=child3)
+      call convertByMul(char(modifier), energyUnits, child3, ctrl%Ef)
     end if
 
     if (geo%tPeriodic .and. .not.ctrl%tFixEf) then
       call getChildValue(value, "IndependentKFilling", ctrl%tFillKSep, .false.)
     end if
+
+    ! Solver
+    call getChildValue(node, "Eigensolver", value, "RelativelyRobust")
+    call getNodeName(value, buffer)
+    select case(char(buffer))
+    case ("qr")
+      ctrl%iSolver = solverQR
+    case ("divideandconquer")
+      ctrl%iSolver = solverDAC
+    case ("relativelyrobust")
+      ctrl%iSolver = solverRR
+  #:if WITH_TRANSPORT
+    case ("greensfunction")
+      ctrl%iSolver = solverGF
+      if (tp%defined .and. .not.tp%taskUpload) then
+        call detailederror(node, "greensfunction solver cannot be used "// &
+            &  "when task = contactHamiltonian")
+      end if
+      call readGreensFunction(value, greendens, tp, ctrl%tempElec)
+      ! fixEf also avoids checks of total charge in initQFromFile
+      ctrl%tFixEf = .true.
+      if (geo%tPeriodic .and. greendens%doLocalCurr) then
+         call detailedError(value, "Local Currents in periodic systems still needs" //&
+              " debugging and will be available soon")
+      end if
+    case ("transportonly")
+      if (ctrl%tGeoOpt .or. ctrl%tMD) then
+        call detailederror(node, "transportonly cannot be used with relaxations or md")
+      end if    
+      if (tp%defined .and. .not.tp%taskUpload) then
+        call detailederror(node, "transportonly cannot be used when "// &
+            &  "task = contactHamiltonian")
+      end if
+      ctrl%iSolver = solverOnlyTransport
+      ctrl%tFixEf = .true.
+  #:endif
+    end select
+
+  #:if WITH_TRANSPORT
+    if (all(ctrl%iSolver /= [solverGF,solverOnlyTransport]) .and. tp%taskUpload) then
+      call detailedError(value, "Eigensolver incompatible with transport calculation&
+          & (GreensFunction or TransportOnly required)")
+    end if
+  #:endif
 
     ! Charge
     call getChildValue(node, "Charge", ctrl%nrChrg, 0.0_dp)
@@ -2157,16 +2294,16 @@ contains
           & child=child)
       select case (tolower(unquote(char(buffer))))
       case("traditional")
-        ctrl%forceType = 0
+        ctrl%forceType = forceOrig
       case("dynamicst0")
-        ctrl%forceType = 2
+        ctrl%forceType = forceDynT0
       case("dynamics")
-        ctrl%forceType = 3
+        ctrl%forceType = forceDynT
       case default
         call detailedError(child, "Invalid force evaluation method.")
       end select
     else
-      ctrl%forceType = 0
+      ctrl%forceType = forceOrig
     end if
 
     call readCustomisedHubbards(node, geo, slako%orb, ctrl%tOrbResolved, ctrl%hubbU)
@@ -2947,7 +3084,7 @@ contains
   #:if DEBUG > 0
     call getChildValue(node, "TimingVerbosity", ctrl%timingLevel, -1)
   #:else
-    call getChildValue(node, "TimingVerbosity", ctrl%timingLevel, 0)
+    call getChildValue(node, "TimingVerbosity", ctrl%timingLevel, 1)
   #:endif
 
     if (ctrl%tReadChrg) then
@@ -2989,12 +3126,12 @@ contains
       allocate(input%uff)
       call readDispVdWUFF(dispModel, geo, input%uff)
     case ("dftd3")
-#:if WITH_DFTD3
+  #:if WITH_DFTD3
       allocate(input%dftd3)
       call readDispDFTD3(dispModel, input%dftd3)
-#:else
+  #:else
       call detailedError(node, "Program had been compiled without DFTD3 support")
-#:endif
+  #:endif
     case default
       call detailedError(node, "Invalid dispersion model name.")
     end select
@@ -3360,14 +3497,14 @@ contains
     ! Linear response stuff
     call getChild(node, "Casida", child, requested=.false.)
 
-#:if not WITH_ARPACK
+  #:if not WITH_ARPACK
 
     if (associated(child)) then
       call detailedError(child, 'This DFTB+ binary has been compiled without support for linear&
           & response calculations (requires the ARPACK/ngARPACK library).')
     end if
 
-#:else
+  #:else
 
     if (associated(child)) then
 
@@ -3443,13 +3580,17 @@ contains
 
     end if
 
-#:endif
+  #:endif
 
   end subroutine readExcited
 
 
   !> Reads the analysis block
   subroutine readAnalysis(node, ctrl, geo, orb, transpar, tundos)
+  subroutine readAnalysis(node, ctrl, geo, orb, transpar, tundos)
+#:else
+  subroutine readAnalysis(node, ctrl, geo, orb)
+#:endif
 
     !> Node to parse
     type(fnode), pointer :: node
@@ -3468,6 +3609,8 @@ contains
 
     !> Tunneling and Dos parameters
     type(TGDFTBTunDos), intent(inout) :: tundos
+
+  #:endif
 
     type(fnode), pointer :: val, child, child2, child3
     type(fnodeList), pointer :: children
@@ -5751,15 +5894,15 @@ contains
 
 
   !> Reads the parallel block.
-  subroutine readParallel(root, parallelOpts)
+  subroutine readParallel(root, input)
 
     !> Root node eventually containing the current block
     type(fnode), pointer, intent(in) :: root
 
-    !> Parallel settings
-    type(TParallelOpts), allocatable, intent(out) :: parallelOpts
+    !> Input structure to be filled
+    type(inputData), intent(inout) :: input
 
-    type(fnode), pointer :: node
+    type(fnode), pointer :: node, pTmp
 
     call getChild(root, "Parallel", child=node, requested=.false.)
     if (withMpi .and. .not. associated(node)) then
@@ -5770,10 +5913,16 @@ contains
         call detailedWarning(node, "Settings will be read but ignored (compiled without MPI&
             & support)")
       end if
-      allocate(parallelOpts)
-      call getChildValue(node, "Groups", parallelOpts%nGroup, 1)
-      call getChildValue(node, "UseOmpThreads", parallelOpts%tOmpThreads, .not. withMpi)
-      call readBlacs(node, parallelOpts%blacsOpts)
+      allocate(input%ctrl%parallelOpts)
+      call getChildValue(node, "Groups", input%ctrl%parallelOpts%nGroup, 1, child=pTmp)
+    #:if WITH_TRANSPORT
+      if (input%transpar%ncont > 0 .and. input%ctrl%parallelOpts%nGroup > 1) then
+        call detailedError(pTmp, "Multiple processor groups are currently incompatible with&
+            & transport.")
+      end if
+    #:endif
+      call getChildValue(node, "UseOmpThreads", input%ctrl%parallelOpts%tOmpThreads, .not. withMpi)
+      call readBlacs(node, input%ctrl%parallelOpts%blacsOpts)
     end if
 
   end subroutine readParallel
@@ -5983,5 +6132,20 @@ contains
     end if
 
   end subroutine readGrid
+
+  function is_numeric(string) result(is)
+    character(len=*), intent(in) :: string
+    logical :: is
+
+    real :: x
+    integer :: err
+
+    print*,string
+
+    read(string,*,iostat=err) x
+    is = (err == 0)
+    print*, x, err, is
+
+  end function is_numeric
 
 end module parser

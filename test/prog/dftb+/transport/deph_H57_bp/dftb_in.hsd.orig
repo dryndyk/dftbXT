@@ -1,0 +1,120 @@
+Geometry = GenFormat {
+<<< 'H57.gen'
+}
+
+Transport {
+  Device {
+    AtomRange = 1 37
+    FirstLayerAtoms =  1 7 13 21
+  }
+  Contact {
+    Id = "source"
+    AtomRange = 38 47
+    FermiLevel [eV] = -6.   
+    Potential [eV] = 4.
+<<<<<<< HEAD
+    #WideBand = Yes   
+    #LevelSpacing = 0.231
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    ReadSurfaceGF = Yes
+    Unformatted = Yes
+=======
+    ReadSurfaceGF = Yes
+    Temperature = 0.00001
+>>>>>>> dftbplus_git
+  }
+  Contact {
+    Id = "drain"
+    AtomRange = 48 57
+    FermiLevel [eV] = -6.   
+    Potential [eV] = -4.
+<<<<<<< HEAD
+    #WideBand = Yes  
+    #LevelSpacing = 0.231
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    ReadSurfaceGF = Yes
+    Unformatted = Yes
+=======
+    ReadSurfaceGF = Yes
+    Temperature = 0.00001
+>>>>>>> dftbplus_git
+  }
+  Task = UploadContacts {}
+}
+
+Hamiltonian = DFTB {
+  SCC = No
+  #SCCTolerance = 1e-6
+  #ReadInitialCharges = No
+  MaxAngularMomentum = {
+    H = "s"
+  }  
+  SlaterKosterFiles = Type2FileNames {
+<<<<<<< HEAD
+    #Prefix = "../../../slako/mio-0-1/"
+    Separator = "-"    
+    Suffix = ".skf"
+  }
+  Dephasing {
+    BuettikerProbes = ZeroPotential {
+    #BuettikerProbes = ZeroCurrent {
+      Coupling [eV] = constant { 0.5 }
+    }
+  }  
+  Eigensolver = TransportOnly{}
+}
+
+=======
+    Prefix = ""
+    Separator = "-"    
+    Suffix = ".skf"
+  }
+  Eigensolver = TransportOnly{}
+}
+
+# ************************************
+# NOTE: Dephasing is not working yet
+# ************************************   
+Dephasing {
+  BuettikerProbes{
+    Coupling [eV] = constant{ 0.5 }
+  }
+}  
+
+>>>>>>> dftbplus_git
+Analysis = {
+  TunnelingAndDos {
+    Verbosity = 101
+    EnergyRange [eV] = -10. -2.
+    EnergyStep [eV] =0.1
+    Region = {
+      Atoms = 1:37
+    }
+  }
+}
+
+Options = {
+  WriteAutotestTag = Yes
+}
+
+<<<<<<< HEAD
+
+
+
+
+
+=======
+ParserOptions = {
+  ParserVersion = 6
+}
+
+Parallel = {
+  # Allow OMP threads explicitely to test for hybrid parallelisation with
+  # MPI-binary. (Check the manual before using this in production runs!)
+  UseOmpThreads = Yes
+}
+>>>>>>> dftbplus_git

@@ -5,6 +5,8 @@
 !  See the LICENSE file for terms of usage and distribution.                                       !
 !--------------------------------------------------------------------------------------------------!
 
+#:include 'common.fypp'
+
 !> data type and associated routines for specifying atomic geometry and boundary conditions
 module typegeometry
   use accuracy
@@ -60,6 +62,16 @@ module typegeometry
    module procedure reduce_Geometry
   end interface
 
+  interface setLattice
+    module procedure setLattice_Geometry
+  end interface
+
+  !> Interface for reducing a geometry to a subset of its atoms
+  interface reduce
+   module procedure reduce_Geometry
+  end interface
+
+  !> Interface to set a lattice for a geometry
   interface setLattice
     module procedure setLattice_Geometry
   end interface
@@ -161,5 +173,76 @@ contains
     !self%volume = determinant33(self%latVecs)
 
   end subroutine setLattice_Geometry
+
+  !> Reduce the geometry to a subset.
+  subroutine reduce_Geometry(self, iStart, iEnd, newOrigin, newLatVecs)
+
+    !> Geometry object
+    type(TGeometry), intent(inout) :: self
+
+    !> Initial atom in the reduced geometry
+    integer, intent(in) :: iStart
+
+    !> Final atom in the reduced geometry
+    integer, intent(in) :: iEnd
+
+    !> Supercell origin - if not initially periodic, structure is converted
+    real(dp), intent(in), optional :: newOrigin(:)
+
+    !> Lattice vectors for the supercell - if not initially periodic, structure is converted
+    real(dp), intent(in), optional :: newLatVecs(:,:)
+
+    integer, allocatable :: tmpSpecies(:)
+    real(dp), allocatable :: tmpCoords(:,:)
+
+
+    self%nAtom = iEnd - iStart + 1
+    allocate(tmpSpecies(self%nAtom))
+    tmpSpecies = self%species(iStart:iEnd)
+    deallocate(self%species)
+    allocate(self%species(self%nAtom))
+    self%species = tmpSpecies
+    deallocate(tmpSpecies)
+
+    allocate(tmpCoords(3, self%nAtom))
+    tmpCoords = self%coords(:,iStart:iEnd)
+    deallocate(self%coords)
+    allocate(self%coords(3, self%nAtom))
+    self%coords = tmpCoords
+    deallocate(tmpCoords)
+    if (present(newLatVecs).and.present(newOrigin)) then
+      call setLattice(self, newOrigin, newLatVecs)
+    end if
+
+  end subroutine reduce_Geometry
+
+  !> Set new lattice vectors for a geometry - if not initially periodic, structure is converted
+  subroutine setLattice_Geometry(self, origin, latVecs)
+
+    !> Geometry object
+    type(TGeometry), intent(inout) :: self
+
+    !> Supercell origin
+    real(dp), intent(in) :: origin(:)
+
+    !> Lattice vectors for the supercell
+    real(dp), intent(in) :: latVecs(:,:)
+
+
+    if (.not. self%tPeriodic) then
+      allocate(self%origin(3))
+      allocate(self%latVecs(3, 3))
+      allocate(self%recVecs2p(3, 3))
+      self%tPeriodic = .true.
+      self%tFracCoord = .false.
+    end if
+    self%origin = origin
+    self%latVecs = latVecs
+    self%recVecs2p = self%latVecs
+    call matinv(self%recVecs2p)
+    self%recVecs2p = reshape(self%recVecs2p, (/3, 3/), order=(/2, 1/))
+
+  end subroutine setLattice_Geometry
+
 
 end module typegeometry

@@ -29,6 +29,12 @@ module inputdata_module
   use poisson_vars  !!DAR
   use tranas_types_main, only : TTraNaSInput
   
+
+#:if WITH_TRANSPORT
+  use libnegf_vars
+  use poisson_init
+#:endif
+
   implicit none
   private
   save
@@ -38,6 +44,9 @@ module inputdata_module
   public :: init, destruct
   public :: TNEGFInfo
 
+#:if WITH_TRANSPORT
+  public :: TNEGFInfo
+#:endif
 
 
   !> Contains Blacs specific options.
@@ -254,7 +263,7 @@ module inputdata_module
 
     real(dp) :: tempElec      = 0.0_dp
     logical :: tFixEf        = .false.
-    real(dp) :: Ef(2)         = 0.0_dp
+    real(dp), allocatable :: Ef(:)
     logical :: tFillKSep     = .false.
     integer :: iDistribFn    = 0
     real(dp) :: wvScale       = 0.0_dp
@@ -398,6 +407,14 @@ module inputdata_module
     logical :: tWriteRealHS = .false.
     logical :: tMinMemory = .false.
 
+    !> potential shifts are read from file
+    logical :: tReadShifts = .false.
+    !> potential shifts are written on file
+    logical :: tWriteShifts = .false.
+
+    !> use Poisson solver for electrostatics
+    logical :: tPoisson = .false.
+
     
     !> potential shifts are read from file
     logical :: tReadShift = .false.
@@ -465,10 +482,19 @@ module inputdata_module
     type(TGDFTBGreenDensInfo) :: greendens  !NEGF solver section informations
     type(TPoissonInfo) :: poisson !DAR
   end type TNEGFInfo
+#:if WITH_TRANSPORT
+  !> container for data needed by libNEGF
+  type TNEGFInfo
+    type(TNEGFTunDos) :: tundos  !Transport section informations
+    type(TNEGFGreenDensInfo) :: greendens  !NEGF solver section informations
+  end type TNEGFInfo
+#:endif
+
 
 
   !> container for input data constituents
   type inputData
+    logical :: tInitialized = .false.
     type(control) :: ctrl
     type(TGeometry) :: geom
     type(slater) :: slako
@@ -476,7 +502,11 @@ module inputdata_module
     type(TNEGFInfo) :: ginfo
     type(TPoissonInfo) :: poisson
     type(TTraNaSInput) :: tranas !Container for TraNaS input. !DAR
-    logical :: tInitialized = .false.
+  #:if WITH_TRANSPORT
+    type(TTransPar) :: transpar
+    type(TNEGFInfo) :: ginfo
+    type(TPoissonInfo) :: poisson
+  #:endif
   end type inputData
 
 
