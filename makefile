@@ -68,21 +68,13 @@ endif
 ifeq ($(strip $(WITH_MPI)),1)
   dftb+: external_mpifx external_scalapackfx
 endif
-ifeq ($(strip $(WITH_LIBNEGF)),1)
-dftb+: external_tranas external_sparskit #external_libnegf 
-#external_libnegf: external_mpifx 
-external_tranas: external_mpifx
-WITH_POISSON := 1
-endif
+
 ifeq ($(strip $(WITH_TRANSPORT)),1)
-  dftb+: external_libnegf external_poisson
-  external_libnegf: external_mpifx
-  external_poisson: external_mpifx external_libnegf
+  dftb+: external_tranas external_poisson external_sparskit
+  external_tranas: external_mpifx
+  external_poisson: external_mpifx external_tranas
 endif
 
-ifeq ($(strip $(WITH_POISSON)),1)
-dftb+: external_mudpack 
-endif
 modes: external_xmlf90
 waveplot: external_xmlf90
 
@@ -100,8 +92,7 @@ misc_skderivs: external_xmlf90
 EXTERNAL_NAME = $(subst external_,,$@)
 
 EXTERNALS = external_xmlf90 external_fsockets external_dftd3 external_mpifx \
-            external_scalapackfx external_mudpack external_tranas external_sparskit 
-	    #external_poisson external_libnegf
+            external_scalapackfx external_poisson external_tranas external_sparskit
 	    
 .PHONY: $(EXTERNALS)
 $(EXTERNALS):

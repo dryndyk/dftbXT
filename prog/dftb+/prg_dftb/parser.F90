@@ -46,11 +46,9 @@ module parser
   use ipisocket, only : IPI_PROTOCOLS
 #:endif
   use wrappedintrinsics
-  use poisson_vars
-  use tranas_vars
 #:if WITH_TRANSPORT
   use poisson_init
-  use libnegf_vars
+  use tranas_vars
 #:endif
   implicit none
 
@@ -197,7 +195,7 @@ contains
       case ("divideandconquer")
          input%ctrl%iSolver = solverDAC
       case ("relativelyrobust")
-         input%ctrl%iSolver = solverRR1
+         input%ctrl%iSolver = solverRR
       case ("greensfunction")
          input%ctrl%iSolver = solverGF
          ! find the maximum temperature between contacts or device
@@ -210,10 +208,10 @@ contains
          enddo
          call readGreensFunction(value, input%ginfo%greendens, input%transpar, temperature)          
       case ("transportonly")
-         input%ctrl%iSolver = 6 !onlyTransport
+         input%ctrl%iSolver = solverOnlyTransport
       end select
       if (input%transpar%taskUpload .and. (input%ctrl%iSolver/=solverGF .and. &
-           input%ctrl%iSolver/=onlyTransport)) then
+           input%ctrl%iSolver/=solverOnlyTransport)) then
          call detailedError(value, "Solver not allowed for transport calculations")
       end if
       
@@ -242,20 +240,19 @@ contains
     ! Read in transport and modify geometry if only contact calculation
     call getChild(root, "Transport", dummy, requested=.false.)
 
-    if (associated(dummy)) then
-      call readTransportGeometry(dummy, input%geom, input%transpar)
-    end if
+!OLD    if (associated(dummy)) then
+!OLD      call readTransportGeometry(dummy, input%geom, input%transpar)
+!OLD    end if
 
     ! Electronic Hamiltonian
     call getChildValue(root, "Hamiltonian", hamNode)
-    call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako, input%transpar, input%ginfo%greendens,  input%ginfo%poisson)
-    call getChild(root, "Transport", child, requested=.false.)
+!OLD    call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako, input%transpar, input%ginfo%greendens,  input%ginfo%poisson)
 
   #:if WITH_TRANSPORT
 
     ! Read in transport and modify geometry if it is only a contact calculation
-    if (associated(child)) then
-      call readTransportGeometry(child, input%geom, input%transpar)
+    if (associated(dummy)) then
+      call readTransportGeometry(dummy, input%geom, input%transpar)
     else
       input%transpar%ncont=0
       allocate(input%transpar%contacts(0))
@@ -267,11 +264,11 @@ contains
     call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako, input%transpar,&
         & input%ginfo%greendens, input%poisson)
 
-    call getChild(root, "Dephasing", child, requested=.false.)
-    if (associated(child)) then
-      call detailedError(child, "Be patient... Dephasing feature will be available soon!")    
-      !call readDephasing(child, input%slako%orb, input%geom, input%transpar, input%ginfo%tundos)
-    end if
+!NEW    call getChild(root, "Dephasing", child, requested=.false.)
+!NEW    if (associated(child)) then
+!NEW      call detailedError(child, "Be patient... Dephasing feature will be available soon!")    
+!NEW      !call readDephasing(child, input%slako%orb, input%geom, input%transpar, input%ginfo%tundos)
+!NEW    end if
 
   #:else
 
@@ -299,12 +296,6 @@ contains
  
     call readAnalysis(child, input%ctrl, input%geom, input%slako%orb, input%transpar, &
         & input%ginfo%tundos)
-        & input%ginfo%tundos)
-
-    call finalizeNegf(input)
-  #:else
-    call readAnalysis(child, input%ctrl, input%geom, input%slako%orb)
-  #:endif
 
     ! excited state options
     call getChildValue(root, "ExcitedState", dummy, "", child=child, list=.true., &
@@ -321,6 +312,7 @@ contains
     
     call finalizeNegf(input) !!DAR
 
+    call readParallel(root, input)
 
     ! input data strucutre has been initialised
     input%tInitialized = .true.
@@ -1232,9 +1224,6 @@ contains
 
   !> Reads Hamiltonian
   subroutine readHamiltonian(node, ctrl, geo, slako, tp, greendens, poisson)
-  subroutine readHamiltonian(node, ctrl, geo, slako, tp, greendens, poisson)
-#:else
-#:endif
 
     !> Node to get the information from
     type(fnode), pointer :: node
@@ -1249,15 +1238,13 @@ contains
     type(slater), intent(inout) :: slako
     
     type(TTransPar), intent(inout) :: tp                  !DAR
-    type(TGDFTBGreenDensInfo), intent(inout) :: greendens !DAR
-    type(TPoissonInfo), intent(inout) :: poisson          !DAR
-
+    
     !> Green's function paramenters
-    type(TNEGFGreenDensInfo), intent(inout) :: greendens
+    !DAR type(TNEGFGreenDensInfo), intent(inout) :: greendens
+    type(TGDFTBGreenDensInfo), intent(inout) :: greendens !DAR
 
     !> Poisson solver paramenters
     type(TPoissonInfo), intent(inout) :: poisson
-  #:endif
 
     type(string) :: buffer
 
@@ -1265,20 +1252,15 @@ contains
     select case (char(buffer))
     case ("dftb")
       call readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
-      call readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
-  #:else
-  #:endif
     case default
       call detailedError(node, "Invalid Hamiltonian")
     end select
 
   end subroutine readHamiltonian
 
+  
   !> Reads DFTB-Hamiltonian
   subroutine readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
-  subroutine readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
-#:else
-#:endif
 
     !> Node to get the information from
     type(fnode), pointer :: node
@@ -1293,15 +1275,13 @@ contains
     type(slater), intent(inout) :: slako
     
     type(TTransPar), intent(inout)  :: tp                       !DAR
-    type(TGDFTBGreenDensInfo), intent(inout) :: greendens       !DAR
-    type(TPoissonInfo), intent(inout) :: poisson                !DAR
-
+    
     !> Green's function paramenters
-    type(TNEGFGreenDensInfo), intent(inout) :: greendens
+    !DAR type(TNEGFGreenDensInfo), intent(inout) :: greendens
+    type(TGDFTBGreenDensInfo), intent(inout) :: greendens !DAR
 
     !> Poisson solver paramenters
     type(TPoissonInfo), intent(inout) :: poisson
-  #:endif
 
     type(fnode), pointer :: value, value2, child, child2, child3, field
     type(fnodeList), pointer :: children
@@ -1841,24 +1821,8 @@ contains
             & ctrl%xi(:slako%orb%nShell(iSp1),iSp1))
       end do
     end if
-
-    case ("greensfunction")
-      ctrl%iSolver = 5 !solverGF
-      ! find the maximum temperature between contacts or device
-      ! this is used to estimate the RealAxis interval 
-      temperature = ctrl%tempElec
-      do ii = 1, tp%ncont
-        if (tp%contacts(ii)%kbT > temperature) then
-          temperature = tp%contacts(ii)%kbT
-        endif
-      enddo
-      call readGreensFunction(value, greendens, tp, temperature)
-    case ("transportonly")
-       ctrl%iSolver = 6 !onlyTransport
-    if ((tp%taskUpload .and. ctrl%iSolver /= solverGF .and. ctrl%tSCC) .or.&
-     & (tp%taskUpload .and. ctrl%iSolver /= onlyTransport .and. (.not.ctrl%tScc))) then
-      call detailedError(value, "Solver not allowed for transport calculations")
-    end if  
+    
+    
     ! Filling (temperature only read, if AdaptFillingTemp was not set for the selected MD
     ! thermostat.)
     call getChildValue(node, "Filling", value, "Fermi", child=child)
@@ -3587,10 +3551,6 @@ contains
 
   !> Reads the analysis block
   subroutine readAnalysis(node, ctrl, geo, orb, transpar, tundos)
-  subroutine readAnalysis(node, ctrl, geo, orb, transpar, tundos)
-#:else
-  subroutine readAnalysis(node, ctrl, geo, orb)
-#:endif
 
     !> Node to parse
     type(fnode), pointer :: node
@@ -3609,8 +3569,6 @@ contains
 
     !> Tunneling and Dos parameters
     type(TGDFTBTunDos), intent(inout) :: tundos
-
-  #:endif
 
     type(fnode), pointer :: val, child, child2, child3
     type(fnodeList), pointer :: children
@@ -3851,7 +3809,7 @@ contains
     real(dp) :: acc, contactRange(2), sep
     type(listInt) :: li                                                     !DAR
     
-    write(stdout,"('> readTransportGeometry is started')") !DAR 
+    write(stdout,"('> readTransportGeometry is started')")                  !DAR 
     
     tp%defined = .true.
     tp%tPeriodic1D = .not. geom%tPeriodic
@@ -4184,7 +4142,7 @@ contains
         & [ 0.5_dp, 0.5_dp, 0.5_dp ], modifier=modif, child=field)
     call convertByMul(char(modif), lengthUnits, field, &
         & poisson%poissGrid)
-    call getChildValue(pNode, "ExactRenorm", poisson%exactRenorm, .false.)
+    call getChildValue(pNode, "NumericalNorm", poisson%numericNorm, .false.)
     call getChild(pNode, "AtomDensityCutoff", pTmp, requested=.false., &
         & modifier=modif)
     call getChild(pNode, "AtomDensityTolerance", pTmp2, requested=.false.)
@@ -5619,7 +5577,7 @@ contains
         &allowEmptyValue=.true., list=.true.)
     call getChildren(child, "Region", children)
     call readPDOSRegions(children, geo, iAtInRegion, &
-        & ctrl%tShellResInRegion, ctrl%regionLabels)
+        & ctrl%tShellResInRegion, ctrl%regionLabel)
     call destroyNodeList(children)
     
     call getChild(node, "TunnelingAndDOS", child, requested=.false.)
@@ -5863,15 +5821,15 @@ contains
     end if
 
     !! Not orthogonal directions in transport are only allowed if no Poisson
-    if (input%ginfo%poisson%defined.and.input%transpar%defined) then
+    if (input%poisson%defined.and.input%transpar%defined) then
       do ii = 1, input%transpar%ncont
         ! If dir is  any value but x,y,z (1,2,3) it is considered oriented along
         ! a direction not parallel to any coordinate axis
         if (input%transpar%contacts(ii)%dir.lt.1 .or. &
           &input%transpar%contacts(ii)%dir.gt.3 ) then
           call error("Contact " // i2c(ii) // " not parallel to any &
-            & coordinate axis is not compatible with Poisson solver") 
-        end if 
+            & coordinate axis is not compatible with Poisson solver")
+        end if
       end do
     end if
 

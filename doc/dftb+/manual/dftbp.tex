@@ -1743,11 +1743,8 @@ options:
   system. For collinear spin polarisation, values for up and down spin channels
   are required. Otherwise only a single global chemical potential is
   required. If this option is present, the total charge and the total spin of
-  the system are not conserved (settings in the options \is{Charge} and
-  \is{UnpairedElectrons} will be ignored). If a fixed chemical potential is
-  used, the output {\em force related energy} includes the contribution to the
-  free energy, $- N \mu$, hence if differentiated will give the forces and
-  stresses (if periodic).
+  the system are not conserved. (Settings in the options \is{Charge} and
+  \is{UnpairedElectrons} will be ignored.)
 \end{description}
 
 \subsubsection{Fermi\{\}}
@@ -3230,14 +3227,6 @@ Transport {
 \end{ptableh}
 
 \begin{description}
-\item[\is{Groups}] Number of process groups. Specifying more than one process
-  group enables parallelisation over k-points and spin, as processes in
-  different process groups are working on different k-points and spins at the
-  same time. The number of process groups must be a divisor of the total number
-  of MPI-processes. Default: 1 (all processes work at the same k-point and spin
-  at a given time). Note that transport calculations between contacts are
-  currently incompatible with multiple process groups (see
-  section~\ref{app:transp}).
 
 \item[\is{AtomRange}] defines the first and last atom of the device region.
 

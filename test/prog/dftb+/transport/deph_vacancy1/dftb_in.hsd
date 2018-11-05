@@ -44,9 +44,8 @@ Hamiltonian = DFTB {
   }
 
   Eigensolver = TransportOnly{}
-}
 
-
+  Dephasing {
     #BuettikerProbes = ZeroCurrent {
     #BuettikerProbes = ZeroPotential {
     #  Coupling [eV] = constant { 0.1 }
@@ -70,7 +69,6 @@ Hamiltonian = DFTB {
       MaxNumIter = 100
     }
   }
-  Eigensolver = TransportOnly{}
 }
 
 Analysis = {

@@ -83,19 +83,13 @@ module initprogram
   use potentials
   use taggedoutput
   use formatout
+#:if WITH_TRANSPORT
   use tranas_vars
   use tranas_interface
-  !!DAR begin - use
-  use poisson_vars
-  use poisson_int
-#:if WITH_TRANSPORT
-  use libnegf_vars
-  use negf_int
   use poisson_init
 #:endif
   use blacsfx_module
-  use tranas_interface 
-  !!DAR end
+
   implicit none
 
   !> Tagged output files (machine readable)
@@ -801,49 +795,54 @@ module initprogram
   type(TParallelKS) :: parallelKS
   
   private :: createRandomGenerators
-  
-  
+
+#:if WITH_TRANSPORT
   !> Transport variables
   !> Container for the atomistic structure for poisson
   type(TPoissonStructure) :: poissStr
+  type(TTransPar) :: transpar
+  type(TNEGFInfo) :: ginfo
+  
   type(TGDFTBStructure) :: negfStr
   integer, allocatable, target :: iAtomStart(:) !!DAR otherwise "negfStr%iAtomStart => denseDesc%iAtomStar" does not work 
   
   !> Container for SK data for poisson
   type(TSKData) :: gdftbSKData
 
+  #:endif
+
   !> Whether contact Hamiltonians are uploaded
-  !> Synonim for G.F. calculation of density 
-  logical :: tUpload   
+  !> Synonym for G.F. calculation of density
+  logical :: tUpload
 
   !> Whether contact Hamiltonians are computed
   logical :: tContCalc       ! Compute contacts
 
-  !> Whether Poisson solver is invoked 
-  logical :: tPoisson     
-  
+  !> Whether Poisson solver is invoked
+  logical :: tPoisson
+
   !> Whether recompute Poisson after every SCC
-  logical :: tPoissonTwice 
+  logical :: tPoissonTwice
 
   !> Calculate terminal tunneling and current
-  logical :: tTunn           
+  logical :: tTunn
 
   !> True if we use any part of Negf (green solver, landauer etc.)
-  logical :: tNegf           
+  logical :: tNegf
 
-  !> Whether local currents are computed 
-  logical :: tLocalCurrents  
+  !> Whether local currents are computed
+  logical :: tLocalCurrents
 
   !> True if LDOS is stored on separate files for k-points
   logical :: writeLDOS
-  
+
   !> True if Tunneling is stored on separate files
   logical :: writeTunn
-  
-  !> Holds spin-dependent electrochemical potentials
-  !> This is because libNEGF is not spin-aware 
-  real(dp), allocatable :: mu(:,:) 
-  
+
+  !> Holds spin-dependent electrochemical potentials of contacts
+  !> This is because libNEGF is not spin-aware
+  real(dp), allocatable :: mu(:,:)
+
   !> NEGF !DAR
   integer, allocatable :: groupKS(:,:)
   integer :: descHS(DLEN_)
@@ -996,7 +995,8 @@ contains
     logical :: tSkipChrgChecksum
 
     @:ASSERT(input%tInitialized)
-    
+
+    write(stdOut, "(/, A)") "Starting initialization..."
     write(stdOut, "(A80)") repeat("-", 80)
     write(stdOut, "(A)") "-- Initialization is started                                                  --"
     write(stdOut, "(A80,/)") repeat("-", 80)
@@ -1590,10 +1590,9 @@ contains
       end if
     end if
 
-
     ! requires stress to already be possible and it being a periodic calculation
     ! with forces
-    tStress = (tPeriodic .and. tForces .and. .not.tNegf .and. tStress)
+    tStress = (tPeriodic .and. tForces .and. tStress)
 
     nMovedAtom = input%ctrl%nrMoved
     nMovedCoord = 3 * nMovedAtom
@@ -2027,8 +2026,8 @@ contains
     tReadShifts = input%ctrl%tReadShifts
     tWriteShifts = input%ctrl%tWriteShifts
     ! Both temporarily removed until debugged:
-    @:ASSERT(not tReadShifts)
-    @:ASSERT(not tWriteShifts)
+    @:ASSERT(.not. tReadShifts)
+    @:ASSERT(.not. tWriteShifts)
 
     tWriteChrgAscii = input%ctrl%tWriteChrgAscii
 
@@ -2542,10 +2541,8 @@ contains
       write (strTmp, "(A)") "Relatively robust"
     case(solverGF)
       write (strTmp, "(A)") "Green's functions"
-    case(solverGF)
-      write (strTmp, "(A)") "Green's functions"
-    case(onlyTransport)
-      write (strTmp, "(A)") "Transport Only (no energies)"  
+    case(solverOnlyTransport)
+      write (strTmp, "(A)") "Transport Only (no energies)"
     case default
       call error("Unknown eigensolver!")
     end select
@@ -2876,8 +2873,6 @@ contains
       end if
 
     end if
-    
-    call initTransport(env, input)
 
     call initProcessorGroups(1, nKPoint, nSpin, groupKS) !!DAR!!
     
@@ -2888,7 +2883,7 @@ contains
     call env%globalTimer%stopTimer(globalTimers%globalInit)
 
   end subroutine initProgramVariables
-  
+
   !DAR begin groupKS
   !------------------------------------------------------------------------------
   
@@ -3031,6 +3026,8 @@ contains
     integer :: iSpin, isz
     integer :: nSpinChannels
 
+    write(stdOut,"(/,'> initTransport is started')")
+  
     ! These two checks are redundant, I check if they are equal
     if (input%poisson%defined .neqv. input%ctrl%tPoisson) then
       call error("Mismatch in ctrl and ginfo fields")
@@ -3104,8 +3101,11 @@ contains
       end if
 
       ! Some sanity checks and initialization of GDFTB/NEGF
-      call negf_init(input%transpar, input%ginfo%greendens, input%ginfo%tundos, env%mpi%globalComm,&
-          & tempElec, solver)
+!NEW      call negf_init(input%transpar, input%ginfo%greendens, input%ginfo%tundos, env%mpi%globalComm,&
+!NEW          & tempElec, solver)
+          
+      call negf_init(negfStr, input%transpar, input%ginfo%greendens, input%ginfo%tundos,&
+           & env%mpi%globalComm, tInitialized)    
 
       ginfo = input%ginfo
 
@@ -3129,6 +3129,8 @@ contains
     !Write Dos and tunneling on separate files?
     writeTunn = ginfo%tundos%writeTunn
     writeLDOS = ginfo%tundos%writeLDOS
+
+    write(stdOut,"('> initTransport is finished')")
 
   end subroutine initTransport
 
@@ -3736,105 +3738,5 @@ contains
     end if
 
   end subroutine getDenseDescCommon
-
-  !!DAR begin - initTransport
-  subroutine initTransport(env, input)
-    type(TEnvironment), intent(in) :: env
-    type(inputData), intent(in) :: input
-  
-    !> Wheter transport has been initialized
-    logical :: tInitialized
-
-    write(stdOut,"(/,'> initTransport is started')")
-    tUpload = input%transpar%taskUpload
-    tContcalc = input%transpar%defined .and. (.not. input%transpar%taskUpload) 
-    ! These two checks are redundant, I check if they are equal 
-    if (input%ginfo%poisson%defined .neqv. input%ctrl%tPoisson) then
-      call error("Mismatch in ctrl and ginfo fields")
-    end if
-    tPoisson = input%ginfo%poisson%defined
-    tPoissonTwice = input%ginfo%poisson%solveTwice
-    ! Calculate the tunneling only if we upload the contacts
-    tTunn = input%ginfo%tundos%defined .and. tUpload
-    tLocalCurrents = input%ginfo%greendens%doLocalCurr
-    ! Do we use any part of negf (solver, tunn etc.)?
-    tNegf = (solver .eq. solverGF) .or. tTunn
-
-    associate(transpar=>input%transpar, greendens=>input%ginfo%greendens)
-      ! Non colinear spin not yet supported
-      ! Inclintude the built-in potential as in negf init, but the whole 
-      ! scc only works for
-      ! calculation without spin (poisson does not support spin dependent
-      ! built in potentials)
-      if (nSpin .eq. 1 .and. tTunn) then
-        allocate(mu(transpar%ncont,1))
-        mu = 0.0_dp
-        mu(1:transpar%ncont, 1) = minval(transpar%contacts(1:transpar%ncont)%eFermi(1)) - &
-            & transpar%contacts(1:transpar%ncont)%potential 
-      else if (nSpin .eq. 2 .and. tTunn) then
-        allocate(mu(transpar%ncont,2))
-        mu = 0.0_dp
-        mu(1:transpar%ncont, 1) = minval(transpar%contacts(1:transpar%ncont)%eFermi(1)) - &
-            & transpar%contacts(1:transpar%ncont)%potential 
-        mu(1:transpar%ncont, 2) = minval(transpar%contacts(1:transpar%ncont)%eFermi(2)) - &
-            & transpar%contacts(1:transpar%ncont)%potential 
-      else if (nSpin .eq. 1 .and. solver == solverGF) then
-        allocate(mu(1,1))
-        mu = 0.0_dp
-        mu(1,1) = greendens%oneFermi(1)
-      else if (nSpin .eq. 2 .and. solver == solverGF) then
-        allocate(mu(1,2))
-        mu = 0.0_dp
-        mu(1,:) = greendens%oneFermi(:)
-      end if
-    end associate
-
-    if (tPoisson) then
-      poissStr%nAtom = nAtom
-      poissStr%nSpecies = nType
-      poissStr%specie0 => species0
-      poissStr%x0 => coord0
-      poissStr%nel = nEl0
-      poissStr%isPeriodic = tPeriodic
-      if (tPeriodic) then
-        poissStr%latVecs(:,:) = latVec(:,:)
-      else
-        poissStr%latVecs(:,:) = 0.0_dp
-      end if
-      poissStr%tempElec = tempElec
-      gdftbSKData%hubbU => hubbU
-      gdftbSKData%mCutoff = skCutoff
-      gdftbSKData%orb => orb 
-    end if
-
-    if (tNegf) then
-      negfStr%nAtom = nAtom
-      allocate(iAtomStart(nAtom+1))
-      iAtomStart = denseDesc%iAtomStart 
-      negfStr%iAtomStart => iAtomStart           
-    end if
-
-    ! Some sanity checks and initialization of GDFTB/NEGF
-    if (tPoisson) then
-      call poiss_init(poissStr, gdftbSKData, input%ginfo%poisson, &
-          & input%transpar, env%mpi%globalComm, tInitialized)
-      if (.not. tInitialized) call error("gdftb not initialized")
-    end if
-    if (tNegf) then       
-      call negf_init(negfStr, input%transpar, input%ginfo%greendens, input%ginfo%tundos,&
-           & env%mpi%globalComm, tInitialized)
-      !call negf_init(input%transpar, input%ginfo%greendens, input%ginfo%tundos,&
-      !     & env%mpi%globalComm, tempElec, tInitialized)     
-      if (.not. tInitialized) call error("libnegf not initialized")
-    end if
-
-    !Write Dos and tunneling on separate files?
-    writeTunn = input%ginfo%tundos%writeTunn
-    writeLDOS = input%ginfo%tundos%writeLDOS
-    
-    write(stdOut,"('> initTransport is finished')")
-
-  end subroutine initTransport
-  !!DAR - end
 
 end module initprogram

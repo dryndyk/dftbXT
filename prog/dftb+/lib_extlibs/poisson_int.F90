@@ -12,7 +12,7 @@ module poisson_init
 
   use accuracy, only : dp
   use constants, only : pi
-  use libnegf_vars, only : TTransPar
+  use tranas_vars, only : TTransPar
   use commonTypes, only : TOrbitals
   use globalenv, only : stdOut
   use poisson
@@ -20,7 +20,7 @@ module poisson_init
   use libmpifx_module
 #:endif
   use message
-  use system_calls, only: create_directory
+  !DAR use system_calls, only: create_directory
   implicit none
   private
 
@@ -218,7 +218,7 @@ contains
 
     if (id0) then
       ! only use a scratch folder on the master node
-      call create_directory(trim(scratchfolder),iErr)
+!DAR!      call create_directory(trim(scratchfolder),iErr)
     end if
 
     if (active_id) then

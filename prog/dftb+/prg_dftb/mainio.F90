@@ -1878,8 +1878,7 @@ contains
   !> regression testing
   subroutine writeAutotestTag(fileName, tPeriodic, cellVol, tMulliken, qOutput, derivs,&
       & chrgForces, excitedDerivs, tStress, totalStress, pDynMatrix, freeEnergy, pressure,&
-      & gibbsFree, endCoords, tLocalise, localisation, esp, tTransmission, transmission)
-!NEW      & gibbsFree, endCoords, tLocalise, localisation, esp, tunneling, ldos)
+      & gibbsFree, endCoords, tLocalise, localisation, esp, tunneling, ldos)
 
     !> Name of output file
     character(*), intent(in) :: fileName
@@ -1931,17 +1930,12 @@ contains
 
     !> Localisation measure, if relevant
     real(dp), intent(in) :: localisation
-    
-    !> Is the transmission function calculated? !DAR
-    logical, intent(in) :: tTransmission !DAR
-    
-    !> Transmission function !DAR
-    real(dp), intent(in) :: transmission(:,:) !DAR
-!NEW    !> tunneling array
-!NEW    real(dp), allocatable, intent(in) :: tunneling(:,:)
-!NEW
-!NEW    !> local projected DOS array
-!NEW    real(dp), allocatable, intent(in) :: ldos(:,:)
+
+    !> tunneling array
+    real(dp), allocatable, intent(in) :: tunneling(:,:)
+
+    !> local projected DOS array
+    real(dp), allocatable, intent(in) :: ldos(:,:)
 
 
     !> Object holding the potentials and their locations
@@ -1992,22 +1986,19 @@ contains
         call writeTagged(fd, tag_externfield, -esp%extPotential)
       end if
     end if
-    if (tTransmission) then
-      call writeTagged(fd, tag_transmission, transmission) !DAR 
+
+
+    if (allocated(tunneling)) then
+      if (size(tunneling, dim=1) > 0) then
+        call writeTagged(fd, tag_tunn, tunneling)
+      end if
     end if
 
-
-!NEW    if (allocated(tunneling)) then
-!NEW      if (size(tunneling, dim=1) > 0) then
-!NEW        call writeTagged(fd, tag_tunn, tunneling)
-!NEW      end if
-!NEW    end if
-!NEW
-!NEW    if (allocated(ldos)) then
-!NEW      if (size(ldos,1) > 0) then
-!NEW        call writeTagged(fd, tag_ldos, ldos)
-!NEW      end if
-!NEW    end if
+    if (allocated(ldos)) then
+      if (size(ldos,1) > 0) then
+        call writeTagged(fd, tag_ldos, ldos)
+      end if
+    end if
 
     close(fd)
 

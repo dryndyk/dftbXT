@@ -58,7 +58,7 @@ program dftbplus
     input%transpar%tWriteTagged = input%ctrl%tWriteTagged
     
     call negf_init_nogeom(input%transpar,input%ginfo%greendens,input%ginfo%tundos,env%mpi%globalComm,tInitNEGF)
-    if (.not.tInitNEGF) write(stdout, "('libnegf initialization error (negf_init_nogeom)')")
+    if (.not.tInitNEGF) write(stdout, "('TraNaS Lib initialization error (negf_init_nogeom)')")
     gdftbStr%nAtom=input%transpar%NumStates
     allocate(gdftbStr%iAtomStart(gdftbStr%nAtom+1))
     do iAtom=1,gdftbStr%nAtom+1          

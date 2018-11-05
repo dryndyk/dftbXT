@@ -55,7 +55,7 @@
       \sphinxlogo%
       {\rm\Huge\py@HeaderFamily \@title \par}%
       {\em\Large\py@HeaderFamily \py@release\releaseinfo \par}
-      {\vskip 1cm\rm\LARGE\py@HeaderFamily open software package for \\[0.2cm] quantum nanoscale modeling} \par
+      {\vskip 1cm\rm\LARGE\py@HeaderFamily open software for \\[0.2cm] quantum nanoscale modeling} \par
       % {\vskip 1cm\LARGE\py@HeaderFamily\em quantum transport, materials, devices}
 
       {\vskip 1cm\Large\py@HeaderFamily\em DFTB$^{\text{+}}$ eXTended version for \\ model and atomistic quantum transport at nanoscale \\ many-body nonequilibrium phenomena \\ material \& device modeling \\}

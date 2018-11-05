@@ -36,11 +36,13 @@ module tranas_interface
   use tranas
   use ln_extract
   use mat_conv 
+  use densedescr
   use commonTypes, only : TOrbitals
   use libmpifx_module
 
-  use FormatOut                                                             !DAR
-  use taggedoutput                                                          !DAR
+  use FormatOut  
+  use globalenv
+  use taggedoutput                                                         
   
   implicit none
   private
@@ -48,9 +50,10 @@ module tranas_interface
   Type(Tnegf), target, save, public :: negf
 
   public :: negf_init      ! general library initializations
-  public :: negf_init_nogeom                                                !DAR 
+  public :: negf_init_nogeom                                               
   public :: negf_init_str  ! passing structure parameters
-  public :: negf_init_elph                                                  !DAR
+  public :: negf_init_str_NEW
+  public :: negf_init_elph                                                 
   public :: negf_destroy
   
   ! wrapped functions passing dftb matrices. Needed for parallel
@@ -712,6 +715,157 @@ module tranas_interface
   end subroutine negf_destroy
 
   !------------------------------------------------------------------------------
+  subroutine negf_init_str_NEW(denseDescr, transpar, greendens, iNeigh, nNeigh, img2CentCell)
+    Type(TDenseDescr), intent(in) :: denseDescr
+    Type(TTranspar), intent(in) :: transpar
+    Type(TGDFTBGreenDensInfo) :: greendens
+    Integer, intent(in) :: nNeigh(:)
+    Integer, intent(in) :: img2CentCell(:)
+    Integer, intent(in) :: iNeigh(0:,:)
+
+    Integer, allocatable :: PL_end(:), cont_end(:), surf_end(:), cblk(:), ind(:)
+    Integer, allocatable :: atomst(:), plcont(:)
+    integer, allocatable :: minv(:,:)
+    Integer :: natoms, ncont, nbl, iatc1, iatc2, iatm2
+    integer :: i, m, i1, j1, info
+    integer, allocatable :: inRegion(:)
+
+    iatm2 = transpar%idxdevice(2)
+    ncont = transpar%ncont
+    nbl = 0
+
+    if (transpar%defined) then
+       nbl = transpar%nPLs
+    else if (greendens%defined) then
+       nbl = greendens%nPLs
+    endif
+
+!NEW    if (nbl.eq.0) then
+!NEW      call error('Internal ERROR: nbl = 0 ?!')
+!NEW    end if
+
+    natoms = size(denseDescr%iatomstart) - 1
+
+!NEW    call check_pls(transpar, greendens, natoms, iNeigh, nNeigh, img2CentCell, info)
+
+    allocate(PL_end(nbl))
+    allocate(atomst(nbl+1))
+    allocate(plcont(nbl))
+    allocate(cblk(ncont))
+    allocate(cont_end(ncont))
+    allocate(surf_end(ncont))
+    allocate(ind(natoms+1))
+    allocate(minv(nbl,ncont))
+
+    ind(:) = DenseDescr%iatomstart(:) - 1
+    minv = 0
+    cblk = 0
+
+    do i = 1, ncont
+       cont_end(i) = ind(transpar%contacts(i)%idxrange(2)+1)
+       surf_end(i) = ind(transpar%contacts(i)%idxrange(1))
+    enddo
+
+    if (transpar%defined) then
+      do i = 1, nbl-1
+        PL_end(i) = ind(transpar%PL(i+1))
+      enddo
+      atomst(1:nbl) = transpar%PL(1:nbl)
+      PL_end(nbl) = ind(transpar%idxdevice(2)+1)
+      atomst(nbl+1) = iatm2 + 1
+    else if (greendens%defined) then
+      do i = 1, nbl-1
+        PL_end(i) = ind(greendens%PL(i+1))
+      enddo
+      atomst(1:nbl) = greendens%PL(1:nbl)
+      PL_end(nbl) = ind(natoms+1)
+      atomst(nbl+1) = natoms + 1
+    endif
+
+    if (transpar%defined .and. ncont.gt.0) then
+
+      if(.not.transpar%tNoGeometry) then
+
+       ! For each PL finds the min atom index among the atoms in each contact
+       ! At the end the array minv(iPL,iCont) can have only one value != 0
+       ! for each contact and this is the interacting PL
+       ! NOTE: the algorithm works with the asymmetric neighbor-map of dftb+
+       !       because atoms in contacts have larger indices than in the device
+       do m = 1, transpar%nPLs
+          ! Loop over all PL atoms
+          do i = atomst(m), atomst(m+1)-1
+
+             ! Loop over all contacts
+             do j1 = 1, ncont
+
+                iatc1 = transpar%contacts(j1)%idxrange(1)
+                iatc2 = transpar%contacts(j1)%idxrange(2)
+
+                i1 = minval(img2CentCell(iNeigh(1:nNeigh(i),i)), &
+                    & mask = (img2CentCell(iNeigh(1:nNeigh(i),i)).ge.iatc1 .and. &
+                    & img2CentCell(iNeigh(1:nNeigh(i),i)).le.iatc2) )
+
+                if (i1.ge.iatc1 .and. i1.le.iatc2) then
+                    minv(m,j1) = j1
+                endif
+
+             end do
+          end do
+       end do
+
+
+       do j1 = 1, ncont
+
+         if (all(minv(:,j1) == 0)) then
+           write(stdOut,*) '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+           write(stdOut,*) 'WARNING: contact',j1,' does no interact with any PL '
+           write(stdOut,*) '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+           minv(1,j1) = j1
+         end if
+
+         if (count(minv(:,j1).eq.j1).gt.1) then
+           write(stdOut,*) '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+           write(stdOut,*) 'ERROR: contact',j1,' interacts with more than one PL'
+           write(stdOut,*) '       check structure and increase PL size         '
+           write(stdOut,*) '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+!NEW           call error("")
+         end if
+
+         do m = 1, transpar%nPLs
+           if (minv(m,j1).eq.j1) then
+             cblk(j1) = m
+           end if
+         end do
+
+       end do
+
+      else
+
+         cblk=transpar%cblk
+
+      end if
+
+      write(stdOut,*) ' Structure info:'
+      write(stdOut,*) ' Number of PLs:',nbl
+      write(stdOut,*) ' PLs coupled to contacts:',cblk(1:ncont)
+      write(stdOut,*)
+
+    end if
+
+    call init_structure(negf, ncont, cont_end, surf_end, nbl, PL_end, cblk)
+
+    deallocate(PL_end)
+    deallocate(plcont)
+    deallocate(atomst)
+    deallocate(cblk)
+    deallocate(cont_end)
+    deallocate(surf_end)
+    deallocate(ind)
+    deallocate(minv)
+
+end subroutine negf_init_str_NEW
+
+
   subroutine negf_init_str(structure, transpar, greendens, iNeigh, nNeigh, img2CentCell)
 
     use tranas_types_mbngf, only : Tmbngf

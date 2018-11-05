@@ -48,12 +48,7 @@ Hamiltonian = DFTB {
     Separator = "-"    
     Suffix = ".skf"
   }
-  Eigensolver = TransportOnly{}
-}
 
-# ************************************
-# NOTE: Dephasing is not working yet
-# ************************************   
   Dephasing {
     BuettikerProbes = ZeroPotential {
     #BuettikerProbes = ZeroCurrent {

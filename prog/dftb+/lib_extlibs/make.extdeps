@@ -30,9 +30,7 @@ scalapackfx.o: _extlib_scalapackfx _extlib_lapack
 scalapackfx.o += _extlib_scalapackfx _extlib_lapack
 #:endif
 
-tranas_interface.o: _extlib_tranas #_extlib_libnegf
-tranas_interface.o += _extlib_tranas #+= _extlib_libnegf
 #:if WITH_TRANSPORT
-negf_int.o: _extlib_libnegf
-negf_int.o += _extlib_libnegf
+tranas_interface.o: _extlib_tranas 
+tranas_interface.o += _extlib_tranas
 #:endif

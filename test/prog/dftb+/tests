@@ -15,7 +15,16 @@ transport/deph_CH4-poisson             #? MPI_PROCS <= 4
 transport/deph_C25_ve_scc
 transport/deph_H57_bp
 transport/graphene3T
-transport/graphene_x
+#transport/graphene_x
+#transport/C-chain_allSteps             #? WITH_TRANSPORT and MPI_PROCS <= 2
+#transport/SiH-chain_allSteps           #? WITH_TRANSPORT and MPI_PROCS <= 2
+#transport/H-chain                      #? WITH_TRANSPORT and MPI_PROCS <= 4
+#transport/H-sheet                      #? WITH_TRANSPORT and MPI_PROCS <= 4
+#transport/H-3conts                     #? WITH_TRANSPORT and MPI_PROCS <= 4
+#transport/SiH-chain                    #? WITH_TRANSPORT and MPI_PROCS <= 4
+#transport/SiH-chain-cont               #? WITH_TRANSPORT and MPI_PROCS <= 4
+#transport/SiH-cont-poiss               #? WITH_TRANSPORT and MPI_PROCS <= 4
+#transport/Au-chain                     #? WITH_TRANSPORT and MPI_PROCS <= 4
 
 derivatives/Si_2_Delta                 #? MPI_PROCS <= 1
 legacy/Si2_oldSKinterp                 #? MPI_PROCS <= 1
@@ -198,19 +207,3 @@ geoopt/Vsi+O_lbfgs                     #? MPI_PROCS <= 4
 geoopt/Vsi+O                           #? MPI_PROCS <= 4
 scc/SiC64+V_dynforce_groups            #? MPI_PROCS <= 8 and MPI_PROCS % 4 == 0
 scc/SiC64+V_dynforce                   #? MPI_PROCS <= 4 and MPI_PROCS % 2 == 0
-
-transport/CH4                          #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/GaAs                         #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/CH4-poisson                  #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/CNT                          #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/C-chain_allSteps             #? WITH_TRANSPORT and MPI_PROCS <= 2
-transport/SiH-chain_allSteps           #? WITH_TRANSPORT and MPI_PROCS <= 2
-transport/H-chain                      #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/H-sheet                      #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/H-3conts                     #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/SiH-chain                    #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/SiH-chain-cont               #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/SiH-cont-poiss               #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/graphene_x                   #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/graphene3T                   #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/Au-chain                     #? WITH_TRANSPORT and MPI_PROCS <= 4

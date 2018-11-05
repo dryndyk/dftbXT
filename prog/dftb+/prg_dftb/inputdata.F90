@@ -25,13 +25,10 @@ module inputdata_module
 #:endif
   use pmlocalisation, only : TPipekMezeyInp
   use elstatpot, only : TElStatPotentialsInp
-  use tranas_vars  !!DAR
-  use poisson_vars  !!DAR
-  use tranas_types_main, only : TTraNaSInput
   
-
 #:if WITH_TRANSPORT
-  use libnegf_vars
+  use tranas_vars  !!DAR
+  use tranas_types_main, only : TTraNaSInput
   use poisson_init
 #:endif
 
@@ -42,7 +39,6 @@ module inputdata_module
   public :: control, TGeometry, slater, inputData, XLBOMDInp, TParallelOpts
   public :: TBlacsOpts
   public :: init, destruct
-  public :: TNEGFInfo
 
 #:if WITH_TRANSPORT
   public :: TNEGFInfo
@@ -361,7 +357,6 @@ module inputdata_module
     logical, allocatable :: tShellResInRegion(:)
     logical, allocatable :: tOrbResInRegion(:)
     character(lc), allocatable :: RegionLabel(:)
-    character(lc), allocatable :: regionLabels(:)
 
 
     !> H short range damping
@@ -414,13 +409,6 @@ module inputdata_module
 
     !> use Poisson solver for electrostatics
     logical :: tPoisson = .false.
-
-    
-    !> potential shifts are read from file
-    logical :: tReadShift = .false.
-    !> use Poisson solver for electrostatics
-    logical :: tPoisson = .false.
-    
 
     !> Dispersion related stuff
     type(DispersionInp), allocatable :: dispInp
@@ -476,20 +464,13 @@ module inputdata_module
   
   !------------------------------------------------------------------------------------------------!
   
+#:if WITH_TRANSPORT
   !> container for data needed by libNEGF
   type TNEGFInfo
     type(TGDFTBTunDos) :: tundos  !Transport section informations
     type(TGDFTBGreenDensInfo) :: greendens  !NEGF solver section informations
-    type(TPoissonInfo) :: poisson !DAR
-  end type TNEGFInfo
-#:if WITH_TRANSPORT
-  !> container for data needed by libNEGF
-  type TNEGFInfo
-    type(TNEGFTunDos) :: tundos  !Transport section informations
-    type(TNEGFGreenDensInfo) :: greendens  !NEGF solver section informations
   end type TNEGFInfo
 #:endif
-
 
 
   !> container for input data constituents
@@ -498,11 +479,9 @@ module inputdata_module
     type(control) :: ctrl
     type(TGeometry) :: geom
     type(slater) :: slako
-    type(TTransPar) :: transpar
-    type(TNEGFInfo) :: ginfo
-    type(TPoissonInfo) :: poisson
-    type(TTraNaSInput) :: tranas !Container for TraNaS input. !DAR
+   
   #:if WITH_TRANSPORT
+    type(TTraNaSInput) :: tranas !Container for TraNaS input. !DAR  
     type(TTransPar) :: transpar
     type(TNEGFInfo) :: ginfo
     type(TPoissonInfo) :: poisson
@@ -520,14 +499,6 @@ module inputdata_module
   interface destruct
     module procedure InputData_destruct
   end interface destruct
-
-  !> Solver types (used like an enumerator)
-  integer, parameter, public :: solverQR = 1
-  integer, parameter, public :: solverDAC = 2
-  integer, parameter, public :: solverRR1 = 3
-  integer, parameter, public :: solverRR2 = 4
-  integer, parameter, public :: solverGF = 5
-  integer, parameter, public :: onlyTransport = 6
 
 !--------------------------------------------------------------------------------------------------!  
 contains
