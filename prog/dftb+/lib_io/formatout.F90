@@ -328,7 +328,8 @@ contains
     write(outunit,*)
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'          TraNaS open software suite for quantum nanoscale modeling         ',hBar,hBar
+    write(outunit, '(5A)') hbar,hbar,'                              TraNaS OpenSuite                              ',hbar,hbar
+    write(outunit, '(5A)') hbar,hbar,'       (integrated open software suite for quantum nanoscale modeling)      ',hbar,hbar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
@@ -341,9 +342,9 @@ contains
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' Please cite as: DFTB+XT package [1], based on the DFTB+ [2,3] source code  ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' Please cite as: TraNaS OpenSuite [1], based on the DFTB+ [2,3] source code ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' [1] Dmitry A. Ryndyk, DFTB+XT, http://quantranspro.org/dftb+xt/            ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,' [1] Dmitry A. Ryndyk, TraNaS OpenSuite, http://quantranspro.org/opensuite/ ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar,' [2] B. Aradi, B. Hourahine and T. Frauenheim,                              ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,'     J. Phys. Chem. A 111, 5678 (2007); http://dftbplus.org/                ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' [3] A. Pecchia, G. Penazzi, L. Salvucci and A. Di Carlo,                   ',hBar,hBar
