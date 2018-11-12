@@ -33,7 +33,7 @@
 
 module mpi_globals
 
-#:if WITH_MPI == 0
+#:if WITH_MPI == 1
   
   use libmpifx_module
   
