@@ -468,12 +468,12 @@ contains
     ctrl%tCoordOpt = .false.
     ctrl%tLatOpt = .false.
 
-    ctrl%iGeoOpt = 0
     ctrl%tMD = .false.
     ctrl%iThermostat = 0
     ctrl%tForces = .false.
     ctrl%tSetFillingTemp = .false.
 
+    ctrl%iGeoOpt = optNull
     call getNodeName2(node, buffer)
     driver: select case (char(buffer))
     case ("")
@@ -644,7 +644,7 @@ contains
 
     case ("lbfgs")
 
-      ctrl%iGeoOpt = 4
+      ctrl%iGeoOpt = optLBFGS
 
       ctrl%tForces = .true.
       ctrl%restartFreq = 1
