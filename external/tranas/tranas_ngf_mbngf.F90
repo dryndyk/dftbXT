@@ -8,7 +8,7 @@
 !--------------------------------------------------------------------------------------------------!
 ! This file is a part of the TraNaS library for quantum transport at nanoscale.                    !
 ! Developer: Dmitry A. Ryndyk.                                                                     !
-! Based on the LibNEGF library developed by                                                        !
+! Partially based on the LibNEGF library developed by                                              !
 ! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
 !--------------------------------------------------------------------------------------------------!
   
@@ -17,10 +17,11 @@ module tranas_ngf_mbngf
   use mpi_globals, only : id, numprocs, id0  
   use libmpifx_module
   use ln_precision
-  use sparsekit_drv
+  use sparsekit_drv  
   use mat_def
 
   use tranas_types_main
+  use tranas_types_mbngf, only : TMBNGF
   use tranas_ngf_integrations
 
   implicit none
@@ -39,12 +40,13 @@ contains
   !------------------------------------------------------------------------------------------------!  
   subroutine mbngfInit(tranas)
 
-    type(TTraNaS) :: tranas
-    type(Tnegf) :: negf
+    type(TTraNaS), target :: tranas
+    type(Tnegf), pointer :: negf
 
     integer :: n,nbl,ierr
 
-    negf = tranas%negf
+    negf => tranas%negf
+    tranas%ngf%mbngf%str=negf%str
   
     ! Allocation of self-energies
     
@@ -71,8 +73,6 @@ contains
     if(negf%mbngf%tRPA) then
     
     end if
-
-    tranas%negf = negf
     
   end subroutine mbngfInit
     
@@ -81,14 +81,16 @@ contains
   !------------------------------------------------------------------------------------------------!  
   subroutine mbngfCompute(tranas)
 
-    type(TTraNaS) :: tranas
-    type(Tnegf) :: negf
+    type(TTraNaS), target :: tranas
+    type(Tnegf), pointer :: negf
+    type(TMBNGF), pointer :: mbngf
     type(z_DNS) :: rho_dense,rho_dense_previous,sigma_dense
 
     integer :: n,m,ii,jj,nbl,ierr,scba_iter
     real(dp) :: scba_error
 
-    negf = tranas%negf
+    negf => tranas%negf
+    mbngf => tranas%ngf%mbngf
 
     scba_error = 0.0_dp
   
@@ -114,19 +116,13 @@ contains
       if (id0.and.negf%verbose.gt.50) write(*,"('> SC iteration',I6)")scba_iter
 
       !------------------------------------------------------------------------
-      ! GreenRetarded calculation
-      !------------------------------------------------------------------------
-
-      if (negf%mbngf%tRPA) call GreenRetarded
-
-      !------------------------------------------------------------------------
       ! Density calculation
       !------------------------------------------------------------------------
 
       if (negf%mbngf%tHartreeFock) call density
 
       !------------------------------------------------------------------------
-      ! Hartree-Fock calculation
+      ! Self-energy calculation
       !------------------------------------------------------------------------
 
       call sigma
@@ -167,8 +163,6 @@ contains
       !write(*,*)
       write(*,"('>>> The MBNGF calculation is ended.')")
     end if
-
-    tranas%negf = negf
   
   CONTAINS  
 
@@ -192,21 +186,6 @@ contains
 
   end subroutine allocation
 
-  !------------------------------------------------------------------------------------------------!
-
-  subroutine GreenRetarded
-  
-    if (id0.and.negf%verbose.gt.50) write(*,"('Retarded GF is started')")
-
-      call tunneling_int_def(negf)
-      !call green_retarded(negf)
-
-
-    
-    if (id0.and.negf%verbose.gt.50) write(*,"('Retarded GF is calculated')")
-    
-  end subroutine GreenRetarded
-    
   !------------------------------------------------------------------------------------------------!
 
   subroutine density
@@ -238,7 +217,7 @@ contains
 
     if (negf%Np_real(1).gt.0) then
       call real_axis_int_def(negf)
-      call real_axis_int(negf)
+      call real_axis_int(tranas)
     endif
        
     call mpifx_allreduceip(negf%mpicomm, negf%rho%nzval, MPI_SUM)
@@ -269,7 +248,7 @@ contains
 
     if (negf%mbngf%tHartreeFock) then
  
-      if (id0.and.negf%verbose.gt.50) write(*,"('HF self-energy is started')")
+      if (id0.and.negf%verbose.gt.50) write(*,"('Calculation of HF self-energy is started')")
 
       call negf%mbngf%get_SelfEnergyR_HF(rho_dense,negf%U)
       !call negf%mbngf%get_SelfEnergyR_RHF(rho_dense,negf%U)   
@@ -303,6 +282,21 @@ contains
       !debug end
 
       if (id0.and.negf%verbose.gt.50) write(*,"('HF self-energy is calculated')")
+
+    end if
+
+    if (tranas%input%tPhotons) then
+ 
+      if (id0.and.negf%verbose.gt.50) write(*,"('Calculation of PHOTON Born self-energy is started.')")
+
+      call tunneling_int_def(negf)
+      call integrationsSelfEnergies(tranas)
+
+
+
+      
+
+      if (id0.and.negf%verbose.gt.50) write(*,"('Photon Born self-energy is calculated.')")
 
     end if
       

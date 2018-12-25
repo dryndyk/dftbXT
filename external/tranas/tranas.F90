@@ -8,7 +8,7 @@
 !--------------------------------------------------------------------------------------------------!
 ! This file is a part of the TraNaS library for quantum transport at nanoscale.                    !
 ! Developer: Dmitry A. Ryndyk.                                                                     !
-! Based on the LibNEGF library developed by                                                        !
+! Partially based on the LibNEGF library developed by                                              !
 ! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
 !--------------------------------------------------------------------------------------------------!
 
@@ -235,21 +235,24 @@ contains
 
   !------------------------------------------------------------------------------------------------!
 
-  !> Calculates the (self-consistent) self-energies and Green functions for given Hamiltonian and
-  !> Overlap (if any), electrode electrical and chemical potentials and temperatures.
+  !> Calculates the (self-consistent) self-energies at all relevant energies for given Hamiltonian and
+  !> overlap (if any), electrode electrical and chemical potentials and temperatures.
   !> The electrical potential (external or self-consistent from Poisson equation) should be included
   !> into the Hamiltonian.
+  !> The self-energies can be saved in memory (for small systems) or in file (for large systems).
   subroutine calcMBNGF(tranas)
 
     type(TTraNaS) :: tranas
 
     integer :: i
  
-    if (id0.and.tranas%negf%verbose.gt.30) then
+    if (id0.and.tranas%negf%verbose.gt.50) then
       write(*,*)
       write(*,'(80("-"))')
       write(*,*) '                          TraNaS: MBNGF calculation'  
-      write(*,'(80("-"))') 
+      write(*,'(80("-"))')
+    end if
+    if (id0.and.tranas%negf%verbose.gt.30) then
       if(tranas%input%tPhotons) then
         write(*,"(/,'Calculation with photons:')")
         write(*,"('Number of photon modes        =   ',I0)")tranas%input%photons%NumModes
@@ -270,7 +273,7 @@ contains
     call mbngfCompute(tranas)
     call destroy_matrices(tranas%negf)
  
-    if (id0.and.tranas%negf%verbose.gt.30) then
+    if (id0.and.tranas%negf%verbose.gt.50) then
       write(*,*)
       write(*,'(80("-"))')
       write(*,*) '                           TraNaS: MBNGF finished'   
@@ -289,7 +292,7 @@ contains
 
     type(TTraNaS) :: tranas
 
-    if (id0.and.tranas%negf%verbose.gt.30) then
+    if (id0.and.tranas%negf%verbose.gt.50) then
       write(*,*)
       write(*,'(80("-"))')
       write(*,*) '                        TraNaS: Local DOS calculation'  
@@ -302,7 +305,7 @@ contains
     call ldos_int(tranas%negf)
     call destroy_matrices(tranas%negf)
 
-    if (id0.and.tranas%negf%verbose.gt.30) then
+    if (id0.and.tranas%negf%verbose.gt.50) then
       write(*,*)
       write(*,'(80("-"))')
       write(*,*) '                         TraNaS: Local DOS finished'   
@@ -330,7 +333,7 @@ contains
       tranas%negf%readOldSGF = 1
     end if
 
-    if (id0.and.tranas%negf%verbose.gt.30) then
+    if (id0.and.tranas%negf%verbose.gt.50) then
       write(*,*)
       write(*,'(80("-"))')
       write(*,*) '                         TraNaS: Current calculation'  
@@ -340,12 +343,12 @@ contains
     call extract_device(tranas%negf)
     call extract_cont(tranas%negf)
     call tunneling_int_def(tranas%negf)
-    call meir_wingreen(tranas%negf)
+    call integrationsMeirWingreen(tranas)
     call electron_current_meir_wingreen(tranas%negf) !DAR
     call destroy_matrices(tranas%negf)
     if(tranas%negf%tMBNGF) call mbngfDestroy(tranas)  !DAR
     
-    if (id0.and.tranas%negf%verbose.gt.30) then
+    if (id0.and.tranas%negf%verbose.gt.50) then
       write(*,*)
       write(*,'(80("-"))')
       write(*,*) '                           TraNaS: Current finished'   
@@ -1229,8 +1232,12 @@ contains
   !                    ! C3  !0 !0 !0 !  in order to compute Ci
   !                    +-----+--+--+--+
   !-------------------------------------------------------------------------------
-  subroutine compute_density_dft(negf)
-    type(Tnegf) :: negf
+  subroutine compute_density_dft(tranas)
+
+    type(TTraNaS), target :: tranas
+    type(Tnegf), pointer :: negf
+
+    negf => tranas%negf
 
     call extract_device(negf)
     call extract_cont(negf)
@@ -1258,7 +1265,7 @@ contains
 
     if (negf%Np_real(1).gt.0) then
       call real_axis_int_def(negf)
-      call real_axis_int(negf)
+      call real_axis_int(tranas)
     endif
      
     call destroy_matrices(negf)

@@ -34,99 +34,100 @@
 
 module tranas_ngf_integrations 
 
-use ln_precision
-use ln_constants
-use ln_allocation
-use lib_param
-use tranas_types_main
-use mpi_globals, only : id, numprocs, id0
-use input_output
-use ln_structure
-use distributions 
-use sparsekit_drv
-use inversions
-use tranas_ngf_iterative
-!use iterative_ph
-use mat_def
-use ln_extract
-use contselfenergy
-use clock
-use elph
-use energy_mesh 
+  use ln_precision
+  use ln_constants
+  use ln_allocation
+  use lib_param
+  use tranas_types_main
+  use tranas_types_mbngf, only : TMBNGF
+  use mpi_globals, only : id, numprocs, id0
+  use input_output
+  use ln_structure
+  use distributions 
+  use sparsekit_drv
+  use inversions
+  use tranas_ngf_iterative
+  !use iterative_ph
+  use mat_def
+  use ln_extract
+  use contselfenergy
+  use clock
+  use elph
+  use energy_mesh 
 
-implicit none 
-private
+  implicit none 
+  private
 
-public :: contour_int       ! generalized contour integrator 
-public :: real_axis_int     ! real-axis integrator
-public :: ldos_int          ! ldos only integrator
+  public :: contour_int       ! generalized contour integrator 
+  public :: real_axis_int     ! real-axis integrator
+  public :: ldos_int          ! ldos only integrator
 
-public :: contour_int_def   ! contour integration for DFT(B)
-public :: contour_int_n_def ! contour integration for CB
-public :: contour_int_p_def ! contour integration for VB
-public :: real_axis_int_def ! real axis integration 
-public :: real_axis_int_n_def ! integration of CB on real axis
-public :: real_axis_int_p_def ! integration of VB on real axis
+  public :: contour_int_def   ! contour integration for DFT(B)
+  public :: contour_int_n_def ! contour integration for CB
+  public :: contour_int_p_def ! contour integration for VB
+  public :: real_axis_int_def ! real axis integration 
+  public :: real_axis_int_n_def ! integration of CB on real axis
+  public :: real_axis_int_p_def ! integration of VB on real axis
 
-public :: tunneling_int_def  !
-public :: tunneling_and_dos  ! computes of T(E) & LDOS(E)
-public :: meir_wingreen      ! computes effective T(E) with interaction
-public :: green_retarded     ! computes retarded GF for MBNGF              !DAR
-public :: electron_current   ! computes terminal currents
-public :: electron_current_meir_wingreen                                   !DAR
+  public :: tunneling_int_def  !
+  public :: tunneling_and_dos  ! computes of T(E) & LDOS(E)
+  public :: integrationsMeirWingreen   ! computes effective T(E) with interactions
+  public :: integrationsSelfEnergies   ! computes energy-dependent self-energies   
+  public :: electron_current   ! computes terminal currents
+  public :: electron_current_meir_wingreen                                   !DAR
 
-public :: phonon_tunneling   ! computes T(E) for phonons
-public :: phonon_current     ! computes heat currents
-public :: thermal_conductance ! computes thermal conductance
-!public :: phonon_phonon      ! computes thermal conductance
+  public :: phonon_tunneling   ! computes T(E) for phonons
+  public :: phonon_current     ! computes heat currents
+  public :: thermal_conductance ! computes thermal conductance
+  !public :: phonon_phonon      ! computes thermal conductance
 
-public :: integrate_el       ! integration of tunneling (el)
-public :: integrate_el_meir_wingreen                                       !DAR
-public :: integrate_ph       ! integration of tunneling (ph)
-!!public :: compute_dos      ! compute local dos only
+  public :: integrate_el       ! integration of tunneling (el)
+  public :: integrate_el_meir_wingreen                                       !DAR
+  public :: integrate_ph       ! integration of tunneling (ph)
+  !!public :: compute_dos      ! compute local dos only
 
-public :: contacts                                                         !DAR
- 
-!public :: menage_scratch
-! ////////////////////////////////////////////////////////////
-! Under development:
-!public :: init_emesh, destroy_emesh
-!private :: adaptive_int, trapez23 
-!public :: contour_int_ph, real_axis_int_ph, real_axis_int_ph2
-!
-!type TG_pointer
-!  type(z_CSR),  pointer :: pG => null()   
-!  integer :: ind   
-!end type TG_pointer
-! ////////////////////////////////////////////////////////////
+  !public :: menage_scratch
+  ! ////////////////////////////////////////////////////////////
+  ! Under development:
+  !public :: init_emesh, destroy_emesh
+  !private :: adaptive_int, trapez23 
+  !public :: contour_int_ph, real_axis_int_ph, real_axis_int_ph2
+  !
+  !type TG_pointer
+  !  type(z_CSR),  pointer :: pG => null()   
+  !  integer :: ind   
+  !end type TG_pointer
+  ! ////////////////////////////////////////////////////////////
+  
+  integer, PARAMETER :: VBT=80
 
-integer, PARAMETER :: VBT=80
-
-!!$ Moved to lib_param: module variables are not thread safe. 
-!!$ As the variable en_grid should not be declared here, also
-!!$ the type definition is moved to lib_param
-!!$ !! Structure used to define energy points for the integration
-!!$ !! For every point we define
-!!$ !!     path (1,2 or 3): the energy point belongs to a real axis 
-!!$ !!     integration (1), a complex plane integration (2) or a 
-!!$ !!     pole summation (3)
-!!$ !!     pt_path: relative point number within a single path
-!!$ !!     pt: absolute point number along the whole integration path
-!!$ !!     cpu: cpu assigned to the calculation of the given energy point
-!!$ !!     Ec: energy value
-!!$ !!     wght: a weight used in final summation to evaluate integrals
-!!$ type TEnGrid   
-!!$     integer :: path
-!!$     integer :: pt_path
-!!$     integer :: pt
-!!$     integer :: cpu
-!!$     complex(dp) :: Ec
-!!$     complex(dp) :: wght
-!!$ end type TEnGrid
-     
-!!$ type(TEnGrid), dimension(:), allocatable :: en_grid
-
-CONTAINS
+  !!$ Moved to lib_param: module variables are not thread safe. 
+  !!$ As the variable en_grid should not be declared here, also 
+  !!$ the type definition is moved to lib_param
+  !!$ !! Structure used to define energy points for the integration
+  !!$ !! For every point we define
+  !!$ !!     path (1,2 or 3): the energy point belongs to a real axis 
+  !!$ !!     integration (1), a complex plane integration (2) or a 
+  !!$ !!     pole summation (3)
+  !!$ !!     pt_path: relative point number within a single path
+  !!$ !!     pt: absolute point number along the whole integration path
+  !!$ !!     cpu: cpu assigned to the calculation of the given energy point
+  !!$ !!     Ec: energy value
+  !!$ !!     wght: a weight used in final summation to evaluate integrals
+  !!$ type TEnGrid   
+  !!$     integer :: path
+  !!$     integer :: pt_path
+  !!$     integer :: pt
+  !!$     integer :: cpu
+  !!$     complex(dp) :: Ec
+  !!$     complex(dp) :: wght
+  !!$ end type TEnGrid
+  
+  !!$ type(TEnGrid), dimension(:), allocatable :: en_grid
+  
+!--------------------------------------------------------------------------------------------------!
+contains
+!--------------------------------------------------------------------------------------------------!
   
   subroutine destroy_en_grid(en_grid)
     type(TEnGrid), dimension(:), allocatable :: en_grid
@@ -152,7 +153,7 @@ CONTAINS
     integer, intent(in) :: Npoints
 
     if (id0 .and. verbose.gt.VBT) then
-      write(6,'(3(a,i0),a,ES15.8)') 'INTEGRAL: point # ',gridpn%pt_path, &
+      write(6,'(3(a,i0),a,ES15.8)') '  INTEGRAL: point # ',gridpn%pt_path, &
           &'/',Npoints,'  CPU= ', gridpn%cpu, '  E=',real(gridpn%Ec)
     endif
 
@@ -217,7 +218,7 @@ CONTAINS
        Ec = negf%en_grid(i)%Ec + j*negf%dos_delta  !MUST use tunneling_int_def  
        negf%iE = negf%en_grid(i)%pt
 
-       call compute_Gr(negf, outer, ncont, Ec, Gr)
+       call compute_Gr(negf, outer, Ec, Gr)
 
 !print *, Gr%nrow, outer, ncont, Ec
 !print *, Gr%nzval       
@@ -760,7 +761,7 @@ CONTAINS
 
         if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Green`s funct ')
  
-        call compute_Gr(negf, outer, ncont, Ec, GreenR)
+        call compute_Gr(negf, outer, Ec, GreenR)
           
         if (id0.and.negf%verbose.gt.VBT) call write_clock
 
@@ -865,20 +866,21 @@ CONTAINS
   ! note: refcont is passed to calls_neq via TNegf
   !-----------------------------------------------------------------------
 
-  subroutine real_axis_int(negf)
-    type(Tnegf) :: negf
+  subroutine real_axis_int(tranas)
 
-    Type(z_DNS), Dimension(MAXNCONT) :: SelfEneR, Tlc, Tcl, GS
+    type(TTraNaS), target :: tranas
+    type(Tnegf), pointer :: negf
+    type(z_DNS), Dimension(MAXNCONT) :: SelfEneR, Tlc, Tcl, GS
     type(z_CSR) :: Gn, TmpMt 
 
     integer :: ref, Npoints
     integer :: i, i1, j1, outer, ncont
-
     real(dp), DIMENSION(:), allocatable :: frm_f
     real(dp) :: ncyc, Er
-
     complex(dp) :: zt
     complex(dp) :: Ec
+
+    negf => tranas%negf
 
     ncont = negf%str%num_conts
     outer = negf%outer
@@ -907,7 +909,7 @@ CONTAINS
 
        if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Green`s funct ')
 
-       call compute_Gn(negf, outer, ncont, Ec, frm_f, Gn)
+       call compute_GreenLesser(tranas, outer, ncont, Ec, frm_f, Gn)
        
        if (id0.and.negf%verbose.gt.VBT) call write_clock
 
@@ -1349,7 +1351,7 @@ end subroutine tunneling_int_def
        !DAR begin - Compute Self-Energies
        negf%tranas%e%IndexEnergy=i
        if(negf%tCalcSelfEnergies) then                                                       
-          if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Contact SE ')
+          if (id0.and.negf%verbose.gt.VBT) call message_clock('  Compute Contact SE ')
           negf%tTrans=.true.
           call compute_contacts(Ec+j*negf%delta,negf,ncyc,Tlc,Tcl,SelfEneR,GS)
           negf%tTrans=.false.
@@ -1405,14 +1407,14 @@ end subroutine tunneling_int_def
        !debug end
 
        if (.not.do_LEDOS) then
-          if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Tunneling ') 
+          if (id0.and.negf%verbose.gt.VBT) call message_clock('  Compute Tunneling ') 
 
           call tunneling_dns(negf%H,negf%S,Ec,SelfEneR,negf%ni,negf%nf,size_ni, &
                              & negf%str,TUN_MAT)
 
           negf%tunn_mat(i,:) = TUN_MAT(:) * negf%wght
        else
-          if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Tunneling and DOS') 
+          if (id0.and.negf%verbose.gt.VBT) call message_clock('  Compute Tunneling and DOS') 
           LEDOS(:) = 0.d0
           
           call tun_and_dos(negf%H,negf%S,Ec,SelfEneR,GS,negf%ni,negf%nf,negf%nLDOS, &
@@ -1473,9 +1475,10 @@ end subroutine tunneling_int_def
   !  lead for integration
   !---------------------------------------------------------------------------
   
-  subroutine meir_wingreen(negf)
+  subroutine integrationsMeirWingreen(tranas)
 
-    type(Tnegf) :: negf
+    type(TTraNaS), target :: tranas
+    type(Tnegf), pointer :: negf
 
     integer :: scba_iter, i1
     real(dp) :: ncyc
@@ -1490,6 +1493,8 @@ end subroutine tunneling_int_def
 
     integer :: i,k1
     integer :: ngs, npl            ! Dimension of Surface GF, PL
+
+    negf => tranas%negf
                                                 
     if (id0.and.negf%verbose.gt.50) then
       write(*,*)   
@@ -1538,7 +1543,7 @@ end subroutine tunneling_int_def
       
       negf%tranas%e%IndexEnergy=ii
       if(negf%tCalcSelfEnergies) then                                                       
-         if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Contact SE ')      
+         if (id0.and.negf%verbose.gt.VBT) call message_clock('  Compute Contact SE ')      
          !call compute_contacts(Ec+j*negf%delta,negf,ncyc,Tlc,Tcl,SelfEneR,GS)
          negf%tTrans=.true.
          call compute_contacts(Ec+(0.d0,1.d0)*negf%delta,negf,ncyc,Tlc,Tcl,SelfEneR,GS)  
@@ -1573,7 +1578,7 @@ end subroutine tunneling_int_def
 
       ! Calculate the SCBA green before the meir wingreen       
       !! If elph model, then get inside a SCBA cycle. Otherwise Gn is calculated
-      !! directly inside meir_wingreen
+      !! directly inside
   
       if (allocated(negf%inter)) then
          
@@ -1583,7 +1588,7 @@ end subroutine tunneling_int_def
 
           !Note: Gr,Sigma_r are also calculated and updated here inside
           negf%inter%scba_iter = scba_iter   
-          call calls_neq_elph(negf,real(Ec),SelfEneR,Tlc,Tcl,GS,frm,Gn,outer)
+          call iterativeGreenLesser(tranas,real(Ec),SelfEneR,Tlc,Tcl,GS,frm,Gn,outer)
           !debug begin
           if (negf%verbose.gt.200) then
             print *, 'debug: Gn_previous%nzval(:)'
@@ -1624,9 +1629,10 @@ end subroutine tunneling_int_def
                & " above reference tolerance ",negf%inter%scba_tol, " at energy ", Ec
         end if
         call destroy(Gn_previous)
+
       endif
 
-      call iterative_meir_wingreen(negf,real(Ec),SelfEneR,Tlc,Tcl,GS,frm,&
+      call iterativeMeirWingreen(negf,real(Ec),SelfEneR,Tlc,Tcl,GS,frm,&
            & negf%ni, tun_mat)
       negf%iE = negf%en_grid(ii)%pt
       negf%tunn_mat(ii,:) = TUN_MAT(:) * negf%wght
@@ -1646,31 +1652,28 @@ end subroutine tunneling_int_def
     write(*,"('>>> The Meir-Wingreen transport is finished.')")             
     end if                                                                  
     
-  end subroutine meir_wingreen
+  end subroutine integrationsMeirWingreen
+  
+  !------------------------------------------------------------------------------------------------!
+  
+  !> Calculation of Green functions and (next iteration) energy-dependent self-energies.
+  !> Saving of self-energies in memory or files.
+  !> (public)
+  subroutine integrationsSelfEnergies(tranas)  
+   
+    type(TTraNaS), target :: tranas
+    type(Tnegf), pointer :: negf
+    type(TMBNGF), pointer :: mbngf
+    type(z_CSR) :: Gn
 
-!--------------------------------------------------------------------------------------------------!
-!DAR begin - green_retarded, contacts, WriteRead_SGF_SE
-!--------------------------------------------------------------------------------------------------!
-
-!--------------------------------------------------------------------------------------------------!  
-!> Calculation of the retarded Green function negf%mbngf%GreenFunctionR
-!--------------------------------------------------------------------------------------------------!  
-                                
-subroutine green_retarded(negf)  
-
-    type(Tnegf) :: negf
-
-    Type(z_DNS), Dimension(MAXNCONT) :: SelfEneR, Tlc, Tcl, GS
-    type(z_CSR) :: Gn, TmpMt 
-
-    integer :: ref, Npoints
+    integer :: Npoints
     integer :: i, i1, j1, outer, ncont
-
     real(dp), DIMENSION(:), allocatable :: frm_f
-    real(dp) :: ncyc, Er
-
-    complex(dp) :: zt
+    real(dp) :: Er
     complex(dp) :: Ec
+
+    negf => tranas%negf
+    mbngf => tranas%ngf%mbngf
 
     ncont = negf%str%num_conts
     outer = negf%outer
@@ -1678,197 +1681,88 @@ subroutine green_retarded(negf)
 
     call log_allocate(frm_f,ncont)
     
-    call create(TmpMt,negf%H%nrow,negf%H%ncol,negf%H%nrow)
-    call initialize(TmpMt)
-    
-    call write_info(negf%verbose,'REAL AXIS INTEGRAL',Npoints)
+    call write_info(negf%verbose,'  ENERGY INTEGRAL',Npoints)
 
     do i = 1, Npoints
 
-       call write_point(negf%verbose,negf%en_grid(i),Npoints)
-       if (negf%en_grid(i)%cpu .ne. id) cycle
+      call write_point(negf%verbose,negf%en_grid(i),Npoints)
+      if (negf%en_grid(i)%cpu .ne. id) cycle
 
-       Ec = negf%en_grid(i)%Ec
-       Er = real(Ec)
-       zt = negf%en_grid(i)%wght
-       negf%iE = negf%en_grid(i)%pt
+      Ec = negf%en_grid(i)%Ec
+      Er = real(Ec)
+      negf%iE = negf%en_grid(i)%pt
 
-       do j1 = 1,ncont
-          frm_f(j1)=fermi(Er,negf%mu(j1),negf%kbT(j1))
-       enddo
+      do j1 = 1,ncont
+        frm_f(j1)=fermi(Er,negf%mu(j1),negf%kbT(j1))
+      enddo
 
-       if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Green`s funct ')
+      if (id0.and.negf%verbose.gt.VBT) call message_clock('  Compute Green functions and self-energies')
+ 
+      call compute_GreenLesser(tranas, outer, ncont, Ec, frm_f, Gn)
 
-       call compute_Gn(negf, outer, ncont, Ec, frm_f, Gn)
-       
-       if (id0.and.negf%verbose.gt.VBT) call write_clock
 
-       if(negf%DorE.eq.'E') zt = zt * Er 
-       
-       call concat(TmpMt,zt,Gn,1,1)
 
-       call destroy(Gn)
 
-    enddo
 
-    if(negf%DorE.eq.'D') then
-       if(allocated(negf%rho%nzval)) then
-          call concat(negf%rho,TmpMt,1,1)
-       else
-          call clone(TmpMt,negf%rho) 
-       endif
-    endif
-    if(negf%DorE.eq.'E') then
-       if(allocated(negf%rho_eps%nzval)) then
-          call concat(negf%rho_eps,TmpMt,1,1)
-       else
-          call clone(TmpMt,negf%rho_eps) 
-       endif
-    endif
-    
-    call destroy(TmpMt)
+      
+      if (id0.and.negf%verbose.gt.VBT) call write_clock
+
+      call destroy(Gn)
+
+    end do
     
     call log_deallocate(frm_f)
 
-end subroutine green_retarded
-
-  !-----------------------------------------------------------------------------
-  !>
-  !  Calculate the contact self-energies
-  !  IS NOT USED AND SHOULD BE CHECKED!
-  !-----------------------------------------------------------------------------
-  subroutine contacts(negf)
+  end subroutine integrationsSelfEnergies
+  
+  !------------------------------------------------------------------------------------------------!
+  
+  subroutine WriteRead_SGF_SE(negf)
 
     type(Tnegf) :: negf
 
-    integer :: scba_iter, i1
-    real(dp) :: ncyc
-    Type(z_DNS), Dimension(MAXNCONT) :: SelfEneR, Tlc, Tcl, GS
-    integer :: size_ni, ii, Nstep, outer, ncont, j1, icont, jj
-    complex(dp) :: Ec
+    integer :: icont,ncont,i,Nstep
+    integer :: npl,ngs
+    real(dp) :: Ec_check
 
-    integer :: i,k1
-    integer :: ngs, npl            ! Dimension of Surface GF, PL 
-    real(dp) :: Ec_check                                                           
-                                                    
     ncont = negf%str%num_conts
     Nstep = size(negf%en_grid)
 
-    call WriteRead_SGF_SE(negf)
+    do icont=1,ncont
 
-    if (id0.and.negf%verbose.gt.VBT) then
-       if(negf%tElastic) write(*,*)
-       if(negf%tCalcSelfEnergies) write(*,"('> The contact self-enery calculation is started.')")
-    end if
-    
-    ! Only take non-zero contacts
-    do ii=1,size(negf%ni)
-       if (negf%ni(ii).eq.0) then
-          size_ni=ii-1
-          exit
-       endif
-    enddo
-    ! Don't need outer blocks
-    outer = 0
-
-    !! Loop on energy points
-    do ii = 1, Nstep
-
-       call write_point(negf%verbose,negf%en_grid(ii), size(negf%en_grid))
-
-       if (negf%en_grid(ii)%cpu /= id) cycle
-       Ec = negf%en_grid(ii)%Ec
-       negf%iE = negf%en_grid(ii)%pt
-
-       negf%tranas%e%IndexEnergy=ii
-       if(negf%tCalcSelfEnergies) then                                                       
-          if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Contact SE ')      
-          !call compute_contacts(Ec+j*negf%delta,negf,ncyc,Tlc,Tcl,SelfEneR,GS)
-          negf%tTrans=.true.
-         call compute_contacts(Ec+(0.d0,1.d0)*negf%delta,negf,ncyc,Tlc,Tcl,SelfEneR,GS)
-         negf%tTrans=.false.
-         if (id0.and.negf%verbose.gt.VBT) call write_clock
-      end if                                                           
+      npl=negf%str%mat_PL_start(negf%str%cblk(icont)+1)-negf%str%mat_PL_start(negf%str%cblk(icont))
        
-       do icont=1,ncont
-          if(negf%tranas%cont(icont)%tReadSelfEnergy) then           
-             SelfEneR(icont)%val=negf%tranas%cont(icont)%SelfEnergy(:,:,ii)
-             npl=negf%str%mat_PL_start(negf%str%cblk(icont)+1)-negf%str%mat_PL_start(negf%str%cblk(icont))
-             SelfEneR(icont)%nrow=npl
-             SelfEneR(icont)%ncol=npl
-          end if
-          if(negf%tranas%cont(icont)%tWriteSelfEnergy) then
-             negf%tranas%cont(icont)%SelfEnergy(:,:,ii)=SelfEneR(icont)%val
-          end if
-       end do     
-      
-       if (id0.and.negf%verbose.gt.VBT) call write_clock
-       do icont=1,ncont
-          if(.not.negf%tranas%cont(icont)%tReadSelfEnergy) &
-               call destroy(Tlc(icont),Tcl(icont),SelfEneR(icont),GS(icont))
-       enddo
-
-    enddo
-   
-    !call log_deallocate(TUN_MAT)
-
-    if (id0.and.negf%verbose.gt.VBT) then
-       !if(negf%tCalcSelfEnergies) write(*,*)
-       if(negf%tCalcSelfEnergies) write(*,"('> The contact self-enery calculation is finished.')")
-    end if
-    
-  end subroutine contacts
-
-!--------------------------------------------------------------------------------------------------!
-!> Write/read the contact self-energies
-!--------------------------------------------------------------------------------------------------!
-
-subroutine WriteRead_SGF_SE(negf)
-
-  type(Tnegf) :: negf
-
-  integer :: icont,ncont,i,Nstep
-  integer :: npl,ngs
-  real(dp) :: Ec_check
-
-  ncont = negf%str%num_conts
-  Nstep = size(negf%en_grid)
-
-  do icont=1,ncont
-
-    npl=negf%str%mat_PL_start(negf%str%cblk(icont)+1)-negf%str%mat_PL_start(negf%str%cblk(icont))
-       
-    if(negf%tranas%cont(icont)%tReadSelfEnergy.or.negf%tranas%cont(icont)%tWriteSelfEnergy.or.negf%tManyBody) then
-      allocate(negf%tranas%cont(icont)%SelfEnergy(npl,npl,size(negf%en_grid)))
-      negf%tranas%cont(icont)%SelfEnergy = 0.0_dp 
-    end if
+      if(negf%tranas%cont(icont)%tReadSelfEnergy.or.negf%tranas%cont(icont)%tWriteSelfEnergy.or.negf%tManyBody) then
+        allocate(negf%tranas%cont(icont)%SelfEnergy(npl,npl,size(negf%en_grid)))
+        negf%tranas%cont(icont)%SelfEnergy = 0.0_dp 
+      end if
          
-    if(negf%tranas%cont(icont)%tReadSelfEnergy) then
-      if (negf%tranas%cont(icont)%tUnformatted) then 
-        open(14,form="unformatted",file=trim(negf%tranas%cont(icont)%name)//'-SelfEnergy.mgf',action="read")
-        do i = 1, Nstep
-          read(14)Ec_check,negf%tranas%cont(icont)%SelfEnergy(:,:,i)
-          if(abs(Ec_check-negf%en_grid(i)%Ec).gt.0.001) then
-            write(*,*)'Self-Energy is not consistent. The program is terminated.'
-            stop
-          end if
-        end do
+      if(negf%tranas%cont(icont)%tReadSelfEnergy) then
+        if (negf%tranas%cont(icont)%tUnformatted) then 
+          open(14,form="unformatted",file=trim(negf%tranas%cont(icont)%name)//'-SelfEnergy.mgf',action="read")
+          do i = 1, Nstep
+             read(14)Ec_check,negf%tranas%cont(icont)%SelfEnergy(:,:,i)
+            if(abs(Ec_check-negf%en_grid(i)%Ec).gt.0.001) then
+              write(*,*)'Self-Energy is not consistent. The program is terminated.'
+              stop
+            end if
+          end do
+        else
+          open(14,file=trim(negf%tranas%cont(icont)%name)//'-SelfEnergy.mgf',action="read")
+          do i = 1, Nstep
+            read(14,*)Ec_check,negf%tranas%cont(icont)%SelfEnergy(:,:,i)
+            if(abs(Ec_check-negf%en_grid(i)%Ec).gt.0.001) then
+              write(*,*)'Self-Energy is not consistent. The program is terminated.'
+              stop
+            end if
+          end do
+        end if   
+        close(14)
+        if (id0) write(*,"('The retarded contact self-energy is red from the file ',A)") &
+          trim(negf%tranas%cont(icont)%name)//'-SelfEnergy.mgf'
       else
-        open(14,file=trim(negf%tranas%cont(icont)%name)//'-SelfEnergy.mgf',action="read")
-        do i = 1, Nstep
-          read(14,*)Ec_check,negf%tranas%cont(icont)%SelfEnergy(:,:,i)
-          if(abs(Ec_check-negf%en_grid(i)%Ec).gt.0.001) then
-            write(*,*)'Self-Energy is not consistent. The program is terminated.'
-            stop
-          end if
-        end do
-      end if   
-      close(14)
-      if (id0) write(*,"('The retarded contact self-energy is red from the file ',A)") &
-        trim(negf%tranas%cont(icont)%name)//'-SelfEnergy.mgf'
-    else
-      negf%tCalcSelfEnergies = .true.
-    end if
+        negf%tCalcSelfEnergies = .true.
+      end if
 
     if(negf%tranas%cont(icont)%tReadSurfaceGF.or.negf%tranas%cont(icont)%tWriteSurfaceGF) then
       ngs=(negf%str%mat_C_end(icont)+ 1- negf%str%mat_B_Start(icont))/2
@@ -1901,40 +1795,35 @@ subroutine WriteRead_SGF_SE(negf)
            trim(negf%tranas%cont(icont)%name)//'-SurfaceGF.mgf'
     end if
 
-  end do
+    end do
 
-end subroutine WriteRead_SGF_SE
- 
-!--------------------------------------------------------------------------------------------------!
-!DAR end
-!--------------------------------------------------------------------------------------------------!
+  end subroutine WriteRead_SGF_SE
 
   !------------------------------------------------------------------------------------------------!
-  !> Calculates the retarded Green function (extended diagonal) at a single energy point.
-  !! It groups calculations of leads, sc loop for dephasing if any and deallocations of
-  !! working arrays. This routine is used in contour integration and DOS.
-  !------------------------------------------------------------------------------------------------!
 
-  subroutine compute_Gr(negf, outer, ncont, Ec, Gr)
+  !> Calculation of the retarded Green function (extended diagonal) at a single energy point.
+  !> It groups calculations of leads, sc loop for dephasing if any and deallocations of
+  !> working arrays.
+  !> This routine is used in the contour integration for full density and for LDOS(E).
+  !> (internal)
+  subroutine compute_Gr(negf, outer, Ec, Gr)
 
     type(Tnegf), intent(inout) :: negf
-    type(z_CSR), intent(out) :: Gr
     complex(dp), intent(in) :: Ec 
-    integer, intent(in) :: outer, ncont
+    integer, intent(in) :: outer
+    type(z_CSR), intent(out) :: Gr
     
     integer :: scba_iter, i1
     real(dp) :: ncyc
-    real(dp) :: scba_error !DAR    
+    real(dp) :: scba_error   
     type(z_DNS), Dimension(MAXNCONT) :: SelfEneR, Tlc, Tcl, GS
-    type(z_CSR) :: Gr_previous !DAR
+    type(z_CSR) :: Gr_previous 
 
-    !DAR call compute_contacts(Ec,negf,ncyc,Tlc,Tcl,SelfEneR,GS)
-    call compute_contacts(Ec+(0.d0,1.d0)*negf%delta,negf,ncyc,Tlc,Tcl,SelfEneR,GS) !DAR
-!print *,  SelfEneR(1)%val
-!print *,  SelfEneR(2)%val    
+    call compute_contacts(Ec+(0.d0,1.d0)*negf%delta,negf,ncyc,Tlc,Tcl,SelfEneR,GS)
+   
     if(allocated(negf%inter)) negf%inter%scba_iter = 0
 
-    call calls_eq_mem_dns(negf,Ec,SelfEneR,Tlc,Tcl,GS,Gr,outer)
+    call iterativeGreenRetarded(negf,Ec,SelfEneR,Tlc,Tcl,GS,Gr,outer)
 
     !! If elph model, then get inside a SCBA cycle
     !write(*,*) 'Before scba! '                                           !debug
@@ -1947,7 +1836,7 @@ end subroutine WriteRead_SGF_SE
         ! Need to destroy previous Gr
         negf%inter%scba_iter = scba_iter
         call destroy(Gr)        
-        call calls_eq_mem_dns(negf,Ec,SelfEneR,Tlc,Tcl,GS,Gr,outer)             
+        call iterativeGreenRetarded(negf,Ec,SelfEneR,Tlc,Tcl,GS,Gr,outer)             
         !DAR begin self-consistently condition
         !if (id0.and.negf%verbose.gt.VBT) write(*,*) 'SCBA iter',scba_iter 
         !if (negf%inter%scba_iter.ne.0) then
@@ -1969,7 +1858,7 @@ end subroutine WriteRead_SGF_SE
     end if
     !----------------------------------------------------------------------------------------------!
 
-    do i1=1,ncont
+    do i1 = 1, negf%str%num_conts
       call destroy(Tlc(i1),Tcl(i1),SelfEneR(i1),GS(i1))
     end do
 
@@ -1987,41 +1876,49 @@ end subroutine WriteRead_SGF_SE
   !  contact Fermi function is zero
   !  
   !-----------------------------------------------------------------------------
-  subroutine compute_Gn(negf, outer, ncont, Ec, frm, Gn)
-    type(Tnegf), intent(inout) :: negf
-    Type(z_CSR), intent(out) :: Gn
-    complex(dp), intent(in) :: Ec 
-    real(dp), dimension(:), intent(in) :: frm
 
+  !> Calculation of the lesser (-iG<) Green function (extended diagonal) at a single energy point.
+  !> It groups calculations of leads, sc loop for dephasing if any and deallocations of
+  !> working arrays.
+  !> This routine is used in the real-energy axis integration for full density and for MBNGF.
+  !> (internal)
+  
+  subroutine compute_GreenLesser(tranas, outer, ncont, Ec, frm, Gn)
+
+    type(TTraNaS), target :: tranas
+    type(Tnegf), pointer :: negf
+    type(z_CSR), intent(out) :: Gn
+    type(z_CSR) :: Gn_previous
+    type(z_DNS), Dimension(MAXNCONT) :: SelfEneR, Tlc, Tcl, GS
+    
     integer, intent(in) :: outer, ncont
     integer :: scba_iter, i1
+    real(dp), dimension(:), intent(in) :: frm
     real(dp) :: ncyc
-    Type(z_DNS), Dimension(MAXNCONT) :: SelfEneR, Tlc, Tcl, GS
     real(dp) :: Er
+    real(dp) :: scba_error
+    complex(dp), intent(in) :: Ec 
 
-    !DAR begin - compute_Gn
-    real(dp) :: scba_error                                                
-    Type(z_CSR) :: Gn_previous
-    !DAR end
-
+    negf => tranas%negf
+    
     Er = real(Ec,dp)
     !call compute_contacts(Ec,negf,ncyc,Tlc,Tcl,SelfEneR,GS)                !DAR
     call compute_contacts(Ec+(0.d0,1.d0)*negf%delta,negf,ncyc,Tlc,Tcl,SelfEneR,GS)
     
     if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP)) then
-      call calls_neq_mem_dns(negf, Er, SelfEneR, Tlc, Tcl, GS, frm, Gn, outer)
+      call iterativeGreenLesser_Landauer(negf, Er, SelfEneR, Tlc, Tcl, GS, frm, Gn, outer)
     else if ((.not.allocated(negf%inter)).and.negf%tDephasingBP) then
-      call calls_neq_elph(negf, Er, SelfEneR, Tlc, Tcl, GS, frm, Gn, outer)
+      call iterativeGreenLesser(tranas, Er, SelfEneR, Tlc, Tcl, GS, frm, Gn, outer)
     else
       negf%inter%scba_iter = 0
-      call calls_neq_elph(negf, Er, SelfEneR, Tlc, Tcl, GS, frm, Gn, outer)
+      call iterativeGreenLesser(tranas, Er, SelfEneR, Tlc, Tcl, GS, frm, Gn, outer)
       !! If elph model, then get inside a SCBA cycle
       call clone(Gn,Gn_previous)                                            !DAR
       do scba_iter = 1, negf%inter%scba_niter
         negf%inter%scba_iter = scba_iter
         ! Destroy previous Gn
         call destroy(Gn)
-        call calls_neq_elph(negf, Er, SelfEneR, Tlc, Tcl, GS, frm, Gn, outer)
+        call iterativeGreenLesser(tranas, Er, SelfEneR, Tlc, Tcl, GS, frm, Gn, outer)
         !DAR begin - self-consistently condition
         !write(*,*) 'SCBA iter',scba_iter 
         !if (negf%inter%scba_iter.ne.0) then
@@ -2046,12 +1943,14 @@ end subroutine WriteRead_SGF_SE
       call destroy(Tlc(i1),Tcl(i1),SelfEneR(i1),GS(i1))
     enddo
 
-  end subroutine compute_Gn
+  end subroutine compute_GreenLesser
 
-  !---------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
   !   COMPUTATION OF CURRENTS 
-  !---------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
+  
   subroutine electron_current(negf)
+
     type(Tnegf) :: negf
     
     integer :: size_ni, ii
@@ -2075,15 +1974,17 @@ end subroutine WriteRead_SGF_SE
                           & negf%kbT(negf%ni(ii)), negf%kbT(negf%nf(ii)), &
                           & negf%Emin, negf%Emax, negf%Estep, negf%g_spin)
     enddo
+
   end subroutine electron_current
 
-  !DAR begin - electron_current_meir_wingreen(negf)
+  !------------------------------------------------------------------------------------------------!
+  
   subroutine electron_current_meir_wingreen(negf)
+
     type(Tnegf) :: negf
     
     integer :: size_ni, ii
-    real(dp) :: mu1, mu2
-
+  
     size_ni = size(negf%tunn_mat,2)
 
     ! If previous calculation is there, destroy it
@@ -2092,14 +1993,13 @@ end subroutine WriteRead_SGF_SE
 
     negf%currents=0.d0
     do ii=1,size_ni
-       mu1=negf%mu(negf%ni(ii))
-       mu2=negf%mu(negf%nf(ii))
-       negf%currents(ii)= integrate_el_meir_wingreen(negf%tunn_mat(:,ii), mu1, mu2, &
+       negf%currents(ii)= integrate_el_meir_wingreen(negf%tunn_mat(:,ii), &
                           & negf%Emin, negf%Emax, negf%Estep, negf%g_spin)
     enddo
 
-  end subroutine electron_current_meir_wingreen		  
-  !DAR end
+  end subroutine electron_current_meir_wingreen
+
+  !------------------------------------------------------------------------------------------------!
   
   !-----------------------------------------------------------------------
   !  Routine to compute T(E) and (optionally) LDOS(E)
@@ -2453,27 +2353,22 @@ end subroutine WriteRead_SGF_SE
   
   end function integrate_el
   
-  !DAR begin - integrate_el_meir_wingreen
-  !************************************************************************
-  ! Function to integrate the current density I(E) !!! and get the current
-  ! for meir_wingreen
-  !************************************************************************
-  function integrate_el_meir_wingreen(TUN_TOT,mu1,mu2,emin,emax,estep,spin_g)
+  !> Function to integrate the current density I(E) and get the current for integrativeMeirWingreen.
+  function integrate_el_meir_wingreen(TUN_TOT,emin,emax,estep,spin_g)
 
     implicit none
  
     real(dp) :: integrate_el_meir_wingreen
-    real(dp), intent(in) :: mu1,mu2,emin,emax,estep
+    real(dp), intent(in) :: emin,emax,estep
     real(dp), dimension(:), intent(in) :: TUN_TOT
     real(dp), intent(in) :: spin_g 
  
-    REAL(dp) :: TT1,TT2,E3,E4,TT3,TT4
-    REAL(dp) :: E1,E2,c1,c2,curr
-    INTEGER :: i,i1,N,Nstep,imin,imax
+    REAL(dp) :: TT1,TT2
+    REAL(dp) :: E1,E2,curr
+    INTEGER :: i,Nstep,imin,imax
 
     curr=0.d0
-    N=0
-    Nstep=NINT((emax-emin)/estep);
+    Nstep=NINT((emax-emin)/estep)
  
     imin=0
     imax=Nstep 
@@ -2493,7 +2388,6 @@ end subroutine WriteRead_SGF_SE
     integrate_el_meir_wingreen = curr
   
   end function integrate_el_meir_wingreen
-  !DAR end
  
   !////////////////////////////////////////////////////////////////////////
   !************************************************************************

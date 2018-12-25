@@ -34,9 +34,6 @@
 
 !> The module implements the classes for many-body interactions.
 
-!> The module implements an abstract class to interface different
-!! many-body interactions. 
-
 module tranas_types_mbngf
 
   use globals, only : LST
@@ -49,8 +46,11 @@ module tranas_types_mbngf
 
   public :: interaction, TMBNGF
 
-  !-----------------------------------------------------------------------------
-
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
+  !> An abstract class to interface different many-body interactions.
+  !> USED ONLY FOR DEPHASING --> TO BE REMOVED?
+  
   type, abstract :: Interaction
 
      character(len=LST) :: descriptor
@@ -67,7 +67,7 @@ module tranas_types_mbngf
      !> Buffer for Gr
 
      !> Local diagonal representation of retarded self energy
-!     complex(dp), allocatable, dimension(:) :: sigma_r
+     !complex(dp), allocatable, dimension(:) :: sigma_r
 
      !> System partitioning (as in TNEGF)
      type(TStruct_info) :: struct
@@ -134,18 +134,21 @@ module tranas_types_mbngf
   !> Initialize information needed for buffering G on memory or disk
   !  Now it only pass the number of energy grid points but it 
   !  could turn in something more complicated (e.g. an energy path object)
-!!$    subroutine init_Gbuffer(this, en_npoints)
-!!$      class(interaction) :: this
-!!$      integer, intent(in) :: en_npoints
-!!$
-!!$      this%en_npoints = en_npoints
-!!$      
-!!$      
-!!$    end subroutine init_Gbuffer
-
-  !-----------------------------------------------------------------------------
-  !DAR begin - class Tmbngf
-  !-----------------------------------------------------------------------------
+  !!$    subroutine init_Gbuffer(this, en_npoints)
+  !!$      class(interaction) :: this
+  !!$      integer, intent(in) :: en_npoints
+  !!$
+  !!$      this%en_npoints = en_npoints
+  !!$      
+  !!$      
+  !!$    end subroutine init_Gbuffer
+  
+  !------------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
+  
+  !------------------------------------------------------------------------------------------------!
+  
+  !> Class for many-body interactions. 
   type :: TMBNGF
 
     !> Logical switches. 
@@ -176,12 +179,11 @@ module tranas_types_mbngf
 
   end type TMBNGF
 
+!--------------------------------------------------------------------------------------------------!
 contains
-
-  !-----------------------------------------------------------------------------  
+!--------------------------------------------------------------------------------------------------!
 
   !> Append the retarded self-energy to ESH
-  !!
   subroutine add_SelfEnergyR(mbngf,ESH)
 
     class(Tmbngf) :: mbngf
@@ -225,8 +227,8 @@ contains
     real(kind=dp), dimension(:,:), intent(in) :: U
     integer :: n,m, nbl, ii,jj,kk
     
-!DAR! Add later allocation for non-diagonal elements.
-!DAR! At the moment only interactions inside every PL are taken into account. 
+  !DAR! Add later allocation for non-diagonal elements.
+  !DAR! At the moment only interactions inside every PL are taken into account. 
 
     !debug begin
     !do ii=1,mbngf%str%central_dim
@@ -265,8 +267,8 @@ contains
     real(kind=dp), dimension(:,:), intent(in) :: U
     integer :: n,m, nbl, ii,jj,kk
     
-!DAR! Add later allocation for non-diagonal elements.
-!DAR! At the moment only interactions inside every PL are taken into account. 
+  !DAR! Add later allocation for non-diagonal elements.
+  !DAR! At the moment only interactions inside every PL are taken into account. 
 
     !debug begin
     !do ii=1,mbngf%str%central_dim
@@ -294,8 +296,7 @@ contains
     
   end subroutine get_SelfEnergyR_RHF
 
-  !-----------------------------------------------------------------------------
-  !DAR end
-  !-----------------------------------------------------------------------------
+!--------------------------------------------------------------------------------------------------!
+!--------------------------------------------------------------------------------------------------!  
 
 end module tranas_types_mbngf

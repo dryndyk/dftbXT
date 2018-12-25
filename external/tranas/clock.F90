@@ -1,3 +1,17 @@
+!--------------------------------------------------------------------------------------------------!
+! DFTB+XT open software package for quantum nanoscale modeling                                     !
+! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+!--------------------------------------------------------------------------------------------------!
+! GNU Lesser General Public License version 3 or (at your option) any later version.               !
+! See the LICENSE file for terms of usage and distribution.                                        !
+!--------------------------------------------------------------------------------------------------!
+! This file is a part of the TraNaS library for quantum transport at nanoscale.                    !
+! Developer: Dmitry A. Ryndyk.                                                                     !
+! Partially based on the LibNEGF library developed by                                              !
+! Alessandro Pecchia, Gabriele Penazzi, Luca Latessa, Aldo Di Carlo.                               !
+!--------------------------------------------------------------------------------------------------!
+
 !!--------------------------------------------------------------------------!
 !! libNEGF: a general library for Non-Equilibrium Green's functions.        !
 !! Copyright (C) 2012                                                       !
@@ -71,7 +85,7 @@ contains
 
    if (nclks.gt.0) then
       if (sus(nclks)) then
-         write(6,FMT='(54("."))',ADVANCE='NO')  
+         write(6,FMT='("  ",52("."))',ADVANCE='NO')  
          sus(nclks)=.false.
       endif   
       call SYSTEM_CLOCK(t2(nclks),cr,cm) 

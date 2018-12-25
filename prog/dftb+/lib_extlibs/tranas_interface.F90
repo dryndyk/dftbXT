@@ -32,7 +32,6 @@ module tranas_interface
                    !     set_elph_dephasing, set_elph_block_dephasing, &
                    !     set_elph_s_dephasing, destroy_elph_model
   use tranas_types_main                
-  !use libnegf
   use tranas
   use ln_extract
   use mat_conv 
@@ -64,7 +63,7 @@ module tranas_interface
   public :: local_currents
   public :: tranasNoGeom                                                    !DAR
  
-!!$ public :: negf_init_elph, negf_destroy_elph
+  !!$ public :: negf_init_elph, negf_destroy_elph
   
   ! interface csr matrices. The pattering must be predefined 
   ! using negf_init_csr 
@@ -76,9 +75,9 @@ module tranas_interface
 
   contains
 
-  !-----------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
   !> Initialize QT environment and variables (public)
-  !-----------------------------------------------------------------------------------------------!
+  !------------------------------------------------------------------------------------------------!
   subroutine negf_init(structure, transpar, greendens, tundos, mpicomm, initinfo)
           
     Type(TTranspar), intent(IN) :: transpar
@@ -320,13 +319,11 @@ module tranas_interface
     !--------------------------------------------------------------------------
 
   end subroutine negf_init
-  !-----------------------------------------------------------------------------
 
-  !DAR begin - negf_init_nogeom
   !------------------------------------------------------------------------------------------------!
   !> Initialize QT environment and variables without geometry (public)
   !------------------------------------------------------------------------------------------------!
-   subroutine negf_init_nogeom(transpar, greendens, tundos, mpicomm, initinfo)
+  subroutine negf_init_nogeom(transpar, greendens, tundos, mpicomm, initinfo)
          
     Type(TTranspar), intent(IN) :: transpar
     Type(TGDFTBstructure) :: structure
@@ -565,6 +562,8 @@ module tranas_interface
     
   end subroutine negf_init_nogeom
 
+  !------------------------------------------------------------------------------------------------!  
+  
   subroutine tp2negf(transpar)
 
     Type(TTranspar), intent(IN) :: transpar
@@ -608,12 +607,9 @@ module tranas_interface
     negf%tranas%cont(:)%tReadSeparatedSGF=transpar%contacts(:)%tReadSeparatedSGF 
 
   end subroutine tp2negf
+
+  !------------------------------------------------------------------------------------------------!  
     
-  !------------------------------------------------------------------------------------------------!
-  !DAR end
-  !------------------------------------------------------------------------------------------------!
-
-
   subroutine negf_init_elph(elph)
   
     type(TElPh), intent(in) :: elph
@@ -643,16 +639,17 @@ module tranas_interface
     negf%inter%scba_tol=elph%scba_tol
     
   end subroutine negf_init_elph
- !!$ !----------------------------------------------------------------------------
- !!$ subroutine negf_destroy_elph()
- !!$
- !!$    call destroy_elph_model(negf)
- !!$
- !!$ end subroutine negf_destroy_elph
- !!$ !----------------------------------------------------------------------------
- !!$
+  !!$ !----------------------------------------------------------------------------
+  !!$ subroutine negf_destroy_elph()
+  !!$
+  !!$    call destroy_elph_model(negf)
+  !!$
+  !!$ end subroutine negf_destroy_elph
+  !!$ !----------------------------------------------------------------------------
+  !!$
 
-  !DAR begin - negf_init_bp
+  !------------------------------------------------------------------------------------------------!  
+  
   subroutine negf_init_bp(elph)
   
     type(TElPh), intent(in) :: elph
@@ -684,7 +681,8 @@ module tranas_interface
     if (id0) write(*,*)'BP dephasing initialization is finished'
 
   end subroutine negf_init_bp
-  !DAR end
+  
+  !------------------------------------------------------------------------------------------------!
   
   subroutine negf_init_csr(iAtomStart, iNeighbor, nNeighbor, img2CentCell, orb)
     integer, intent(in) :: iAtomStart(:)    
@@ -702,7 +700,8 @@ module tranas_interface
 
   end subroutine negf_init_csr
   
-  !------------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
+  
   subroutine negf_destroy()
 
     !write(*,'(A)') 'Release Negf Memory:'                                 !DAR
@@ -714,7 +713,8 @@ module tranas_interface
 
   end subroutine negf_destroy
 
-  !------------------------------------------------------------------------------
+  !------------------------------------------------------------------------------------------------!
+  
   subroutine negf_init_str_NEW(denseDescr, transpar, greendens, iNeigh, nNeigh, img2CentCell)
     Type(TDenseDescr), intent(in) :: denseDescr
     Type(TTranspar), intent(in) :: transpar
@@ -863,8 +863,9 @@ module tranas_interface
     deallocate(ind)
     deallocate(minv)
 
-end subroutine negf_init_str_NEW
+  end subroutine negf_init_str_NEW
 
+  !------------------------------------------------------------------------------------------------!  
 
   subroutine negf_init_str(structure, transpar, greendens, iNeigh, nNeigh, img2CentCell)
 
@@ -1030,6 +1031,7 @@ end subroutine negf_init_str_NEW
   subroutine negf_density(miter, spin, nkpoint, HH, SS, mu, tundos, DensMat, EnMat)
   !DAR - tundos is added, it is necessary for 'call negf_init_elph(tundos%elph)'
 
+    type(TTraNaS) :: tranas
     Type(TGDFTBTunDos), intent(IN) :: tundos                                !DAR
     integer, intent (in) :: miter          ! SCC step (used in SGF)
     integer, intent (in) :: spin           ! spin component (SGF)
@@ -1084,8 +1086,10 @@ end subroutine negf_init_str_NEW
     call pass_HS(negf,HH,SS)
     if(negf%tDephasingVE) call negf_init_elph(tundos%elph)                  !DAR
     if(negf%tDephasingBP) call negf_init_bp(tundos%bp)                      !DAR
-    call compute_density_dft(negf)
-  
+    tranas%negf = negf
+    call compute_density_dft(tranas)
+    negf = tranas%negf    
+    
     call destroy_matrices(negf)
     
     if (id0.and.params%verbose.gt.30) write(*,'(73("*"))')
@@ -1096,14 +1100,14 @@ end subroutine negf_init_str_NEW
   !> INTERFACE subroutine to call LDOS computation (called only from this module)
   !------------------------------------------------------------------------------------------------!
   subroutine negf_ldos(HH, SS, spin, kpoint, wght, ledos)
+
+    type(TTraNaS) :: tranas
     type(z_CSR), intent(in) :: HH, SS
     integer, intent(in) :: spin      ! spin index 
     integer, intent(in) :: kpoint        ! kp index 
     real(dp), intent(in) :: wght      ! kp weight 
     real(dp), dimension(:,:), pointer :: ledos
-    type(lnParams) :: params
-
-    type(TTraNaS) :: tranas
+    type(lnParams) :: params 
 
     call get_params(negf, params)
 
@@ -1128,9 +1132,7 @@ end subroutine negf_init_str_NEW
     call pass_HS(negf,HH,SS)
 
     tranas%negf = negf
-
     call calcLDOS(tranas)
-
     negf = tranas%negf
     
     call destroy_matrices(negf)
@@ -1284,7 +1286,7 @@ end subroutine negf_init_str_NEW
     unitOfEnergy%name = "H"
     unitOfCurrent%name = "A"
     
-    if (id0.and.negf%verbose.gt.0) then
+    if (id0.and.negf%verbose.gt.30) then
       write(*,*)
       write(*,'(80("="))')
       write(*,*) '                            COMPUTATION OF TRANSPORT         '
@@ -1304,7 +1306,7 @@ end subroutine negf_init_str_NEW
     !if(negf%tModel) call ReadModel ! Is done now from parser! -- REMOVE
     if(.not.allocated(negf%H_all)) allocate(negf%H_all(negf%NumStates,negf%NumStates))
     negf%H_all=transpar%H_all
-    if (id0.and.negf%verbose.gt.90) then
+    if (id0.and.negf%verbose.gt.100) then
     write(*,"('Hamiltonian:')")   
     do i=1,negf%NumStates
        write(*,"(10000ES16.8)")negf%H_all(i,1:negf%NumStates)
@@ -1326,7 +1328,7 @@ end subroutine negf_init_str_NEW
         negf%S_all(i,i)=1._dp
       end do
     end if
-    if (id0.and.negf%verbose.gt.90) then
+    if (id0.and.negf%verbose.gt.100) then
     write(*,"('Overlap:')")   
     do i=1,negf%NumStates
        write(*,"(10000ES16.8)")negf%S_all(i,1:negf%NumStates)
@@ -1363,7 +1365,7 @@ end subroutine negf_init_str_NEW
 
     tranas%negf = negf
     tranas%input = transpar%tranas_input
-   
+ 
     if (negf%tMBNGF) call calcMBNGF(tranas)
 
     if (negf%tWrite_ldos) call calcLDOS(tranas)
@@ -1575,8 +1577,6 @@ end subroutine negf_init_str_NEW
     end if
         
   end subroutine tranasNoGeom
-  !-----------------------------------------------------------------------------
-  !DAR end
 
   !------------------------------------------------------------------------------------------------!
   !> Calculates density matrix with Green functions (public)
@@ -1808,8 +1808,7 @@ end subroutine negf_init_str_NEW
     
     
   end subroutine calcPDOS_green
-
-      
+     
   !------------------------------------------------------------------------------------------------!
   !> Subroutine to call current computation (public)
   !------------------------------------------------------------------------------------------------!
@@ -1885,7 +1884,7 @@ end subroutine negf_init_str_NEW
 
       if(negf%NumStates.eq.0) negf%NumStates=csrHam%ncol
       
-      if (id0.and.params%verbose.gt.0) then
+      if (id0.and.params%verbose.gt.30) then
       write(*,*)
       write(*,'(80("="))')
       write(*,*) '                            COMPUTATION OF TRANSPORT         '
@@ -2113,7 +2112,7 @@ end subroutine negf_init_str_NEW
 
   end if
     
-    if (id0.and.params%verbose.gt.0) print*,'calc_current done'             
+    if (id0.and.params%verbose.gt.30) print*,'calc_current done'             
 
   end subroutine calc_current
   !------------------------------------------------------------------------------------------------!
@@ -2437,10 +2436,6 @@ end subroutine negf_init_str_NEW
 
   !------------------------------------------------------------------------------------------------!
   !------------------------------------------------------------------------------------------------!
-  !------------------------------------------------------------------------------------------------!
-
-  !------------------------------------------------------------------------------------------------!
-  !DAR begin - ReadDFTB, ReadModel, test_negf, orthogonalization, etc.
   !------------------------------------------------------------------------------------------------!
 
   subroutine ReadDFTB
@@ -3042,9 +3037,5 @@ end subroutine negf_init_str_NEW
   
   end function inv
   
-  !------------------------------------------------------------------------------------------------!
-  !DAR end
-  !------------------------------------------------------------------------------------------------!
-    
 end module tranas_interface
 
