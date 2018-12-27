@@ -1,4 +1,6 @@
-% ******* Start of file osa.bst ******* 
+% ******* Start of file osa_tranas.bst ******* 
+%   osa_tranas.bst is modified osa.bst
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %   Copyright (c) 1994, Optical Society of America. 
 %						  
@@ -42,8 +44,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                       
 %   See the REVTeX 3.0 README file for restrictions and more
-%   information.  REVTeX 3.1 documentation is not yet available.                
-                                   
+%   information.  REVTeX 3.1 documentation is not yet available.              
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -643,8 +644,8 @@ FUNCTION {article}
   "title" format.title #0 add.string.check " " *
   "journal" journal #0 add.string.check " " *
   output
-%  format.vol.page #0 push.string
-  format.vol.num.pages #0 push.string
+  format.vol.page #0 push.string
+%  format.vol.num.pages #0 push.string
   " " *
   "date" format.date paren #0 add.string.check
   note empty$
