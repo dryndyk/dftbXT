@@ -1,8 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
-! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
+! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2017-2019 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -87,8 +87,8 @@ module initprogram
   use tranas_vars
   use tranas_interface
   use poisson_init
-#:endif
   use blacsfx_module
+#:endif
 
   implicit none
 
@@ -809,7 +809,13 @@ module initprogram
   !> Container for SK data for poisson
   type(TSKData) :: gdftbSKData
 
-  #:endif
+  !> NEGF !DAR
+  integer :: descHS(DLEN_)
+  
+#:endif
+
+  !> NEGF !DAR
+  integer, allocatable :: groupKS(:,:)
 
   !> Whether contact Hamiltonians are uploaded
   !> Synonym for G.F. calculation of density
@@ -842,10 +848,6 @@ module initprogram
   !> Holds spin-dependent electrochemical potentials of contacts
   !> This is because libNEGF is not spin-aware
   real(dp), allocatable :: mu(:,:)
-
-  !> NEGF !DAR
-  integer, allocatable :: groupKS(:,:)
-  integer :: descHS(DLEN_)
 
   !> Poisson Derivatives (forces)
   real(dp), allocatable :: poissonDerivs(:,:)

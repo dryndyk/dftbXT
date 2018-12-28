@@ -1,8 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
-! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
+! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2017-2019 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -18,11 +18,16 @@ program dftbplus
   use inputdata_module, only : inputData
   use formatout, only : printDftbHeader
   use parser, only : parseHsdInput
+#:if WITH_TRANSPORT
   use initprogram, only : initProgramVariables, &
                           negf_init_nogeom, negf_init_str, tranasNoGeom !DAR
   use libmpifx_module !DAR
   use tranas_vars !DAR
   use periodic !DAR
+#:else
+  use initprogram, only : initProgramVariables
+#:endif
+  
   implicit none
 
   character(len=*), parameter :: releaseName = '${RELEASE}$'
@@ -30,9 +35,11 @@ program dftbplus
 
   type(TEnvironment) :: env
   type(inputData), allocatable :: input
+#:if WITH_TRANSPORT  
   integer :: iAtom !DAR
   logical :: tInitNEGF !DAR
   Type(TGDFTBstructure) :: gdftbStr !DAR
+#:endif  
   integer, allocatable :: nNeigh(:)
   integer, allocatable :: img2CentCell(:)
   integer, allocatable :: iNeigh(:,:)
@@ -46,7 +53,7 @@ program dftbplus
   !------------------------------------------------------------------------------------------------!
   !DAR begin - NoGeometry
   !------------------------------------------------------------------------------------------------!
-
+#:if WITH_TRANSPORT
   if(input%transpar%tNoGeometry) then
 
     call env%initMpi(1)
@@ -86,13 +93,13 @@ program dftbplus
   !------------------------------------------------------------------------------------------------!
   !DAR end
   !------------------------------------------------------------------------------------------------!
-  
+#:endif  
   call initProgramVariables(input, env)
   !!DAR deallocate(input)        !! Big temporary hack.
   call runDftbPlus(env, input)   !!DAR + input
   call env%destruct()
   call destructGlobalEnv()
-
+#:if WITH_TRANSPORT
   end if
-
+#:endif
 end program dftbplus
