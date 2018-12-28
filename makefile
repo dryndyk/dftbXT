@@ -1,9 +1,12 @@
-#------------------------------------------------------------------------------#
-#  DFTB+: general package for performing fast atomistic simulations            #
-#  Copyright (C) 2018  DFTB+ developers group                                  #
-#                                                                              #
-#  See the LICENSE file for terms of usage and distribution.                   #
-#------------------------------------------------------------------------------#
+#--------------------------------------------------------------------------------------------------!
+# DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
+# Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
+# DFTB+: general package for performing fast atomistic simulations                                 !
+# Copyright (C) 2017-2019 DFTB+ developers group                                                   !
+#--------------------------------------------------------------------------------------------------!
+# GNU Lesser General Public License version 3 or (at your option) any later version.               !
+# See the LICENSE file for terms of usage and distribution.                                        !
+#--------------------------------------------------------------------------------------------------!
 
 ROOT := $(PWD)
 
@@ -93,7 +96,7 @@ EXTERNAL_NAME = $(subst external_,,$@)
 
 EXTERNALS = external_xmlf90 external_fsockets external_dftd3 external_mpifx \
             external_scalapackfx external_poisson external_tranas external_sparskit
-	    
+
 .PHONY: $(EXTERNALS)
 $(EXTERNALS):
 	mkdir -p $(BUILDDIR)/external/$(EXTERNAL_NAME)
@@ -170,9 +173,9 @@ check_dptools_py3:
 .PHONY: distclean
 distclean:
 	rm -rf $(BUILDDIR)
-	rm -rf external/sparskit/*/*.o !DAR!
+	rm -rf external/sparskit/*/*.o
 	rm -rf doc/dftb+/manual/*.aux doc/dftb+/manual/*._tmp_ doc/dftb+/manual/*.blg doc/dftb+/manual/*.ilg doc/dftb+/manual/*.log 
-	rm -rf doc/dftb+/manual/*.out doc/dftb+/manual/*.brf doc/dftb+/manual/*.idx doc/dftb+/manual/*.ind doc/dftb+/manual/*.pl
+	rm -rf doc/dftb+/manual/*.out doc/dftb+/manual/*.brf doc/dftb+/manual/*.pl
 	find -iname "*~"  -exec rm -i {} \;
 
 # Create a source distribution from current git check-out
