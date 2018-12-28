@@ -5,8 +5,8 @@
 #:include 'common.fypp'
 
 transport/model_H40                    #? WITH_TRANSPORT
-transport/GaAs                         #? MPI_PROCS <= 8
-transport/CH4                          #? MPI_PROCS <= 4  
+transport/GaAs                         #? WITH_TRANSPORT and MPI_PROCS <= 8
+transport/CH4                          #? WITH_TRANSPORT and MPI_PROCS <= 4  
 transport/CNT                          #? WITH_TRANSPORT
 transport/CNT_GF                       #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/deph_C25_ve                  #? WITH_TRANSPORT
