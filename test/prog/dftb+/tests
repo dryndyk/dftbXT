@@ -16,16 +16,17 @@ transport/deph_CH4-poisson             #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/deph_C25_ve_scc              #? WITH_TRANSPORT
 transport/deph_H57_bp                  #? WITH_TRANSPORT
 transport/graphene3T                   #? WITH_TRANSPORT
-#transport/graphene_x                  #? WITH_TRANSPORT
-#transport/C-chain_allSteps             #? WITH_TRANSPORT and MPI_PROCS <= 2
-#transport/SiH-chain_allSteps           #? WITH_TRANSPORT and MPI_PROCS <= 2
-#transport/H-chain                      #? WITH_TRANSPORT and MPI_PROCS <= 4
-#transport/H-sheet                      #? WITH_TRANSPORT and MPI_PROCS <= 4
-#transport/H-3conts                     #? WITH_TRANSPORT and MPI_PROCS <= 4
-#transport/SiH-chain                    #? WITH_TRANSPORT and MPI_PROCS <= 4
-#transport/SiH-chain-cont               #? WITH_TRANSPORT and MPI_PROCS <= 4
-#transport/SiH-cont-poiss               #? WITH_TRANSPORT and MPI_PROCS <= 4
-#transport/Au-chain                     #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/C-chain_allSteps             #? WITH_TRANSPORT and MPI_PROCS <= 2
+transport/H-chain                      #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/H-sheet                      #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/H-3conts                     #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/SiH-chain                    #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/SiH-chain-cont               #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/SiH-cont-poiss               #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/SiH-chain-parallel           #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/SiH-chain_allSteps           #? WITH_TRANSPORT and MPI_PROCS <= 2
+transport/Au-chain                     #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/graphene_x                   #? WITH_TRANSPORT
 
 derivatives/Si_2_Delta                 #? MPI_PROCS <= 1
 legacy/Si2_oldSKinterp                 #? MPI_PROCS <= 1

@@ -73,14 +73,12 @@ hamiltonian = dftb {
   #!Eigensolver = DivideAndConquer{} 
 }
 
-Analysis{
+Analysis = {
   TunnelingAndDOS{
-    EnergyRange [eV] = -0.0  0.0
-    EnergyStep [eV] = 0.02 
+    EnergyRange [eV] = -7.0  -6.0
+    EnergyStep [eV] = 0.2 
   }
 }
-
-!Analysis{}
 
 Parallel = {
   Blacs{ 

@@ -177,6 +177,7 @@ distclean:
 	rm -rf doc/dftb+/manual/*.aux doc/dftb+/manual/*._tmp_ doc/dftb+/manual/*.blg doc/dftb+/manual/*.ilg doc/dftb+/manual/*.log 
 	rm -rf doc/dftb+/manual/*.out doc/dftb+/manual/*.brf doc/dftb+/manual/*.pl
 	find -iname "*~"  -exec rm -i {} \;
+	find -iname "*.pyc"  -exec rm {} \;
 
 # Create a source distribution from current git check-out
 # Note: check-out must contain all submodules
