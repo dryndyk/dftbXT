@@ -885,8 +885,8 @@ contains
   subroutine buildSquaredAtomIndex(iAtomStart, orb)
 
     !> Returns the offset array for each atom.
-    !!DAR integer, intent(out) :: iAtomStart(:)
-    integer, allocatable, intent(out) :: iAtomStart(:) !!DAR
+    !DAR integer, intent(out) :: iAtomStart(:)
+    integer, allocatable, intent(out) :: iAtomStart(:) !DAR
 
     !> Information about the orbitals in the system.
     type(TOrbitals), intent(in) :: orb
@@ -896,9 +896,9 @@ contains
 
     nAtom = size(orb%nOrbAtom)
 
-    ALLOCATE(iAtomStart(nAtom + 1)) !!DAR
-    !!DAR @:ASSERT(all(shape(iAtomStart) == (/ nAtom + 1 /)))
-
+    !DAR @:ASSERT(all(shape(iAtomStart) == (/ nAtom + 1 /)))
+    ALLOCATE(iAtomStart(nAtom + 1)) !DAR
+    
     ind = 1
     do iAt1 = 1, nAtom
       iAtomStart(iAt1) = ind

@@ -1,8 +1,11 @@
 !--------------------------------------------------------------------------------------------------!
-!  DFTB+: general package for performing fast atomistic simulations                                !
-!  Copyright (C) 2018  DFTB+ developers group                                                      !
-!                                                                                                  !
-!  See the LICENSE file for terms of usage and distribution.                                       !
+! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
+! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
+! DFTB+: general package for performing fast atomistic simulations                                 !
+! Copyright (C) 2017-2019 DFTB+ developers group                                                   !
+!--------------------------------------------------------------------------------------------------!
+! GNU Lesser General Public License version 3 or (at your option) any later version.               !
+! See the LICENSE file for terms of usage and distribution.                                        !
 !--------------------------------------------------------------------------------------------------!
 
 #:include 'common.fypp'
@@ -27,8 +30,8 @@ module inputdata_module
   use elstatpot, only : TElStatPotentialsInp
   
 #:if WITH_TRANSPORT
-  use tranas_vars  !!DAR
-  use tranas_types_main, only : TTraNaSInput
+  use tranas_vars  !DAR
+  use tranas_types_main, only : TTraNaSInput !DAR
   use poisson_init
 #:endif
 
@@ -132,7 +135,7 @@ module inputdata_module
     logical :: tAppendGeo  = .false.
 
     !> use converged SCC forces only
-    logical :: tConvrgForces = .false.
+    logical :: tConvrgForces = .false. !DAR .true. -> .false.
 
     !> geometry step
     integer :: iGeoOpt     = 0
@@ -444,7 +447,7 @@ module inputdata_module
     integer :: timingLevel
     
     !> global verbosity level 
-    integer :: verbose  !!DAR
+    integer :: verbose  !DAR
 
   end type control
 

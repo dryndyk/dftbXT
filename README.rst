@@ -2,12 +2,12 @@
 DFTB+XT: open software package for quantum nanoscale modeling
 ********************************************************************************
 
-DFTB+XT is DFTB+ eXTended version for 
-model and atomistic quantum transport at nanoscale,
-many-body nonequilibrium phenomena, 
-material & device modeling.
+DFTB+XT is DFTB+ eXTended version for model and atomistic quantum 
+transport at nanoscale, many-body nonequilibrium phenomena, material & device modeling.
 
-DFTB+XT is available from http://quantranspro.org/dftb+xt/ site
+DFTB+XT is the core package of TraNaS OpenSuite, tranas.org/opensuite.
+
+The project is hosted on `github <http://github.com/tranas-open/dftbXT>`_.
 
 ********************************************************************************
 DFTB+: general package for performing fast atomistic calculations

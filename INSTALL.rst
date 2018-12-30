@@ -1,12 +1,12 @@
-******************************
-Compiling and installing DFTB+
-******************************
+********************************
+Compiling and installing DFTB+XT
+********************************
 
 
 Requirements
 ============
 
-In order to compile DFTB+, you need the following software components:
+In order to compile DFTB+XT, you need the following software components:
 
 * A Fortran 2003 compliant compiler
 
@@ -38,17 +38,17 @@ results, you will additionally need:
 Obtaining the source
 ====================
 
-The source code of the last stable release can be downloaded from the `DFTB+
-homepage <http://www.dftbplus.org>`_.
+The source code of the last stable release can be downloaded from the 
+`TraNaS OpenSuite homepage <http://tranas.org/opensuite>`_.
 
 Alternatively you can clone the `public git repository
-<https://github.com/dftbplus/dftbplus>`_. The tagged revisions correspond to
+<https://github.com/tranas-open/dftbXT>`_. The tagged revisions correspond to
 stable releases, while the master branch contains the latest development
 version. As the project uses git-submodules, those must be additionally
 downloaded ::
 
-  git clone https://github.com/dftbplus/dftbplus.git
-  cd dftbplus
+  git clone https://github.com/tranas-open/dftbXT.git
+  cd dftbXT
   git submodule update --init --recursive
 
 Optional extra components
@@ -117,8 +117,8 @@ Compiling
   when using OpenMP parallelism only and an optimised thread aware BLAS library.
 
 
-Testing DFTB+
-=============
+Testing
+=======
 
 * After successful compilation, execute the code tests with ::
 

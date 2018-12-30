@@ -1,8 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
-! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
+! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2017-2019 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -25,7 +25,7 @@ module globalenv
   private
 
   public :: initGlobalEnv, destructGlobalEnv
-  public :: initGlobalEnv_CP2K !!DAR
+  public :: initGlobalEnv_CP2K !DAR
   public :: abort, shutdown, synchronizeAll
   public :: stdOut, tIoProc
   public :: withScalapack, withMpi
@@ -71,7 +71,7 @@ contains
 
   end subroutine initGlobalEnv
   
-  !!DAR begin - initGlobalEnv_CP2K()  
+  !DAR begin - initGlobalEnv_CP2K()  
   !> Initializes DFTB+XT global environment in CP2K+XT
   subroutine initGlobalEnv_CP2K()
 
@@ -89,7 +89,7 @@ contains
   #:endif
 
   end subroutine initGlobalEnv_CP2K
-  !!DAR end
+  !DAR end
 
 
   !> Finalizes global environment (must be the last statement of a program)

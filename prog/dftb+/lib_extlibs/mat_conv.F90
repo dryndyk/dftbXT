@@ -18,8 +18,8 @@
 module mat_conv
   use assert
   use accuracy
-  use mat_def
-  !use libnegf, only: r_CSR, z_CSR, r_DNS, z_DNS, create, destroy 
+  use mat_def !DAR
+  !DAR use libnegf, only: r_CSR, z_CSR, r_DNS, z_DNS, create, destroy 
   use Constants, only : pi
   use CommonTypes, only : TOrbitals
   implicit none

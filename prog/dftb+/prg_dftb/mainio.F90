@@ -2216,8 +2216,8 @@ contains
         write(fd, *) 'KPT ', iK, ' SPIN ', iSpin, ' KWEIGHT ', kWeight(iK)
         do iEgy = 1, size(eigen, dim=1)
           ! meV accuracy for eigenvalues
-          !!DAR write(fd, "(I6, F10.3, F9.5)") iEgy, Hartree__eV * eigen(iEgy, iK, iSpin),&
-          write(fd, "(F10.3, F9.5)") Hartree__eV * eigen(iEgy, iK, iSpin),& !!DAR     
+          !DAR write(fd, "(I6, F10.3, F9.5)") iEgy, Hartree__eV * eigen(iEgy, iK, iSpin),&
+          write(fd, "(F10.3, F9.5)") Hartree__eV * eigen(iEgy, iK, iSpin),& !DAR     
               & filling(iEgy, iK, iSpin)
         end do
         write(fd,*)
@@ -3721,8 +3721,8 @@ contains
           & iLatGeoStep
     else
       write(stdOut, "(A, I0)") '-- Geometry step: ', iGeoStep
-   end if
-   write(stdOut, '(A)') repeat('-', 80)
+    end if
+    write(stdOut, '(A)') repeat('-', 80)
 
   end subroutine printGeoStepInfo
 

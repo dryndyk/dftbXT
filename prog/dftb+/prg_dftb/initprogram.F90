@@ -87,7 +87,7 @@ module initprogram
   use tranas_vars
   use tranas_interface
   use poisson_init
-  use blacsfx_module
+  use blacsfx_module !DAR
 #:endif
 
   implicit none
@@ -793,7 +793,7 @@ module initprogram
 
   !> Contains (iK, iS) tuples to be processed in parallel by various processor groups
   type(TParallelKS) :: parallelKS
-  
+
   private :: createRandomGenerators
 
 #:if WITH_TRANSPORT
@@ -802,20 +802,18 @@ module initprogram
   type(TPoissonStructure) :: poissStr
   type(TTransPar) :: transpar
   type(TNEGFInfo) :: ginfo
-  
+
+  !!DAR!! begin
   type(TGDFTBStructure) :: negfStr
-  integer, allocatable, target :: iAtomStart(:) !!DAR otherwise "negfStr%iAtomStart => denseDesc%iAtomStar" does not work 
-  
+  integer, allocatable, target :: iAtomStart(:) ! otherwise "negfStr%iAtomStart => denseDesc%iAtomStar" does not work
   !> Container for SK data for poisson
   type(TSKData) :: gdftbSKData
-
-  !> NEGF !DAR
+  !> NEGF
   integer :: descHS(DLEN_)
+  integer, allocatable :: groupKS(:,:)
+  !!DAR!! end
   
 #:endif
-
-  !> NEGF !DAR
-  integer, allocatable :: groupKS(:,:)
 
   !> Whether contact Hamiltonians are uploaded
   !> Synonym for G.F. calculation of density
@@ -1583,7 +1581,8 @@ contains
 
     ! requires stress to already be possible and it being a periodic calculation
     ! with forces
-    tStress = (tPeriodic .and. tForces .and. tStress)
+    !!DAR!! tStress = (tPeriodic .and. tForces .and. .not.tNegf .and. tStress)    
+    tStress = (tPeriodic .and. tForces .and. tStress) !!DAR!!
 
     nMovedAtom = input%ctrl%nrMoved
     nMovedCoord = 3 * nMovedAtom
@@ -2882,7 +2881,7 @@ contains
 
   end subroutine initProgramVariables
 
-  !DAR begin groupKS
+  !!DAR!! begin groupKS
   !------------------------------------------------------------------------------
   
   subroutine initProcessorGroups(nGroup, nKPoint, nSpin, groupKS)
@@ -2928,7 +2927,7 @@ contains
   end subroutine initProcessorGroups
   
   !------------------------------------------------------------------------------
-  !DAR end groupKS
+  !!DAR!! end groupKS
 
 
   !> Clean up things that do not automatically get removed on going out of scope
@@ -3099,11 +3098,10 @@ contains
       end if
 
       ! Some sanity checks and initialization of GDFTB/NEGF
-!NEW      call negf_init(input%transpar, input%ginfo%greendens, input%ginfo%tundos, env%mpi%globalComm,&
-!NEW          & tempElec, solver)
-          
+      !NEW call negf_init(input%transpar, input%ginfo%greendens, input%ginfo%tundos, env%mpi%globalComm,&
+      !NEW     & tempElec, solver)
       call negf_init(negfStr, input%transpar, input%ginfo%greendens, input%ginfo%tundos,&
-           & env%mpi%globalComm, tInitialized)    
+           & env%mpi%globalComm, tInitialized) !!DAR!!    
 
       ginfo = input%ginfo
 

@@ -323,7 +323,7 @@ contains
     ! Read W values if needed by Hamitonian or excited state calculation
     call readSpinConstants(hamNode, input%geom, input%slako, input%ctrl)
 #:if WITH_TRANSPORT
-    call finalizeNegf(input) !!DAR
+    call finalizeNegf(input) !DAR
 #:endif
     call readParallel(root, input)
 
@@ -3081,7 +3081,7 @@ contains
       call getChildValue(node, "ReadChargesAsText", ctrl%tReadChrgAscii, .false.)
     end if
     call getChildValue(node, "WriteChargesAsText", ctrl%tWriteChrgAscii, .false.)
-    call getChildValue(node, "Verbosity", ctrl%verbose, 51) !!DAR
+    call getChildValue(node, "Verbosity", ctrl%verbose, 51) !DAR
 
     ctrl%tSkipChrgChecksum = .false.
     if (.not. ctrl%tFixEf .and. ctrl%tReadChrg) then
@@ -5374,7 +5374,7 @@ contains
     type(fnodeList), pointer :: pNodeList
     integer :: ii, contact
     real(dp) :: acc, contactRange(2), sep
-    type(listInt) :: li                                           !!DAR
+    type(listInt) :: li                                           !DAR
    
     write(stdout,"('> readTransportGeometry_NoGeom is started')") !DAR 
    
@@ -5812,7 +5812,7 @@ contains
          tundos%dosOrbitals(ii)%data=iAtInRegion(ii)%data
       end do
 
-!DAR!      call transformPdosRegionInfo(iAtInRegion, tShellResInRegion, &
+!!DAR!!      call transformPdosRegionInfo(iAtInRegion, tShellResInRegion, &
 !          & regionLabelPrefixes, orb, geo%species, tundos%dosOrbitals, &
 !          & tundos%dosLabels)
 

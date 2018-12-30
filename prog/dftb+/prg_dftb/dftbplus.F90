@@ -95,8 +95,8 @@ program dftbplus
   !------------------------------------------------------------------------------------------------!
 #:endif  
   call initProgramVariables(input, env)
-  !!DAR deallocate(input)        !! Big temporary hack.
-  call runDftbPlus(env, input)   !!DAR + input
+  !!DAR!! deallocate(input)      !! Big temporary hack.
+  call runDftbPlus(env, input)   !!DAR!! + input
   call env%destruct()
   call destructGlobalEnv()
 #:if WITH_TRANSPORT

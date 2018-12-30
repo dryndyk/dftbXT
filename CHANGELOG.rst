@@ -1,6 +1,56 @@
-**********
-Change Log
-**********
+******************
+Change Log DFTB+XT
+******************
+
+Notable project changes from release 1.01 (2018-01-18).
+Changes in DFTB+ are below.
+
+
+Unreleased
+=================
+
+Added
+-----
+
+
+Changed
+-------
+
+
+Fixed
+-----
+
+
+1.01 (2018-01-18)
+=================
+
+Added
+-----
+
+- Model Hamiltonians for transport calculations.
+  We introduced the possibility to read model Hamiltonians from external data files and use it with
+  or without a geometry structure. 
+
+- Elastic dephasing.
+  Two models of elastic dephasing ("Büttiker probe" and "vibronic dephasing") can be used now 
+  to include the dephasing and dissipation beyond the coherent Green function method. 
+
+- Application to STM spectroscopy.
+  We added new options to simplify and make faster the calculation of currents for systems with 
+  changeable geometry (like the STM setup). 
+
+
+Changed
+-------
+
+
+Fixed
+-----
+
+
+****************
+Change Log DFTB+
+****************
 
 Notable project changes since release 1.3.1 (2017-02-22).
 
@@ -20,7 +70,6 @@ Changed
 
 Fixed
 -----
-
 
 
 18.2

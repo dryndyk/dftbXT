@@ -1,8 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
-! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
+! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2017-2019 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -17,7 +17,7 @@ module formatout
   use message
   use assert
   use accuracy
-  use fileid
+  use fileid !!DAR!!
   use constants
   use lapackroutines, only: matinv
   use sparse2dense
@@ -26,7 +26,7 @@ module formatout
 
   public :: clearFile, writeGenFormat, writeXYZFormat
   public :: printDFTBHeader
-  public :: writeSparseAsSquare, writeSparseAsSquare_old, writeSparse
+  public :: writeSparseAsSquare, writeSparseAsSquare_old, writeSparse !!DAR!! + writeSparseAsSquare_old
 
 
   !> Clears contents of a file
@@ -55,7 +55,7 @@ module formatout
     module procedure writeSparseAsSquare_cplx
   end interface writeSparseAsSquare
   
-  interface writeSparseAsSquare_old
+  interface writeSparseAsSquare_old !!DAR!!
     module procedure writeSparseAsSquare_real_old
     module procedure writeSparseAsSquare_cplx_old
   end interface writeSparseAsSquare_old
@@ -486,8 +486,8 @@ contains
   end subroutine writeSparseAsSquare_cplx
   
   !> Converts a sparse matrix to its square form and write it to a file.
-  subroutine writeSparseAsSquare_real_old(fname, sparse, iNeighbor, nNeighbor, iAtomStart, iPair, &
-      & img2CentCell)
+  subroutine writeSparseAsSquare_real_old(fname, sparse, iNeighbor, nNeighbor, iAtomStart, iPair, & !!DAR!!
+      & img2CentCell) 
 
     !> Name of the file to write the matrix to.
     character(len=*), intent(in) :: fname
@@ -534,7 +534,7 @@ contains
 
 
   !> Converts a sparse matrix to its square form and write it to a file.
-  subroutine writeSparseAsSquare_cplx_old(fname, sparse, kPoints, iNeighbor, nNeighbor, iAtomStart, &
+  subroutine writeSparseAsSquare_cplx_old(fname, sparse, kPoints, iNeighbor, nNeighbor, iAtomStart, & !!DAR!!
       & iPair, img2CentCell, iCellVec, cellVec)
 
     !> Name of the file to write the matrix into.

@@ -76,7 +76,7 @@ module main
   use mdintegrator
   use tempprofile
 
-  !! DAR begin - use
+  !!DAR begin - use
   use initprogram 
   use fileid
   !!DAR end
@@ -102,12 +102,12 @@ module main
 contains
 
   !> The main DFTB program itself
-  subroutine runDftbPlus(env, input) !!DAR + input temporary
-    !use initprogram
+  subroutine runDftbPlus(env, input) !!DAR!! + input
+    !use initprogram !!DAR!!
 
     !> Environment settings
     type(TEnvironment), intent(inout) :: env
-    type(inputdata), intent(in) :: input !!DAR
+    type(inputdata), intent(in) :: input !!DAR!!
 
     !> energy in previous scc cycles
     real(dp) :: Eold
@@ -193,21 +193,7 @@ contains
     !> All of the excited energies actuall solved by Casida routines (if used)
     real(dp), allocatable :: energiesCasida(:)
 
-!OLD    !> Variables for Transport NEGF/Poisson solver
-!OLD    !> Tunneling, local DOS and current
-
-!OLD    real(dp), allocatable :: tunneling(:,:), ldos(:,:), current(:)
     real(dp), allocatable :: tunnTot(:,:), ldosTot(:,:), currTot(:)
-
- !OLD   !> Poisson Derivatives (forces)
- !OLD   real(dp), allocatable :: poissonDerivs(:,:)
-
-!OLD    !> Shell-resolved Potential shifts uploaded from contacts 
-!OLD    real(dp), allocatable :: shiftPerLUp(:,:)
-
- !OLD   !> Details of energy interval for tunneling used in output
- !OLD   real(dp)              :: Emin, Emax, Estep
- 
     
     call initGeoOptParameters(tCoordOpt, nGeoSteps, tGeomEnd, tCoordStep, tStopDriver, iGeoStep,&
         & iLatGeoStep)
@@ -376,11 +362,9 @@ contains
             & tRealHS, tSpinSharedEf, tSpinOrbit, tDualSpinOrbit, tFillKSep, tFixEf, tMulliken,&
             & iDistribFn, tempElec, nEl, parallelKS, Ef, mu, energy, eigen, filling, rhoPrim,&
             & Eband, TS, E0, iHam, xi, orbitalL, HSqrReal, SSqrReal, eigvecsReal, iRhoPrim,&
-            & HSqrCplx, SSqrCplx, eigvecsCplx, rhoSqrReal, input)
+            & HSqrCplx, SSqrCplx, eigvecsCplx, rhoSqrReal, input)  !!DAR!! + input
         if(input%ctrl%verbose.gt.80) write(stdout,"('getDensity is finished')") !DAR
         end if !DAR    
-!print *, 'main rhoPrim'       
-!print *,  rhoPrim
 
 !NEW        ! Compute Density Matrix
 !NEW        call getDensity(env, iSCCIter, denseDesc, ham, over, neighbourList, nNeighbourSK,&
@@ -520,7 +504,7 @@ contains
 !NEW      if (tLocalCurrents) then
 !NEW        call writeXYZFormat("supercell.xyz", coord, species, speciesName)
 !NEW        write(stdOut,*) " <<< supercell.xyz written on file"
-!NEW        call local_currents(env%mpi%globalComm, parallelKS%localKS, ham, over,&
+!NEW        call local_currents(env%mpi%globalComm, parallelKS%localKS, ham, over,& !!DAR!!
 !NEW            & neighbourList%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
 !NEW            & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, coord0Fold, .false., mu)
 !NEW      end if
@@ -556,8 +540,7 @@ contains
         call getEnergyWeightedDensity(env, denseDesc, forceType, filling, eigen, kPoint, kWeight,&
             & neighbourList, nNeighbourSK, orb, iSparseStart, img2CentCell, iCellVec, cellVec,&
             & tRealHS, ham, over, parallelKS, solver, iSCCIter, mu, ERhoPrim, eigvecsReal, &
-            & SSqrReal, eigvecsCplx, SSqrCplx, input)
-!NEW            & tRealHS, ham, over, parallelKS, solver, iSCCIter, mu, ERhoPrim, eigvecsReal,&
+            & SSqrReal, eigvecsCplx, SSqrCplx, input) !!DAR!! + input
 !NEW            & SSqrReal, eigvecsCplx, SSqrCplx)
         if(input%ctrl%verbose.gt.80) write(stdout,"('getEDensity is finished')") !DAR      
         call env%globalTimer%stopTimer(globalTimers%energyDensityMatrix)
@@ -780,16 +763,6 @@ contains
     endif
     
     !==========================================================================!
-    ! Contact                                                                  !
-    !==========================================================================!
-
-!OLD    if (tContCalc) then
-!      ! Note: shift and charge are saved in QM representation (not UD)
-!OLD      call writeContShift(input%transpar, nAtom, orb, potential%intShell,&
-!OLD          &qOutput)
-!OLD    end if
-    
-    !==========================================================================!
     !  Transport section                                                       !
     !==========================================================================!
 
@@ -809,8 +782,9 @@ contains
           & img2CentCell, iCellVec, cellVec, orb, nEl, tempElec,&
           & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, writeLDOS,&
           & mu, input%ginfo%tundos)
-      !DAR - input%ginfo%tundos is added,
-      !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface
+      !!DAR!! - input%ginfo%tundos is added,
+      !         it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface
+
       !call ud2qm(ham)   
       !NEW call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over,&
       !NEW    & neighbourList%iNeighbour, nNeighbourSK, densedesc%iAtomStart, iSparseStart,&
@@ -1875,7 +1849,7 @@ contains
       & tSpinSharedEf, tSpinOrbit, tDualSpinOrbit, tFillKSep, tFixEf, tMulliken, iDistribFn,&
       & tempElec, nEl, parallelKS, Ef, mu, energy, eigen, filling, rhoPrim, Eband, TS, E0, iHam,&
       & xi, orbitalL, HSqrReal, SSqrReal, eigvecsReal, iRhoPrim, HSqrCplx, SSqrCplx, eigvecsCplx,&
-      & rhoSqrReal, input)
+      & rhoSqrReal, input)  !!DAR!! + input
 
     !> Environment settings
     type(TEnvironment), intent(inout) :: env
@@ -2020,9 +1994,9 @@ contains
 
     integer :: nSpin
 
-    type(inputdata), intent(in) :: input !!DAR
+    type(inputdata), intent(in) :: input !!DAR!!
 #:if WITH_TRANSPORT    
-    integer :: descHS(DLEN_)             !!DAR
+    integer :: descHS(DLEN_)             !!DAR!!
 #:endif    
 
     nSpin = size(ham, dim=2)
@@ -2034,7 +2008,7 @@ contains
       call calcdensity_green(0, env%mpi%globalComm, groupKS, ham, over, &
           & descHS, neighbourlist%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart, &
           & img2CentCell, iCellVec, cellVec, orb, nEl, & 
-          & tempElec, kPoint, kWeight, rhoPrim, Eband, Ef, E0, TS, mu, input%ginfo%tundos)
+          & tempElec, kPoint, kWeight, rhoPrim, Eband, Ef, E0, TS, mu, input%ginfo%tundos) !!DAR!!
       
 !NEW      call calcdensity_green(iSCC, env%mpi%globalComm, parallelKS%localKS, ham, over,&
 !NEW          & neighbourlist%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
@@ -3823,7 +3797,7 @@ contains
   !>
   subroutine getEnergyWeightedDensity(env, denseDesc, forceType, filling, eigen, kPoint, kWeight,&
       & neighbourList, nNeighbourSK, orb, iSparseStart, img2CentCell, iCellVEc, cellVec, tRealHS, ham,&
-      & over, parallelKS, solver, iSCC, mu, ERhoPrim, HSqrReal, SSqrReal, HSqrCplx, SSqrCplx, input)
+      & over, parallelKS, solver, iSCC, mu, ERhoPrim, HSqrReal, SSqrReal, HSqrCplx, SSqrCplx, input) !!DAR!! + input
 !NEW      & ham, over, parallelKS, solver, iSCC, mu, ERhoPrim, HSqrReal, SSqrReal, HSqrCplx, SSqrCplx)
 
 
@@ -3916,7 +3890,7 @@ contains
       call calcEdensity_green(0, env%mpi%globalComm, groupKS, ham, over, &
           & descHS, neighbourlist%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart, &
           & img2CentCell, iCellVec, cellVec, orb, & 
-          & kPoint, kWeight, ERhoPrim, mu, input%ginfo%tundos)    
+          & kPoint, kWeight, ERhoPrim, mu, input%ginfo%tundos) !!DAR!! 
 !NEW      call calcEdensity_green(iSCC, env%mpi%globalComm, parallelKS%localKS, ham, over,&
 !NEW          & neighbourlist%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
 !NEW          & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, mu, ERhoPrim)

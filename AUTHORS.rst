@@ -11,9 +11,18 @@ and was continued later as a joint project between the University of Bremen
 (Germany) and the University of Strathclyde (Glasgow, UK).  Since 2017, DFTB+ is
 now an open source project.
 
+DFTB+XT is an extended version of the DFTB+ code for model and atomistic quantum 
+transport at nanoscale, many-body nonequilibrium phenomena, material & device modeling. 
+Since 2018, it is developed as the core package of TraNaS OpenSuite.
+
 
 People
 ======
+
+The DFTB+XT is developed by
+
+* Dmitry Ryndyk (University of Bremen and TU Dresden, Germany)   
+
 
 The DFTB+ development is being lead and coordinated by:
 
@@ -34,8 +43,6 @@ contributed to DFTB+ :
 
 * Gabriele Penazzi (formerly University of Bremen Germany (till 2016), now
   QuantumWise A/S, Denmark)
-
-* Dmitry Ryndyk (University of Bremen, Germany)   
   
 * Jan Řezáč (Institute of Organic Chemistry and Biochemistry AS CR, Czech Republic)
 
