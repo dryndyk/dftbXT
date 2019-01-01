@@ -500,7 +500,7 @@ Eigensolver = GreensFunction {
 \section{Eigensolver = TransportOnly}
 
 The \is{GreensFunction} block is used to solve the full self-consistent NEGF
-transport problem. However, the block \iscb{TunnelingAndDos} within the
+transport problem. However, the block \iscb{TransmissionAndDos} within the
 \is{Analysis} block (see below), can be used to calculate the transmission
 function according to the Landauer formula, without solving for the full density
 matrix. This can be applied even for calculations where the density matrix and
@@ -1038,11 +1038,11 @@ section~\ref{sec:dftbp.Parallel}) are not supported.
 \label{sec:transport.Analysis}
 
 The \kw{Analysis} block is used to specify post-scf calculations such as
-tunnelling or projected DOS.
+transmission or projected DOS.
 
 \begin{verbatim}
 Analysis{
-  TunnelingAndDOS{
+  TransmissionAndDOS{
     EnergyRange [eV] = {-5.0 -3.0}
     EnergyStep [eV] = 0.02
   }
@@ -1050,7 +1050,7 @@ Analysis{
 \end{verbatim}
 
 
-\htsection{TunnelingAndDos}
+\htsection{TransmissionAndDos}
 
 This method block can be specified in \iscb{Analysis} and it is
 used to calculate the transmission by means of Caroli formula, the current by
@@ -1119,7 +1119,7 @@ When a temperature is specified in the \is{Contact} section of the
 %changed soon.
 
 %It is also possible to specify a (different) temperature in the section
-%\is{TunnelingAndDOS}, within the block \is{Analysis}. The latter applies only in
+%\is{TransmissionAndDOS}, within the block \is{Analysis}. The latter applies only in
 %the calculation of currents (integration of the transmission function).
 
 %Although slightly inconsistent, in some cases it is useful to be able to set a
@@ -1138,7 +1138,7 @@ When a temperature is specified in the \is{Contact} section of the
 %version of dftb+/libNEGF. B\"uttiker probes are also under development.
 %A \kw{Dephasing} block must be specified (outside the Hamiltonian block).
 %The dephasing block is common to the Green's functions for the computation
-%of the Density Matrix and Tunneling calculations.
+%of the Density Matrix and Transmission calculations.
 %Example:
 %
 %   \begin{verbatim}

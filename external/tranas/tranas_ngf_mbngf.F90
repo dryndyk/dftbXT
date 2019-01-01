@@ -289,7 +289,7 @@ contains
  
       if (id0.and.negf%verbose.gt.50) write(*,"('Calculation of PHOTON Born self-energy is started.')")
 
-      call tunneling_int_def(negf)
+      call transmission_int_def(negf)
       call integrationsSelfEnergies(tranas)
 
 

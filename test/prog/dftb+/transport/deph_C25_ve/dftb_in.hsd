@@ -84,7 +84,7 @@ Hamiltonian = DFTB {
 }
 
 Analysis = {
-  TunnelingAndDos {
+  TransmissionAndDos {
     Verbosity = 101
     EnergyRange [eV] = -9.  -2.   
     EnergyStep [eV] =0.02

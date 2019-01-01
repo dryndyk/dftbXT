@@ -286,7 +286,7 @@ module negf_int
     ! ------------------------------------------------------------------------------
     ! Setting the delta: priority on Green Solver, if present
     ! dos_delta is used by libnegf to smoothen T(E) and DOS(E)
-    ! and is currently set in tunneling
+    ! and is currently set in transmission
     if (tundos%defined) then
       params%dos_delta = tundos%broadeningDelta
       params%delta = tundos%delta      ! delta for G.F.
@@ -1219,7 +1219,7 @@ module negf_int
       !       tunnPMat is MPI distributed on energy points (0.0 on other nodes)
       !       tunnMat MPI gather partial results and accumulate k-summation
       !       currPMat stores contact current I_i(iE)
-      !       tunnSKRes stores tunneling for all k-points and spin: T(iE, i->j, iSK)
+      !       tunnSKRes stores transmission for all k-points and spin: T(iE, i->j, iSK)
       call add_partial_results(mpicomm, tunnPMat, tunnMat, tunnSKRes, iKS, nKS)
 
       call add_partial_results(mpicomm, currPMat, currMat, currSKRes, iKS, nKS)
@@ -1337,7 +1337,7 @@ module negf_int
 
   end subroutine add_partial_results
 
-  !> utility to write tunneling or ldos on files
+  !> utility to write transmission or ldos on files
   subroutine write_file(negf, matTot, matSKRes, filename, groupKS, kpoints, kWeights)
     type(TNegf) :: negf
     real(dp), intent(in), allocatable :: matTot(:,:)

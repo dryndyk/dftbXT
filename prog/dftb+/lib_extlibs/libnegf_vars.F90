@@ -86,7 +86,7 @@ module libnegf_vars
   end type ContactInfo
 
 
-  !> Options for Landauer (Tunneling and DOS) calculation
+  !> Options for Landauer (Transmission and DOS) calculation
   type TNEGFTunDos
 
     !> true only if filling block is defined
@@ -110,7 +110,7 @@ module libnegf_vars
     !> Delta for Green's function
     real(dp)           :: delta
 
-    !> An additional broadening delta for DOS and tunneling
+    !> An additional broadening delta for DOS and transmission
     real(dp)           :: broadeningDelta
 
     !> emitter contact(s)
@@ -126,7 +126,7 @@ module libnegf_vars
     !> write DOS on separate files
     logical :: writeLDOS = .false.
 
-    !> write tunneling on separate files
+    !> write transmission on separate files
     logical :: writeTunn = .false.
 
     !> contact temperatures

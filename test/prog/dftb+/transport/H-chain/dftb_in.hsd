@@ -70,7 +70,7 @@ hamiltonian = dftb {
 }
 
 Analysis{
-  TunnelingAndDOS{
+  TransmissionAndDOS{
     EnergyRange [eV] = -0.0  0.0
     EnergyStep [eV] = 0.02 
   }

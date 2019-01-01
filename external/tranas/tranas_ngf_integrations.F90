@@ -69,21 +69,21 @@ module tranas_ngf_integrations
   public :: real_axis_int_n_def ! integration of CB on real axis
   public :: real_axis_int_p_def ! integration of VB on real axis
 
-  public :: tunneling_int_def  !
-  public :: tunneling_and_dos  ! computes of T(E) & LDOS(E)
+  public :: transmission_int_def  !
+  public :: transmission_and_dos  ! computes of T(E) & LDOS(E)
   public :: integrationsMeirWingreen   ! computes effective T(E) with interactions
   public :: integrationsSelfEnergies   ! computes energy-dependent self-energies   
   public :: electron_current   ! computes terminal currents
   public :: electron_current_meir_wingreen                                   !DAR
 
-  public :: phonon_tunneling   ! computes T(E) for phonons
+  public :: phonon_transmission   ! computes T(E) for phonons
   public :: phonon_current     ! computes heat currents
   public :: thermal_conductance ! computes thermal conductance
   !public :: phonon_phonon      ! computes thermal conductance
 
-  public :: integrate_el       ! integration of tunneling (el)
+  public :: integrate_el       ! integration of transmission (el)
   public :: integrate_el_meir_wingreen                                       !DAR
-  public :: integrate_ph       ! integration of tunneling (ph)
+  public :: integrate_ph       ! integration of transmission (ph)
   !!public :: compute_dos      ! compute local dos only
 
   !public :: menage_scratch
@@ -215,7 +215,7 @@ contains
        
        if (negf%en_grid(i)%cpu /= id) cycle
       
-       Ec = negf%en_grid(i)%Ec + j*negf%dos_delta  !MUST use tunneling_int_def  
+       Ec = negf%en_grid(i)%Ec + j*negf%dos_delta  !MUST use transmission_int_def  
        negf%iE = negf%en_grid(i)%pt
 
        call compute_Gr(negf, outer, Ec, Gr)
@@ -1212,7 +1212,7 @@ contains
 !> Energy grid for transmission / DOS calculation
 !--------------------------------------------------------------------------------------------------!  
   
-subroutine tunneling_int_def(negf)
+subroutine transmission_int_def(negf)
 
   type(Tnegf) :: negf
 
@@ -1236,14 +1236,14 @@ subroutine tunneling_int_def(negf)
     negf%en_grid(i+1)%cpu = mod(i,numprocs)
   end do
 
-end subroutine tunneling_int_def
+end subroutine transmission_int_def
 
   !-----------------------------------------------------------------------------
   !  Routine to compute T(E) and (optionally) LDOS(E)
   !  PDOS is computed if negf%nLDOS > 0
   !  When only T(E) is needed, a fast algorithm is used (reduction to one block)
   !----------------------------------------------------------------------------- 
-  subroutine tunneling_and_dos(negf)
+  subroutine transmission_and_dos(negf)
     type(Tnegf) :: negf
 
     ! Local Variables
@@ -1262,7 +1262,7 @@ end subroutine tunneling_int_def
     
     Logical :: do_LEDOS            ! performs or not LDOS
 
-    !DAR begin - tunneling_and_dos - variables
+    !DAR begin - transmission_and_dos - variables
     integer :: j1,k1
     integer :: ngs, npl            ! Dimension of Surface GF, PL            
     real(dp) :: Ec_check                                                           
@@ -1275,7 +1275,7 @@ end subroutine tunneling_int_def
     
     ! Get out immediately if Emax<Emin 
     if (negf%Emax.le.negf%Emin) then
-       if(id0) write(*,*) '0 tunneling points;  current = 0.0'
+       if(id0) write(*,*) '0 transmission points;  current = 0.0'
        !call log_allocatep(negf%tunn_mat,0,0)
        !if (do_ledos) call log_allocatep(negf%ldos_mat,0,0)
        ! If a previous calculation is present, destroy it
@@ -1295,7 +1295,7 @@ end subroutine tunneling_int_def
     ncyc=0
     
     !Extract emitter-collector contacts -------------------
-    !Tunneling set-up
+    !Transmission set-up
     do i=1,size(negf%ni)
        if (negf%ni(i).eq.0) then
           size_ni=i-1
@@ -1338,7 +1338,7 @@ end subroutine tunneling_int_def
 
     call WriteRead_SGF_SE(negf)                                             !DAR
     
-    !Loop on energy points: tunneling 
+    !Loop on energy points: transmission 
     do i = 1, Nstep
       
        call write_point(negf%verbose,negf%en_grid(i), size(negf%en_grid))
@@ -1407,14 +1407,14 @@ end subroutine tunneling_int_def
        !debug end
 
        if (.not.do_LEDOS) then
-          if (id0.and.negf%verbose.gt.VBT) call message_clock('  Compute Tunneling ') 
+          if (id0.and.negf%verbose.gt.VBT) call message_clock('  Compute Transmission ') 
 
-          call tunneling_dns(negf%H,negf%S,Ec,SelfEneR,negf%ni,negf%nf,size_ni, &
+          call transmission_dns(negf%H,negf%S,Ec,SelfEneR,negf%ni,negf%nf,size_ni, &
                              & negf%str,TUN_MAT)
 
           negf%tunn_mat(i,:) = TUN_MAT(:) * negf%wght
        else
-          if (id0.and.negf%verbose.gt.VBT) call message_clock('  Compute Tunneling and DOS') 
+          if (id0.and.negf%verbose.gt.VBT) call message_clock('  Compute Transmission and DOS') 
           LEDOS(:) = 0.d0
           
           call tun_and_dos(negf%H,negf%S,Ec,SelfEneR,GS,negf%ni,negf%nf,negf%nLDOS, &
@@ -1441,7 +1441,7 @@ end subroutine tunneling_int_def
     !write(*,*)                                                                      
     write(*,"('>>> The Landauer transport (transmission [and DOS]) is finished.')")  
     end if
-    !DAR end - tunneling_and_dos
+    !DAR end - transmission_and_dos
 
     !debug begin
     !if (id0) then
@@ -1459,13 +1459,13 @@ end subroutine tunneling_int_def
     ! end if
     !debug end
 
-  end subroutine tunneling_and_dos
+  end subroutine transmission_and_dos
 
   !---------------------------------------------------------------------------
   !>
   !  Calculate the "effective transmission" Tr[Iop] (trace of current operator)
   !  according to the Meir-Wingreen on the energy points specified by 
-  !  tunneling_int_def. 
+  !  transmission_int_def. 
   !
   !    Teff = Tr[Sigma^n_i*A-Gamma_i*G^n]
   !
@@ -2006,7 +2006,7 @@ end subroutine tunneling_int_def
   !  PDOS is computed if negf%nLDOS > 0
   !  When only T(E) is needed, a fast algorithm is used (reduction to one block)
   !------------------------------------------------------------------------------- 
-  subroutine phonon_tunneling(negf)
+  subroutine phonon_transmission(negf)
     type(Tnegf) :: negf
 
     ! Local Variables
@@ -2027,7 +2027,7 @@ end subroutine tunneling_int_def
     
     ! Get out immediately if Emax<Emin 
     if (negf%Emax.le.negf%Emin) then
-       if(id0) write(*,*) '0 tunneling points;  current = 0.0'
+       if(id0) write(*,*) '0 transmission points;  current = 0.0'
        !call log_allocatep(negf%tunn_mat,0,0)
        !if (do_ledos) call log_allocatep(negf%ldos_mat,0,0)
        call log_allocatep(negf%currents,1) 
@@ -2043,7 +2043,7 @@ end subroutine tunneling_int_def
     ncyc=0
     
     !Extract emitter-collector contacts -------------------
-    !Tunneling set-up
+    !Transmission set-up
     do i=1,size(negf%ni)
        if (negf%ni(i).eq.0) then
           size_ni=i-1
@@ -2077,7 +2077,7 @@ end subroutine tunneling_int_def
     !-------------------------------------------------------
     
     
-    !Loop on energy points: tunneling 
+    !Loop on energy points: transmission 
     do i = 1, Nstep
       
        call write_point(negf%verbose,negf%en_grid(i), size(negf%en_grid))
@@ -2099,14 +2099,14 @@ end subroutine tunneling_int_def
       
 
        if (.not.do_LEDOS) then
-          if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Tunneling ') 
+          if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Transmission ') 
 
-          call tunneling_dns(negf%H,negf%S,Ec,SelfEneR,negf%ni,negf%nf,size_ni, &
+          call transmission_dns(negf%H,negf%S,Ec,SelfEneR,negf%ni,negf%nf,size_ni, &
                              & negf%str,TUN_MAT)
 
           negf%tunn_mat(i,:) = TUN_MAT(:) * negf%wght
        else
-          if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Tunneling and DOS') 
+          if (id0.and.negf%verbose.gt.VBT) call message_clock('Compute Transmission and DOS') 
           LEDOS(:) = 0.d0
           
           call tun_and_dos(negf%H,negf%S,Ec,SelfEneR,GS,negf%ni,negf%nf,negf%nLDOS, &
@@ -2131,7 +2131,7 @@ end subroutine tunneling_int_def
     call log_deallocate(TUN_MAT)
     if(do_LEDOS) call log_deallocate(LEDOS)
   
-  end subroutine phonon_tunneling
+  end subroutine phonon_transmission
   
   !---------------------------------------------------------------------------
   subroutine phonon_current(negf)
@@ -2177,7 +2177,7 @@ end subroutine tunneling_int_def
 !!$ 
 !!$    ! Get out immediately if Emax<Emin 
 !!$    if (negf%Emax.le.negf%Emin) then
-!!$       if(id0) write(*,*) '0 tunneling points;  current = 0.0'
+!!$       if(id0) write(*,*) '0 transmission points;  current = 0.0'
 !!$       call log_allocatep(negf%currents,1) 
 !!$       negf%currents = 0.0_dp 
 !!$       return
@@ -2191,7 +2191,7 @@ end subroutine tunneling_int_def
 !!$    ncyc=0
 !!$    
 !!$    !Extract emitter-collector contacts -------------------
-!!$    !Tunneling set-up
+!!$    !Transmission set-up
 !!$    do i=1,size(negf%ni)
 !!$       if (negf%ni(i).eq.0) then
 !!$          size_ni=i-1
@@ -2264,7 +2264,7 @@ end subroutine tunneling_int_def
     
   !////////////////////////////////////////////////////////////////////////
   !************************************************************************
-  ! Function to integrate the tunneling and get the current
+  ! Function to integrate the transmission and get the current
   ! The function resolves fermi(E) on a fine grid interpolating linearly T(E)  
   ! In this way a more precise integration is obtained when T ~ constant
   !************************************************************************
@@ -2330,7 +2330,7 @@ end subroutine tunneling_int_def
        enddo
       
     
-       ! Within each substep the tunneling is linearly interpolated
+       ! Within each substep the transmission is linearly interpolated
        ! Possibly perform a cubic-spline interpolation in future 
        do i1=0,N-1
           
@@ -2391,7 +2391,7 @@ end subroutine tunneling_int_def
  
   !////////////////////////////////////////////////////////////////////////
   !************************************************************************
-  ! Function to integrate the tunneling and get the current
+  ! Function to integrate the transmission and get the current
   ! The function resolves fermi(E) on a fine grid interpolating linearly T(E)  
   ! In this way a more precise integration is obtained when T ~ constant
   !************************************************************************
@@ -2442,7 +2442,7 @@ end subroutine tunneling_int_def
           destep=(E2-E1)/N
        enddo
        
-       ! Within each substep the tunneling is linearly interpolated
+       ! Within each substep the transmission is linearly interpolated
        ! Possibly perform a cubic-spline interpolation in future 
        do i1=0,N-1
           
@@ -2494,7 +2494,7 @@ end subroutine tunneling_int_def
 
 !       TT1=10.d0+3.0*(i-1)
 
-       ! Within each substep the tunneling is linearly interpolated
+       ! Within each substep the transmission is linearly interpolated
        ! Possibly perform a cubic-spline interpolation in future 
        do i=0,Nstep-1
 

@@ -253,7 +253,7 @@ module tranas_interface
     ! ------------------------------------------------------------------------------
     !! Setting the delta: priority on Green Solver, if present
     !! dos_delta is used by libnegf to smoothen T(E) and DOS(E)
-    !! and is currently set in tunneling
+    !! and is currently set in transmission
     params%dos_delta = tundos%broadeningDelta
     if (tundos%defined) then
       params%delta = tundos%delta      ! delta for G.F.
@@ -498,7 +498,7 @@ module tranas_interface
     ! ------------------------------------------------------------------------------
     !! Setting the delta: priority on Green Solver, if present
     !! dos_delta is used by libnegf to smoothen T(E) and DOS(E)
-    !! and is currently set in tunneling
+    !! and is currently set in transmission
     params%dos_delta = tundos%broadeningDelta
     if (tundos%defined) then
       params%delta = tundos%delta      ! delta for G.F.
@@ -1497,7 +1497,7 @@ module tranas_interface
     call mpifx_allreduceip(mpicomm, tunn, MPI_SUM)
 
     if (id0 .and. tundos%writeTunn) then  
-       open(65000,file='tunneling.dat')
+       open(65000,file='transmission.dat')
        do i=1,size(tunn,1)
           write(65000,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
           do j=1,size(tunn,2)
@@ -1511,7 +1511,7 @@ module tranas_interface
     if(negf%tZeroCurrent) then                                                
        call mpifx_allreduceip(mpicomm, negf%tunn_mat_bp, MPI_SUM)        
     if (id0 .and. tundos%writeTunn) then  
-       open(65000,file='tunneling_bp.dat')
+       open(65000,file='transmission_bp.dat')
        do i=1,size(negf%tunn_mat_bp,1)
           write(65000,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
           do j=1,size(negf%tunn_mat_bp,2)
@@ -2074,9 +2074,9 @@ module tranas_interface
     if (allocated(tunnTot)) then
       !print*,'reduce tunnTot cpu #',id                                     !DAR
       call mpifx_allreduceip(mpicomm, tunnTot, MPI_SUM)
-      ! Write Total tunneling on a separate file (optional)
+      ! Write Total transmission on a separate file (optional)
       if (id0 .and. writeTunn) then
-        call write_file(negf, tunnTot, tunnSKRes, 'tunneling', &
+        call write_file(negf, tunnTot, tunnSKRes, 'transmission', &
                          & groupKS, kpoints, kWeights)
         if (allocated(tunnSKRes)) deallocate(tunnSKRes)
       endif 
@@ -2087,7 +2087,7 @@ module tranas_interface
     !DAR begin - print tunn_mat_bp
     if(negf%tZeroCurrent) then                                                
        call mpifx_allreduceip(mpicomm, negf%tunn_mat_bp, MPI_SUM)        
-       if (id0) call write_file(negf, negf%tunn_mat_bp, tunnSKRes, 'tunneling_bp', &
+       if (id0) call write_file(negf, negf%tunn_mat_bp, tunnSKRes, 'transmission_bp', &
             & groupKS, kpoints, kWeights)
         if (allocated(tunnSKRes)) deallocate(tunnSKRes)
     endif
@@ -2152,7 +2152,7 @@ module tranas_interface
   
   end subroutine add_partial_results
   ! ----------------------------------------------------------------------------
-  !    utility to write tunneling or ldos on files 
+  !    utility to write transmission or ldos on files 
   ! ----------------------------------------------------------------------------
   subroutine write_file(negf, pTot, pSKRes, filename, groupKS, kpoints, kWeights)
     type(TNegf) :: negf

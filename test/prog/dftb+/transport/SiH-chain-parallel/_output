@@ -286,7 +286,7 @@ scc total               CPU:   119.92       Wall:    57.44
  Total Mermin free energy:          -2.9562206470 H
 
 =========================================================================
-                    COMPUTING TUNNELING AND DOS          
+                    COMPUTING TRANSMISSION AND DOS          
 =========================================================================
 
   contacts:   1  2 current:    0.00000E+00 A       

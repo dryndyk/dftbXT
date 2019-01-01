@@ -96,7 +96,7 @@ Hamiltonian = Model {
 }
 
 Analysis = {
-  TunnelingAndDos {
+  TransmissionAndDos {
     Verbosity = 101
     EnergyRange [eV] = -5.  6.
     EnergyStep [eV] =0.03

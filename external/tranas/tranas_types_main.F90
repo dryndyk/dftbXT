@@ -181,9 +181,9 @@ module tranas_types_main
     real(dp) :: Ev                ! valence band edge
 
     !! Real axis
-    real(dp) :: Emin              ! Tunneling or dos interval
+    real(dp) :: Emin              ! Transmission or dos interval
     real(dp) :: Emax              ! 
-    real(dp) :: Estep             ! Tunneling or dos E step 
+    real(dp) :: Estep             ! Transmission or dos E step 
 
     !! Emitter and collector for transmission or Meir-Wingreen 
     !! (only emitter in this case)

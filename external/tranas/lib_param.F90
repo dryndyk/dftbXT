@@ -159,9 +159,9 @@ contains
 
      negf%delta = 1.d-4      ! delta for G.F. 
      negf%dos_delta = 1.d-4  ! delta for DOS 
-     negf%Emin = 0.d0        ! Tunneling or dos interval
+     negf%Emin = 0.d0        ! Transmission or dos interval
      negf%Emax = 0.d0        ! 
-     negf%Estep = 0.d0       ! Tunneling or dos E step
+     negf%Estep = 0.d0       ! Transmission or dos E step
      negf%kbT = 0.d0         ! electronic temperature
      negf%g_spin = 2.d0      ! spin degeneracy
 

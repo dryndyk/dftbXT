@@ -27,13 +27,13 @@
   {\normalfont\sffamily\huge\bfseries\color{black}}
   {\partname\ \thepart}{20pt}{\Huge}
 
-\title{DFTB$^{\text{+}}$XT \& TraNaS OpenSuite Guide \\ version 1.02}
-
-\release{(Development) \today} 
+\title{TraNaS OpenSuite Guide}
+\release{\today}
 %\release{January 18, 2018}
 \author{}
 \newcommand{\sphinxlogo}{}
-\renewcommand{\releasename}{Release}
+%\renewcommand{\releasename}{Release}
+\renewcommand{\releasename}{version 1.02 (development)}
 
 \newcommand{\dftbp}{\textsf{DFTB$^{\text{+}}$\ }} %% noodle (alias dftb+)
 \newcommand{\dftbpa}{\textsf{DFTB$^{\text{+}}$}} %% noodle (alias dftb+)
@@ -48,10 +48,10 @@
 \makeatother
 \verbatimfont{\sf}
 
-\date{\normalfont\sffamily {http://quantranspro.org/dftb+xt/}\\[0.2cm]
+\date{\normalfont\sffamily {tranas.org/opensuite}\\[0.2cm]
   detailed description of input and output is given in the \dftbpxt USER MANUAL \\[0.2cm]
   this guide focuses on quantum transport \\
-  please go to {http://dftbplus.org/} for additional \dftbp documentation}
+  please go to {dftbplus.org} for additional \dftbp documentation}
 
 \makeindex
 
@@ -538,7 +538,7 @@ In the simplest case it looks like
 %
 \begin{verbatim} 
 Analysis{
-   TunnelingAndDOS{
+   TransmissionAndDOS{
       EnergyRange [eV] = -5.0 -3.0
       EnergyStep [eV] = 0.02
       Region = {
@@ -1867,7 +1867,7 @@ C    H
 
 Now the file \emph{device\_7.gen} contains the correct structure, defined as
 a cluster and with the proper atom ordering. Next, we set up the input
-file for a tunnelling calculation.
+file for a transmission calculation.
 
 
 \subsection{Transmission and density of states}
@@ -1986,11 +1986,11 @@ to execute and also allows us to use the simplest input file possible.
 
 Finally, the implementation of the Landauer-Caroli formula is regarded
 as a post-processing operation and specified by the block
-\emph{TunnelingAndDos} inside \emph{Analysis}:
+\emph{TransmissionAndDos} inside \emph{Analysis}:
 
 \begin{Verbatim}[commandchars=\\\{\}]
 Analysis = \PYGZob{}
-    TunnelingAndDos \PYGZob{}
+    TransmissionAndDos \PYGZob{}
       Verbosity = 101
       EnergyRange [eV] = \PYGZhy{}6.5  \PYGZhy{}3.0
       EnergyStep [eV] = 0.01
@@ -2001,7 +2001,7 @@ Analysis = \PYGZob{}
 \PYGZcb{}
 \end{Verbatim}
 
-\emph{TunnelingAndDos} allows for the calculation of transmission
+\emph{TransmissionAndDos} allows for the calculation of transmission
 coefficient, Local Density of States (LDOS) and current. A
 transmission is always calculated using the energy interval and energy
 step specified here. The LDOS is only calculated when sub-blocks
@@ -2047,14 +2047,14 @@ small amount of memory per node.
 
 When the calculation has finished, the transmission and density of
 states are saved to both the \emph{detailed.out} file and to two separate
-\emph{tunneling.dat} and \emph{localDOS.dat} files. These additional files both
+\emph{transmission.dat} and \emph{localDOS.dat} files. These additional files both
 contain the energy points in the first column and the desired
 quantities as additional columns.
 
 We can plot the transmission by using the \emph{plotxy} script:
 
 \begin{Verbatim}[commandchars=\\\{\}]
-plotxy \PYGZhy{}\PYGZhy{}xlabel \PYGZsq{}Energy [eV]\PYGZsq{} \PYGZhy{}\PYGZhy{}ylabel \PYGZsq{}Transmission\PYGZsq{} \PYGZhy{}L tunneling.dat \&
+plotxy \PYGZhy{}\PYGZhy{}xlabel \PYGZsq{}Energy [eV]\PYGZsq{} \PYGZhy{}\PYGZhy{}ylabel \PYGZsq{}Transmission\PYGZsq{} \PYGZhy{}L transmission.dat \&
 \end{Verbatim}
 
 The plot is shown in Figure {\hyperref[transport:fig-nonscc-tunn]{\emph{\DUspan{}{Non-SCC transmission through a pristine AGR}}}} (\autopageref*{transport:fig-nonscc-tunn}):
@@ -2181,7 +2181,7 @@ with a single vacancy and the pristine ribbon by using plotxy:
 
 \begin{Verbatim}[commandchars=\\\{\}]
 plotxy \PYGZhy{}\PYGZhy{}xlabel \PYGZsq{}Energy [eV]\PYGZsq{} \PYGZhy{}\PYGZhy{}ylabel \PYGZsq{}Transmission\PYGZsq{} \PYGZhy{}L \PYGZhy{}\PYGZhy{}xlimits \PYGZhy{}6.5 \PYGZhy{}3 \PYGZbs{}
- ../ideal/tunneling.dat tunneling.dat \&
+ ../ideal/transmission.dat transmission.dat \&
 \end{Verbatim}
 \begin{figure}[htbp]
 \centering
@@ -2654,7 +2654,7 @@ The last block is \emph{Analysis}:
 \begin{Verbatim}[commandchars=\\\{\}]
 ...
 Analysis = \PYGZob{}
-  TunnelingAndDos \PYGZob{}
+  TransmissionAndDos \PYGZob{}
     Verbosity = 101
     EnergyRange [eV] = \PYGZhy{}6.0  \PYGZhy{}3.0
     EnergyStep [eV] = 0.01
@@ -2902,7 +2902,7 @@ verify if we can identify a vacancy state:
 
 \begin{Verbatim}[commandchars=\\\{\}]
 Analysis = \PYGZob{}
-  TunnelingAndDos \PYGZob{}
+  TransmissionAndDos \PYGZob{}
       Verbosity = 101
       EnergyRange [eV] = \PYGZhy{}6.0  \PYGZhy{}3.0
       EnergyStep [eV] = 0.025
@@ -2930,7 +2930,7 @@ transmission are shown in Figure {\hyperref[transport:fig-scc-vac-dos]{\emph{\DU
 \caption{SCC transmission in pristine (blue) and single vacancy (red) ribbons}\label{transport:fig-scc-vac-tunn}\end{figure}
 
 The vacancy states are located in the energy gap, consistently with
-the periodic calculation, and that the tunneling curve is qualitative
+the periodic calculation, and that the transmission curve is qualitative
 similar to the non-scc calculation. The first conduction and valence
 band are weakly affected by the vacancy which does not act as a strong
 scatterer. There is no signature of resonances, as the additional

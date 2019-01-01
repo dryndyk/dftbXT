@@ -363,7 +363,7 @@
   \item \textsf  {Transport}, \hyperpage{66}, \hyperpage{71, 72}
   \item \textsf  {Transport\{\}}, \hyperpage{65}
   \item \textsf  {TruncateSKRange}, \hyperpage{26}
-  \item \textsf  {TunnelingAndDos}, \hyperpage{81}
+  \item \textsf  {TransmissionAndDos}, \hyperpage{81}
   \item \textsf  {TypeNames}, \hyperpage{12}
   \item \textsf  {TypesAndCoordinates}, \hyperpage{12}
 

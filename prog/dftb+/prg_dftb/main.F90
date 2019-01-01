@@ -788,7 +788,7 @@ contains
       !call ud2qm(ham)   
       !NEW call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over,&
       !NEW    & neighbourList%iNeighbour, nNeighbourSK, densedesc%iAtomStart, iSparseStart,&
-      !NEW    & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, tunneling, current, ldos,&
+      !NEW    & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, transmission, current, ldos,&
       !NEW    & leadCurrents, writeTunn, writeLDOS, mu)
     end if
   #:endif
@@ -821,7 +821,7 @@ contains
           & energy%EMermin, extPressure, energy%EGibbs, coord0, tLocalise, localisation, esp,&
           & tunnTot, ldosTot)
 !OLD          & tTunn, tunnTot)
-!NEW          & tunneling, ldos)
+!NEW          & transmission, ldos)
     end if
     if (tWriteResultsTag) then
       call writeResultsTag(resultsTag, energy, derivs, chrgForces, tStress, totalStress,&

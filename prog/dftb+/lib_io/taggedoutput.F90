@@ -86,8 +86,8 @@ module taggedoutput
   !> total stress tensor for periodic geometries
   character(*), parameter, public :: tag_stressTot = 'stress'
 
-  !> total tunneling vector
-  character(*), parameter, public :: tag_tunn = 'total_tunneling'
+  !> total transmission vector
+  character(*), parameter, public :: tag_tunn = 'total_transmission'
 
   !> total projected DOS vector
   character(*), parameter, public :: tag_ldos = 'total_localdos'

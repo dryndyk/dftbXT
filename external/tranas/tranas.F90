@@ -91,7 +91,7 @@ module tranas
   ! Extract HM and SM
   ! run DM calculation
 
-  public ::  write_tunneling_and_dos ! Print tunneling and dot to file
+  public ::  write_transmission_and_dos ! Print transmission and dot to file
   ! Note: for debug purpose. I/O should be managed 
   ! by calling program
   public :: return_dos_mat           ! return pointer to LDOS matrix 
@@ -140,7 +140,7 @@ module tranas
     !> Valence band edge
     real(c_double) :: ev        
     !! Real axis integral
-    !> Minimum energy for real axis (current integration, DOS, tunneling)
+    !> Minimum energy for real axis (current integration, DOS, transmission)
     real(c_double) :: emin       
     !> Maximum energy for real axis
     real(c_double) :: emax   
@@ -215,8 +215,8 @@ contains
 
     call extract_device(tranas%negf)
     call extract_cont(tranas%negf)
-    call tunneling_int_def(tranas%negf)
-    call tunneling_and_dos(tranas%negf)
+    call transmission_int_def(tranas%negf)
+    call transmission_and_dos(tranas%negf)
     call electron_current(tranas%negf)
     call destroy_matrices(tranas%negf)
     
@@ -301,7 +301,7 @@ contains
 
     call extract_device(tranas%negf)
     call extract_cont(tranas%negf)
-    call tunneling_int_def(tranas%negf)
+    call transmission_int_def(tranas%negf)
     call ldos_int(tranas%negf)
     call destroy_matrices(tranas%negf)
 
@@ -342,7 +342,7 @@ contains
 
     call extract_device(tranas%negf)
     call extract_cont(tranas%negf)
-    call tunneling_int_def(tranas%negf)
+    call transmission_int_def(tranas%negf)
     call integrationsMeirWingreen(tranas)
     call electron_current_meir_wingreen(tranas%negf) !DAR
     call destroy_matrices(tranas%negf)
@@ -1328,7 +1328,7 @@ contains
   !---- SAVE TUNNELING AND DOS ON FILES -----------------------------------------------
   ! GP Left in MPI version for debug purpose only. This will write a separate
   ! file for every ID, which is not possible on all architectures 
-  subroutine write_tunneling_and_dos(negf)
+  subroutine write_transmission_and_dos(negf)
 
     type(Tnegf) :: negf
 
@@ -1344,7 +1344,7 @@ contains
         write(ofKP,'(i6.6)') negf%kpoint
         write(idstr,'(i6.6)') id
         
-        open(1021,file=trim(negf%out_path)//'tunneling_'//ofKP//'_'//idstr//'.dat')
+        open(1021,file=trim(negf%out_path)//'transmission_'//ofKP//'_'//idstr//'.dat')
         
         !print*,'ENE CONV=',negf%eneconv
         negf%eneconv=1.d0
@@ -1386,7 +1386,7 @@ contains
        
     endif
     
-  end subroutine write_tunneling_and_dos
+  end subroutine write_transmission_and_dos
   
   !-------------------------------------------------------------------------------
   subroutine compute_phonon_current(negf)
@@ -1404,16 +1404,16 @@ contains
        negf%readOldSGF = 1
     end if
 
-    call tunneling_int_def(negf)
+    call transmission_int_def(negf)
 
-    call phonon_tunneling(negf)
+    call phonon_transmission(negf)
   
     call phonon_current(negf) 
 
     !!GP Locally writing energy dependent data is not meaningful in the MPI
     !implementation, because the gathering is done externally.
     ! An implementation node by node is still active, for debugging purposes 
-    !call write_tunneling_and_dos(negf)
+    !call write_transmission_and_dos(negf)
     
     call destroy_matrices(negf)
  

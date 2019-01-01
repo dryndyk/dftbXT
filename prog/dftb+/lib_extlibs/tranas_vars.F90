@@ -79,7 +79,7 @@ module tranas_vars
   end type TElPh
 
   type TGDFTBTunDos
-    !Option for Landauer (Tunneling and Dos) calculation
+    !Option for Landauer (Transmission and Dos) calculation
     logical            :: defined = .false.    ! true only if filling block is
                                                ! defined
     integer            :: verbose              ! verbosity level of the library
@@ -89,13 +89,13 @@ module tranas_vars
     real(dp)           :: emax                 ! Max integration energy
     real(dp)           :: estep                ! Energy step
     real(dp)           :: delta                ! Delta for Green function
-    real(dp)           :: broadeningDelta      ! An additional broadening delta for DOS and tunneling
+    real(dp)           :: broadeningDelta      ! An additional broadening delta for DOS and transmission
     integer, allocatable, dimension(:)  :: ni  !emitter contact(s)
     integer, allocatable, dimension(:)  :: nf  !collector contact(s)
     type(WrappedInt1), allocatable :: dosOrbitals(:)
     character(lc), allocatable :: dosLabels(:)
     logical :: writeLDOS = .false.  ! write DOS on separate files
-    logical :: writeTunn = .false.  ! write tunneling on separate files
+    logical :: writeTunn = .false.  ! write transmission on separate files
     real(dp), dimension(:), allocatable :: kbT ! contact temperatures
     type(Telph) :: elph
     type(Telph) :: bp

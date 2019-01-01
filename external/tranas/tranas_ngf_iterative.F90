@@ -51,7 +51,7 @@ module tranas_ngf_iterative
   implicit none
   private
 
-  public :: tunneling_dns
+  public :: transmission_dns
   public :: tun_and_dos
 
   public :: iterativeGreenRetarded
@@ -80,7 +80,7 @@ module tranas_ngf_iterative
 contains
 !--------------------------------------------------------------------------------------------------!
 
-  SUBROUTINE tunneling_dns(H,S,Ec,SelfEneR,ni,nf,size_ni,str,TUN_MAT)
+  SUBROUTINE transmission_dns(H,S,Ec,SelfEneR,ni,nf,size_ni,str,TUN_MAT)
 
     implicit none
 
@@ -189,7 +189,7 @@ contains
     call destroy_ESH(ESH)
     call deallocate_blk_dns(ESH)
 
-  end SUBROUTINE tunneling_dns
+  end SUBROUTINE transmission_dns
 
   !------------------------------------------------------------------------------------------------!
 
@@ -200,7 +200,7 @@ contains
   !************************************************************************
   ! NOTE:
   !
-  !  This subroutine was hacked quickly to obain effiecient tunneling calcs
+  !  This subroutine was hacked quickly to obain effiecient transmission calcs
   !  Useful only when there are 2 contacts
   !                ===================
   !************************************************************************

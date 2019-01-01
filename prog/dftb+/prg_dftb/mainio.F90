@@ -1878,7 +1878,7 @@ contains
   !> regression testing
   subroutine writeAutotestTag(fileName, tPeriodic, cellVol, tMulliken, qOutput, derivs,&
       & chrgForces, excitedDerivs, tStress, totalStress, pDynMatrix, freeEnergy, pressure,&
-      & gibbsFree, endCoords, tLocalise, localisation, esp, tunneling, ldos)
+      & gibbsFree, endCoords, tLocalise, localisation, esp, transmission, ldos)
 
     !> Name of output file
     character(*), intent(in) :: fileName
@@ -1931,8 +1931,8 @@ contains
     !> Localisation measure, if relevant
     real(dp), intent(in) :: localisation
 
-    !> tunneling array
-    real(dp), allocatable, intent(in) :: tunneling(:,:)
+    !> transmission array
+    real(dp), allocatable, intent(in) :: transmission(:,:)
 
     !> local projected DOS array
     real(dp), allocatable, intent(in) :: ldos(:,:)
@@ -1988,9 +1988,9 @@ contains
     end if
 
 
-    if (allocated(tunneling)) then
-      if (size(tunneling, dim=1) > 0) then
-        call writeTagged(fd, tag_tunn, tunneling)
+    if (allocated(transmission)) then
+      if (size(transmission, dim=1) > 0) then
+        call writeTagged(fd, tag_tunn, transmission)
       end if
     end if
 

@@ -3598,7 +3598,7 @@ contains
     !> Transport parameters
     type(TTransPar), intent(inout) :: transpar
 
-    !> Tunneling and Dos parameters
+    !> Transmission and Dos parameters
     type(TGDFTBTunDos), intent(inout) :: tundos
 #:endif
 
@@ -3710,13 +3710,13 @@ contains
     call getChildValue(node, "CalculateForces", ctrl%tPrintForces, .false.)
 
   #:if WITH_TRANSPORT
-    call getChild(node, "TunnelingAndDOS", child, requested=.false.)
+    call getChild(node, "TransmissionAndDOS", child, requested=.false.)
     if (associated(child)) then
       if (.not.transpar%defined) then
-        call error("Block TunnelingAndDos requires Transport block.")
+        call error("Block TransmissionAndDos requires Transport block.")
       end if
       if (.not.transpar%taskUpload) then
-        call error("Block TunnelingAndDos not compatible with task=contactHamiltonian")
+        call error("Block TransmissionAndDos not compatible with task=contactHamiltonian")
       end if
       call readTunAndDos(child, orb, geo, tundos, transpar, ctrl%tempElec)
     else
@@ -4761,7 +4761,7 @@ contains
   !DAR end
   !-----------------------------------------------------------------------------
 
-  !> Read Tunneling and Dos options from analysis block
+  !> Read Transmission and Dos options from analysis block
   subroutine readTunAndDos(root, orb, geo, tundos, transpar, tempElec)
   
     type(fnode), pointer :: root
@@ -5346,12 +5346,12 @@ contains
         !------------------------------------------------------------------------------------------! 
       end if
 
-    ! New in TunnelingAndDOS
+    ! New in TransmissionAndDOS
 
     call getChildValue(root, "Analysis", dummy, "", child=node, list=.true., &
          &allowEmptyValue=.true., dummyValue=.true.)
 
-    call getChild(node, "TunnelingAndDos", value, requested=.false.)
+    call getChild(node, "TransmissionAndDos", value, requested=.false.)
     if(associated(value)) then
        call getChildValue(value, "WriteDOS", tp%tWriteDOS,.false.)      
        call getChildValue(value, "WriteEqLDOS", tp%tWrite_ldos,.false.)
@@ -5650,10 +5650,10 @@ contains
         & ctrl%tShellResInRegion, ctrl%regionLabel)
     call destroyNodeList(children)
     
-    call getChild(node, "TunnelingAndDOS", child, requested=.false.)
+    call getChild(node, "TransmissionAndDOS", child, requested=.false.)
     if (associated(child)) then
       if (.not.transpar%defined) then
-        call error("Block TunnelingAndDos requires Transport block.")
+        call error("Block TransmissionAndDos requires Transport block.")
       end if
       ! find the maximum temperature between contacts or device
       ! this is used to estimate the RealAxis interval 
@@ -5868,7 +5868,7 @@ contains
     !! Check consistency between different deltas
     if (input%ginfo%tundos%defined.and.input%ginfo%greendens%defined) then
       if (input%ginfo%tundos%delta.ne.input%ginfo%greendens%delta) then
-        call error("Delta parameter must be the same in GreensFunction and TunnelingAndDos")
+        call error("Delta parameter must be the same in GreensFunction and TransmissionAndDos")
       end if
     end if
 

@@ -73,8 +73,8 @@ Hamiltonian = DFTB {
 
 Analysis{
 
-  TunnelingAndDOS{
-    #WriteTunneling = No 
+  TransmissionAndDOS{
+    #WriteTransmission = No 
     EnergyRange [eV] = -6.0  -5.5
     EnergyStep [eV] = 0.02
     Region {

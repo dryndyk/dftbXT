@@ -264,7 +264,7 @@ Hamiltonian = DFTB {
 }
   
 Analysis {
-  TunnelingAndDOS{
+  TransmissionAndDOS{
     Verbosity = 51
     EnergyRange = { -0.367400E+000 0.36740000E+000 }
     EnergyStep = 0.0074240000000000E+000
@@ -274,7 +274,7 @@ Analysis {
     }
     Delta = 1.000000000000000E-005
     #DumpHS = No
-    #WriteTunneling = Yes 
+    #WriteTransmission = Yes 
   }
   CalculateForces = Yes
 }

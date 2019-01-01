@@ -828,7 +828,7 @@ module initprogram
   !> Whether recompute Poisson after every SCC
   logical :: tPoissonTwice
 
-  !> Calculate terminal tunneling and current
+  !> Calculate terminal transmission and current
   logical :: tTunn
 
   !> True if we use any part of Negf (green solver, landauer etc.)
@@ -840,7 +840,7 @@ module initprogram
   !> True if LDOS is stored on separate files for k-points
   logical :: writeLDOS
 
-  !> True if Tunneling is stored on separate files
+  !> True if Transmission is stored on separate files
   logical :: writeTunn
 
   !> Holds spin-dependent electrochemical potentials of contacts
@@ -856,7 +856,7 @@ module initprogram
   !> Orbital-resolved charges uploaded from contacts
   real(dp), allocatable :: chargeUp(:,:,:)
 
-  !> Details of energy interval for tunneling used in output
+  !> Details of energy interval for transmission used in output
   real(dp) :: Emin, Emax, Estep
 
   !> Electrostatics type (either gammafunctional or poisson)
@@ -1548,7 +1548,7 @@ contains
     end if
 
   #:if WITH_TRANSPORT
-    ! whether tunneling is computed
+    ! whether transmission is computed
     tTunn = input%ginfo%tundos%defined
 
     ! Do we use any part of negf (solver, tunnelling etc.)?
@@ -3121,7 +3121,7 @@ contains
 
     transpar = input%transpar
 
-    !Write Dos and tunneling on separate files?
+    !Write Dos and transmission on separate files?
     writeTunn = ginfo%tundos%writeTunn
     writeLDOS = ginfo%tundos%writeLDOS
 
