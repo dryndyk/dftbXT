@@ -123,18 +123,10 @@ module tranas_types_main
 
   end type Telectrons
 
-  type Toutput
-
-     logical :: tWriteDOS = .false.
-     logical :: tDOSwithS = .false.
-
-  end type Toutput
-
   type Ttranas_old
 
      type(Telectrons) :: e
      type(Tcontact), dimension(:), allocatable :: cont
-     type(Toutput) :: out
 
   end type Ttranas_old
 
@@ -280,7 +272,6 @@ module tranas_types_main
     real(kind=dp) :: Mixing = 0.5
     real(kind=dp) :: Tolerance = 0.001
     integer :: MaxIter = 1000
-    logical :: tWrite_ldos = .false.
     logical :: tWrite_negf_params = .false.
     type(Ttranas_old) :: tranas
     type(Tdephasing) :: deph

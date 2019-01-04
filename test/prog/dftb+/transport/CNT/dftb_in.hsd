@@ -75,6 +75,7 @@ Analysis{
 
   TransmissionAndDOS{
     #WriteTransmission = No 
+    WriteLDOS = Yes
     EnergyRange [eV] = -6.0  -5.5
     EnergyStep [eV] = 0.02
     Region {

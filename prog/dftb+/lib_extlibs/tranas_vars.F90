@@ -25,7 +25,7 @@ module tranas_vars
   use ln_precision
   use CommonTypes
   use WrappedIntrinsics
-  use xmlf90                                                                !DAR                 
+  use xmlf90                                                                               
 
   implicit none
   private
@@ -206,10 +206,7 @@ module tranas_vars
     integer :: MaxIter = 1000
     logical :: tHartreeFock = .false.
     logical :: tRPA = .false.
-    logical :: tWriteDOS = .false.
-    logical :: tWrite_ldos = .false.
     logical :: tWrite_negf_params = .false.
-    logical :: tDOSwithS =.true.
     type(fnode), pointer :: nodeVE
     type(fnode), pointer :: nodeBP
     logical :: tWriteTagged = .false.

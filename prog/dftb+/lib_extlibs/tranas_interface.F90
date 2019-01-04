@@ -1,8 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
-! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
+! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2017-2019 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -591,10 +591,7 @@ module tranas_interface
     negf%Mixing=transpar%Mixing
     negf%Tolerance=transpar%Tolerance
     negf%MaxIter=transpar%MaxIter
-    negf%tranas%out%tWriteDOS=transpar%tWriteDOS
-    negf%tWrite_ldos=transpar%tWrite_ldos
     negf%tWrite_negf_params=transpar%tWrite_negf_params
-    negf%tranas%out%tDOSwithS=transpar%tDOSwithS
     negf%tWriteTagged=transpar%tWriteTagged
     allocate(negf%tranas%cont(transpar%ncont))
     negf%tranas%cont(:)%name=transpar%contacts(:)%name
@@ -1244,8 +1241,12 @@ module tranas_interface
     
     if (negf%tMBNGF) call calcMBNGF(tranas)
 
-    if (negf%tWrite_ldos) call calcLDOS(tranas)
-
+    if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
+      if (tundos%writeLDOS.and.(.not.tundos%writeTunn)) call calcLDOS(tranas)
+    else
+      if (tundos%writeLDOS) call calcLDOS(tranas) 
+    end if
+       
     if (tundos%writeTunn) then
       if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
         call calcLandauer(tranas)
@@ -1368,7 +1369,11 @@ module tranas_interface
  
     if (negf%tMBNGF) call calcMBNGF(tranas)
 
-    if (negf%tWrite_ldos) call calcLDOS(tranas)
+    if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
+      if (tundos%writeLDOS.and.(.not.tundos%writeTunn)) call calcLDOS(tranas)
+    else
+      if (tundos%writeLDOS) call calcLDOS(tranas) 
+    end if
 
     if (tundos%writeTunn) then
       if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
@@ -1390,26 +1395,10 @@ module tranas_interface
     !WriteSelfEnergy / WriteSurfaceGF
     !-------------------------------------------------------------------------
     
-  do icont=1,negf%str%num_conts
-    if(negf%tranas%cont(icont)%tWriteSelfEnergy) &
+    do icont=1,negf%str%num_conts
+      if(negf%tranas%cont(icont)%tWriteSelfEnergy) &
          call mpifx_allreduceip(mpicomm, negf%tranas%cont(icont)%SelfEnergy, MPI_SUM)
-  end do
-
-  !debug begin
-  !   if (id0) then
-  !   do i = 1, size(negf%en_grid)
-  !     do icont=1,negf%str%num_conts  
-  !        !print *, negf%tranas%cont(icont)%tWriteSurfaceGF
-  !        if(negf%tranas%cont(icont)%tWriteSurfaceGF) then
-  !          print *, 'SelfEnergy',icont,'IndexEnergy=',i
-  !          do j=1,size(negf%tranas%cont(icont)%SelfEnergy,1)
-  !            print *, negf%tranas%cont(icont)%SelfEnergy(j,1:size(negf%tranas%cont(icont)%SelfEnergy,1),i)
-  !          end do
-  !        end if 
-  !     end do
-  !   end do
-  !   end if
-  !debug end  
+    end do
   
     if (id0) then
        do icont=1,negf%str%num_conts
@@ -1439,21 +1428,21 @@ module tranas_interface
             call mpifx_allreduceip(mpicomm, negf%tranas%cont(icont)%SurfaceGF, MPI_SUM)
     end do
 
-  !debug begin
-  !   if (id0) then
-  !   do i = 1, size(negf%en_grid)
-  !     do icont=1,negf%str%num_conts  
-  !        !print *, negf%tranas%cont(icont)%tWriteSurfaceGF
-  !        if(negf%tranas%cont(icont)%tWriteSurfaceGF) then
-  !          print *, 'SurfaceGF',icont,'IndexEnergy=',i
-  !          do j=1,size(negf%tranas%cont(icont)%SurfaceGF,1)
-  !            print *, negf%tranas%cont(icont)%SurfaceGF(j,1:size(negf%tranas%cont(icont)%SurfaceGF,1),i)
-  !          end do
-  !        end if 
-  !     end do
-  !   end do
-  !   end if
-  !debug end
+    !debug begin
+    !   if (id0) then
+    !   do i = 1, size(negf%en_grid)
+    !     do icont=1,negf%str%num_conts  
+    !        !print *, negf%tranas%cont(icont)%tWriteSurfaceGF
+    !        if(negf%tranas%cont(icont)%tWriteSurfaceGF) then
+    !          print *, 'SurfaceGF',icont,'IndexEnergy=',i
+    !          do j=1,size(negf%tranas%cont(icont)%SurfaceGF,1)
+    !            print *, negf%tranas%cont(icont)%SurfaceGF(j,1:size(negf%tranas%cont(icont)%SurfaceGF,1),i)
+    !          end do
+    !        end if 
+    !     end do
+    !   end do
+    !   end if
+    !debug end
     
     if (id0) then
        do icont=1,negf%str%num_conts
@@ -1480,73 +1469,55 @@ module tranas_interface
 
     !-------------------------------------------------------------------------
 
-  if (tundos%writeTunn) then   
+    if (tundos%writeTunn) then   
     
-    call mpifx_allreduceip(mpicomm, currents, MPI_SUM)
+      call mpifx_allreduceip(mpicomm, currents, MPI_SUM)
 
-    currents = currents * convertCurrent(unitOfEnergy, unitOfCurrent) 
+      currents = currents * convertCurrent(unitOfEnergy, unitOfCurrent) 
     
-    if (id0) then 
-      do i=1, size(currents)
-        write(*,'(1x,a,i3,i3,a,ES14.5,a,a)') &
+      if (id0) then 
+        do i=1, size(currents)
+          write(*,'(1x,a,i3,i3,a,ES14.5,a,a)') &
              & 'contacts: ',negf%ni(i),negf%nf(i), &
              & '   current: ', currents(i),' ',unitOfCurrent%name
-      enddo
-    endif
+        enddo
+      endif
 
-    call mpifx_allreduceip(mpicomm, tunn, MPI_SUM)
+      call mpifx_allreduceip(mpicomm, tunn, MPI_SUM)
 
-    if (id0 .and. tundos%writeTunn) then  
-       open(65000,file='transmission.dat')
-       do i=1,size(tunn,1)
-          write(65000,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
-          do j=1,size(tunn,2)
-             write(65000,'(E18.8E3)',ADVANCE='NO') tunn(i,j)
-          enddo
-          write(65000,*)
-       enddo
-       close(65000)
-    endif
+      if (id0 .and. tundos%writeTunn) then  
+         open(65000,file='transmission.dat')
+         do i=1,size(tunn,1)
+            write(65000,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
+            do j=1,size(tunn,2)
+               write(65000,'(E18.8E3)',ADVANCE='NO') tunn(i,j)
+            enddo
+            write(65000,*)
+         enddo
+         close(65000)
+      endif
 
-    if(negf%tZeroCurrent) then                                                
-       call mpifx_allreduceip(mpicomm, negf%tunn_mat_bp, MPI_SUM)        
-    if (id0 .and. tundos%writeTunn) then  
-       open(65000,file='transmission_bp.dat')
-       do i=1,size(negf%tunn_mat_bp,1)
-          write(65000,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
-          do j=1,size(negf%tunn_mat_bp,2)
-             write(65000,'(E18.8E3)',ADVANCE='NO') negf%tunn_mat_bp(i,j)
-          enddo
-          write(65000,*)
-       enddo
-       close(65000)
-    endif 
-    endif
+      if(negf%tZeroCurrent) then                                                
+         call mpifx_allreduceip(mpicomm, negf%tunn_mat_bp, MPI_SUM)        
+        if (id0 .and. tundos%writeTunn) then  
+           open(65000,file='transmission_bp.dat')
+           do i=1,size(negf%tunn_mat_bp,1)
+              write(65000,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
+              do j=1,size(negf%tunn_mat_bp,2)
+                 write(65000,'(E18.8E3)',ADVANCE='NO') negf%tunn_mat_bp(i,j)
+              enddo
+              write(65000,*)
+           enddo
+           close(65000)
+        endif 
+      endif
 
-  end if
+    end if
 
-  if (allocated(negf%inter).or.negf%tDephasingBP.or.negf%tMBNGF) then
-    if (negf%tWrite_ldos) call mpifx_allreduceip(mpicomm, ledos, MPI_SUM)
-  else
-    if (tundos%writeLDOS.or.negf%tWrite_ldos) call mpifx_allreduceip(mpicomm, ledos, MPI_SUM)
-  end if
+    if (tundos%writeLDOS) call mpifx_allreduceip(mpicomm, ledos, MPI_SUM)
 
-    if ((.not.allocated(negf%inter)).and.(.not.negf%tDephasingBP).and.(.not.negf%tMBNGF)) then
     if (id0 .and. tundos%writeLDOS) then
        open(65000,file='localDOS.dat')
-       do i=1,size(ledos,1)
-          write(65000,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
-          do j=1,size(ledos,2)
-             write(65000,'(E18.8E3)',ADVANCE='NO') ledos(i,j)
-          enddo
-          write(65000,*)
-       enddo
-       close(65000)
-    end if
-    end if
- 
-    if (id0 .and. negf%tWrite_ldos) then
-       open(65000,file='localEqDOS.dat')
        do i=1,size(ledos,1)
           write(65000,'(E18.8E3)',ADVANCE='NO') (negf%Emin+(i-1)*negf%Estep)*27.21138469
           do j=1,size(ledos,2)
@@ -1572,7 +1543,7 @@ module tranas_interface
 !      call writeTagged(10, tag_forceTot, -derivs)
 !    end if
 
-    close(10)
+      close(10)
 
     end if
         
@@ -2043,7 +2014,7 @@ module tranas_interface
 
     end if  
 
-    if (tundos%writeLDOS.or.negf%tWrite_ldos) then
+    if (tundos%writeLDOS) then
     
       call add_partial_results(ldosMat, ldosTot, ldosSKRes, iKS, nKS) 
 
@@ -2095,7 +2066,7 @@ module tranas_interface
 
   end if   
 
-  if (tundos%writeLDOS.or.negf%tWrite_ldos) then
+  if (tundos%writeLDOS) then
      
     if (allocated(ldosTot)) then
       !print*,'reduce ldosTot cpu #',id                                     

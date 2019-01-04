@@ -40,6 +40,7 @@ MODULE sparsekit_drv
   public :: zsubmat_st, zcopymat_st, zamub_st, zaplb_st, zcplsamub_st
   public :: zdagger, zspectral
   public :: zmask_realloc
+  public :: nnz_mult
 
   private :: zrconcatm_csr, zconcat_csr, zconcatm_csr
   private :: rcoocsr_st, rcsrcoo_st, rcsrdns_st, zdnscsr_st, zdnscsc_st, zcooxcsr_st
@@ -1270,7 +1271,7 @@ CONTAINS
     !Short call for submat (extraction of submatrix in csr format from matrix in csr format)
     !Input:
     !A_csr: complete matrix
-    !i1,i2: row to be extracted
+    !i1,i2: rows to be extracted
     !j1,j2: columns to be extracted
     !Output:
     !Asub_csr: extracted submatrix
@@ -1722,7 +1723,7 @@ CONTAINS
   end function zchkdrp
   !--------------------------------------------------------------------------------
 
-  subroutine zmultcsr(A_csr,B_csr,C_csr)
+  subroutine zmultcsr(A_csr,B_csr,C_csr) !!DAR!! It seems that it does not work! 
 
     !*****************************************************************
     !
@@ -1744,7 +1745,7 @@ CONTAINS
     IF (A_csr%ncol.NE.B_csr%nrow) THEN
        call error_msg('(zmult_csr)',MISMATCH) 
     ENDIF
-
+  
     IF ((A_csr%nnz.EQ.0).OR.(B_csr%nnz.EQ.0)) THEN
 
        CALL create(C_csr,A_csr%nrow,B_csr%ncol,0)
@@ -1761,14 +1762,13 @@ CONTAINS
        b_bw = max(ml + 1, mu + 1) * 2
 
        ! Bandwidth of products is two time the bandwith of factors
-       nnz = max(a_bw, b_bw) * max(A_csr%nrow, B_csr%ncol) * 2
+       nnz = max(a_bw, b_bw) * max(A_csr%nrow, B_csr%ncol) * 2         !!DAR!! is possibly WRONG! 
 
        !Preliminar product on indexes only. This is used to determine the exact amount 
        !of memory which needs to be allocate, avoiding a temporary unused heavy
        !complex array
-       call log_allocate(C_csr%nzval,MISMATCH)
-       call log_allocate(C_csr%colind,nnz)
-       call log_allocate(C_csr%rowpnt,(A_csr%nrow+1))
+       call log_allocate(C_csr%nzval,MISMATCH)            
+       call log_allocate(C_csr%rowpnt,(A_csr%nrow+1))    
        C_csr%rowpnt=0
 
        !Allocazione work array iw
@@ -1776,7 +1776,6 @@ CONTAINS
        call zamub(A_csr%nrow,B_csr%ncol,0,A_csr%nzval,A_csr%colind,A_csr%rowpnt,&
             B_csr%nzval,B_csr%colind,B_csr%rowpnt,C_csr%nzval,C_csr%colind,C_csr%rowpnt,&
             nnz,iw,ierr)
-
 
        if (ierr.ne.0) call error_msg('(zamub)',OUTOFBOUND) 
 
@@ -1842,14 +1841,13 @@ CONTAINS
         call error_msg('(zmultccsr)',MISMATCH) 
     ENDIF
 
-    IF ((A_csr%nnz.EQ.0).OR.(B_csr%nnz.EQ.0).OR.(ABS(s).EQ.0)) THEN
+    if ((A_csr%nnz.EQ.0).OR.(B_csr%nnz.EQ.0).OR.(ABS(s).EQ.0)) THEN
 
        CALL create(C_csr,A_csr%nrow,B_csr%ncol,0)
        C_csr%rowpnt=1
 
     else
- 
-    
+     
        ! G. P. preallocation for exact calculation of nonzero values.
        ! The first guess is built depending on A and B bandwidth
        ! I consider the maximum bandwidth
@@ -1905,7 +1903,7 @@ CONTAINS
 
        call log_deallocate(iw)  
 
-    ENDIF
+    end if
 
   end subroutine zmultcsrs
 

@@ -993,7 +993,6 @@ contains
 
     @:ASSERT(input%tInitialized)
 
-    write(stdOut, "(/, A)") "Starting initialization..."
     write(stdOut, "(A80)") repeat("-", 80)
     write(stdOut, "(A)") "-- Initialization is started                                                  --"
     write(stdOut, "(A80,/)") repeat("-", 80)

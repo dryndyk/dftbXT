@@ -4788,7 +4788,7 @@ contains
     ncont = transpar%ncont
 
     call getChildValue(root, "Verbosity", tundos%verbose, 51)
-    call getChildValue(root, "WriteLDOS", tundos%writeLDOS, .true.)
+    call getChildValue(root, "WriteLDOS", tundos%writeLDOS, .false.)
     call getChildValue(root, "WriteTunn", tundos%writeTunn, .true.)
 
     ! Read Temperature. Can override contact definition
@@ -5353,10 +5353,7 @@ contains
 
     call getChild(node, "TransmissionAndDos", value, requested=.false.)
     if(associated(value)) then
-       call getChildValue(value, "WriteDOS", tp%tWriteDOS,.false.)      
-       call getChildValue(value, "WriteEqLDOS", tp%tWrite_ldos,.false.)
        call getChildValue(value, "Write_negf_params", tp%tWrite_negf_params,.false.)
-       call getChildValue(value, "DOSwithS", tp%tDOSwithS,.true.)
     end if
        
     end subroutine readTransport
@@ -5692,7 +5689,7 @@ contains
     tundos%defined = .true.
     ncont = transpar%ncont
     call getChildValue(root, "Verbosity", tundos%verbose, 51)
-    call getChildValue(root, "WriteLDOS", tundos%writeLDOS, .true.)
+    call getChildValue(root, "WriteLDOS", tundos%writeLDOS, .false.)
     call getChildValue(root, "WriteTunn", tundos%writeTunn, .true.)
 
     write(stdout,"('Verbosity           = ',I6)")tundos%verbose

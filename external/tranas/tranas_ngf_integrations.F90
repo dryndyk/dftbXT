@@ -60,7 +60,7 @@ module tranas_ngf_integrations
 
   public :: contour_int       ! generalized contour integrator 
   public :: real_axis_int     ! real-axis integrator
-  public :: ldos_int          ! ldos only integrator
+  public :: integrationsLDOS  ! ldos only integrator
 
   public :: contour_int_def   ! contour integration for DFT(B)
   public :: contour_int_n_def ! contour integration for CB
@@ -176,30 +176,31 @@ contains
     
   end subroutine write_end_clock
 
-  !-----------------------------------------------------------------------
-  ! Projected DOS on atoms or obitals
-  !-----------------------------------------------------------------------
-  subroutine ldos_int(negf) 
+  !-----------------------------------------------------------------------------------------------!
+
+  !> Projected DOS on atoms or obitals.
+  !> (public)
+  subroutine integrationsLDOS(negf)
+    
     type(Tnegf) :: negf
 
     Type(z_DNS), Dimension(MAXNCONT) :: SelfEneR, Tlc, Tcl, GS
-    Type(z_CSR) ::  Gr
+    Type(z_CSR) :: Gr, GrS
     complex(dp), Dimension(:), ALLOCATABLE :: diag
 
     integer :: Nstep, i, i1, l, kb, ke
     integer :: outer, ncont
+    integer :: nnz
 
     real(dp) :: ncyc
     complex(dp) :: Ec
     character(6) :: ofKP
     character(1) :: ofSp
-
-    !DAR begin - ldos_int - variables          
+         
     if (id0.and.negf%verbose.gt.50) then
     write(*,*)   
     write(*,"('>>> The LDOS is started.')")
     end if
-    !DAR end
     
     outer = 1
     ncont = negf%str%num_conts
@@ -218,34 +219,34 @@ contains
        Ec = negf%en_grid(i)%Ec + j*negf%dos_delta  !MUST use transmission_int_def  
        negf%iE = negf%en_grid(i)%pt
 
-       call compute_Gr(negf, outer, Ec, Gr)
-
-!print *, Gr%nrow, outer, ncont, Ec
-!print *, Gr%nzval       
+       call compute_Gr(negf, outer, Ec, Gr)     
        
        call log_allocate(diag, Gr%nrow)
-       call getdiag(Gr,diag)
+       nnz = nnz_mult(Gr,negf%S)      
+       call create(GrS,Gr%nrow,Gr%ncol,nnz)
+       call zamub_st(Gr,negf%S,GrS)
+       !call prealloc_mult(Gr,negf%S,GrS) does not work for CSR!
+       call getdiag(GrS,diag)
        diag = - aimag(diag)/pi
 
        do i1 = 1, size(negf%LDOS)
            negf%ldos_mat(i, i1) = sum(diag(negf%LDOS(i1)%indexes))
        enddo
         
-       call destroy(Gr)
+       call destroy(Gr,GrS)
        call log_deallocate(diag)
 
     enddo
 
     !call destroy_en_grid()
 
-    !DAR begin
     if (id0.and.negf%verbose.gt.50) then                                   
     !write(*,*)                                                              
     write(*,"('>>> The LDOS is finished.')")             
     end if                                                                  
-    !DAR end - ldos_int
 
-  end subroutine ldos_int
+  end subroutine integrationsLDOS
+  
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
 

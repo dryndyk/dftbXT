@@ -302,7 +302,7 @@ contains
     call extract_device(tranas%negf)
     call extract_cont(tranas%negf)
     call transmission_int_def(tranas%negf)
-    call ldos_int(tranas%negf)
+    call integrationsLDOS(tranas%negf)
     call destroy_matrices(tranas%negf)
 
     if (id0.and.tranas%negf%verbose.gt.50) then

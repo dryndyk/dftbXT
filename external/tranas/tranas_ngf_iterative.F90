@@ -394,15 +394,15 @@ contains
     Real(dp), Dimension(:), intent(inout) :: LEDOS
 
     ! Local variables
-    Type(z_CSR) :: ESH_tot, GrCSR
+    Type(z_CSR) :: ESH_tot, GrCSR, SrCSR, Grm, Srm, GrmS
     Type(z_DNS), Dimension(:,:), allocatable :: ESH
-    Type(r_CSR) :: Grm                          ! Green Retarded nella molecola           
-    real(dp), dimension(:), allocatable :: diag
+    !Type(r_CSR) :: Grm, Srm, GrmS                          ! Green Retarded nella molecola           
+    complex(dp), dimension(:), allocatable :: diag
     Real(dp) :: tun
     Complex(dp) :: zc
     Integer :: nbl,ncont, ierr
     Integer :: nit, nft, icpl
-    Integer :: iLDOS, i2, i
+    Integer :: iLDOS, i2, i, nnz
     Character(1) :: Im
    
 
@@ -445,7 +445,7 @@ contains
 
       TUN_MAT(icpl) = tun 
 
-    enddo
+    end do
     
     !Deallocate energy-dependent matrices
     call destroy_gsm(gsmr)
@@ -458,40 +458,53 @@ contains
     enddo
     call destroy_ESH(ESH)
     call deallocate_blk_dns(ESH)
-
+    
+    call allocate_blk_dns(ESH,nbl)
+    call zcsr2blk_sod(S,ESH,str%mat_PL_start)
     call create(Grm,str%mat_PL_start(nbl+1)-1,str%mat_PL_start(nbl+1)-1,0)
+    call create(Srm,Grm%nrow,Grm%ncol,0)
 
     Grm%rowpnt(:)=1
 
     do i=1,nbl
       call create(GrCSR,Gr(i,i)%nrow,Gr(i,i)%ncol,Gr(i,i)%nrow*Gr(i,i)%ncol)
+      call create(SrCSR,Gr(i,i)%nrow,Gr(i,i)%ncol,Gr(i,i)%nrow*Gr(i,i)%ncol) 
       call dns2csr(Gr(i,i),GrCSR)
+      call dns2csr(ESH(i,i),SrCSR)
       !Concatena direttamente la parte immaginaria per il calcolo della DOS
-      zc=(-1.d0,0.d0)/pi
-      
-      call concat(Grm,zc,GrCSR,Im,str%mat_PL_start(i),str%mat_PL_start(i))
+      zc=(-1.d0,0.d0)/pi    
+      !call concat(Grm,zc,GrCSR,str%mat_PL_start(i),str%mat_PL_start(i))
+      call concat(Grm,GrCSR,str%mat_PL_start(i),str%mat_PL_start(i))
+      call concat(Srm,SrCSR,str%mat_PL_start(i),str%mat_PL_start(i))
       call destroy(Gr(i,i))
-      call destroy(GrCSR)
+      call destroy(GrCSR,SrCSR)
     enddo
 
+    call destroy_ESH(ESH)
+    call deallocate_blk_dns(ESH)
     call deallocate_blk_dns(Gr)
+ 
+    nnz = nnz_mult(Grm,Srm) 
+    call create(GrmS,Grm%nrow,Grm%ncol,nnz)
+    call zamub_st(Grm,Srm,GrmS)
+    call destroy(Grm,Srm)
 
     !Compute LDOS on the specified intervals
     if (nLDOS.gt.0) then
-      call log_allocate(diag, Grm%nrow)
-      call getdiag(Grm,diag)
+      call log_allocate(diag, GrmS%nrow)
+      call getdiag(GrmS,diag)    
       do iLDOS=1,nLDOS
         do i = 1, size(LDOS(iLDOS)%indexes)
           i2 = LDOS(iLDOS)%indexes(i)
           if (i2 .le. str%central_dim) then
-            LEDOS(iLDOS) = LEDOS(iLDOS) + diag(i2)  
+            LEDOS(iLDOS) = LEDOS(iLDOS) - aimag(diag(i2))/pi 
           end if
         end do
       enddo
       call log_deallocate(diag)
     endif
 
-    call destroy(Grm)
+    call destroy(GrmS)
 
   end subroutine tun_and_dos  
 
@@ -503,21 +516,20 @@ contains
   subroutine iterativeGreenRetarded(pnegf,E,SelfEneR,Tlc,Tcl,gsurfR,A,outer)
 
     !----------------------------------------------------------------------------------------------!
-    !> Input
-    !! pnegf:    negf data container
-    !! E:        energy point
-    !! SelfEneR: matrices array containing contacts self-energy
-    !! Tlc:      matrices array containing contacts-device interaction blocks (ES-H)
-    !! Tcl:      matrices array containing device-contacts interaction blocks (ES-H)
-    !! gsurfR:   matrices array containing contacts surface green
-    !! outer:    parameter (0,1,2)
-    !!
-    !> Output
-    !! A: Retarded Green function (Device + Contacts overlap regions -> effective conductor)
-    !!    outer = 0  no outer parts are computed
-    !!    outer = 1  only D/C part is computed
-    !!    outer = 2  D/C and C/D parts are computed
-    !!               (needed for K-points calculations)
+    ! Input
+    ! pnegf:    negf data container
+    ! E:        energy point
+    ! SelfEneR: matrices array containing contacts self-energy
+    ! Tlc:      sparse matrices array containing contacts-device interaction blocks (ES-H)
+    ! Tcl:      sparse matrices array containing device-contacts interaction blocks (ES-H)
+    ! gsurfR:   sparse matrices array containing contacts surface Green functions
+    ! outer:    parameter (0,1,2)
+    !
+    ! Output
+    ! A: Retarded Green function masked with S (Device + Contacts overlap regions)
+    !    outer = 0  no outer parts are computed
+    !    outer = 1  only D/C part is computed
+    !    outer = 2  D/C and C/D parts are computed (needed for K-points calculations)
     !----------------------------------------------------------------------------------------------!
 
     implicit none
@@ -2262,24 +2274,21 @@ contains
 
   SUBROUTINE Outer_Gr_mem_dns(Tlc,Tcl,gsurfR,struct,lower,Aout)
 
-    !****************************************************************************
-    !Input:
-    !Tlc: sparse arraymatrices array containing contact-device interacting blocks 
-    !     ESH-H
-    !Tlc: sparse arraymatrices array containing device-contact interacting blocks 
-    !     ESH-H
-    !gsurfR: sparse matrices array containing contacts surface green
-    !lower: if .true., also lower parts are calculated and concatenated
+    !----------------------------------------------------------------------------------------------!
+    ! Input
+    ! Tlc:      sparse matrices array containing contacts-device interaction blocks (ES-H)
+    ! Tcl:      sparse matrices array containing device-contacts interaction blocks (ES-H)
+    ! gsurfR:   sparse matrices array containing contacts surface Green functions
+    ! lower:    if .true., also lower parts are calculated and concatenated
     !
-    !global variables needed: nbl, indblk(nbl+1), ncont, cblk(ncont), 
-    !cindblk(ncont), Gr in the diagonal block related to the interaction layer
-    ! 
-    !Output:
-    !Aout: sparse matrix containing density matrix in the region 
-    !      corresponding to non-zero overlap
+    ! global varable: Gr in the diagonal block related to the interaction layer
     !
-    !****************************************************************************
-
+    ! Output
+    ! Aout: Retarded Green function masked with S (Device + Contacts overlap regions)
+    !    lower = .false.:  only D/C part is computed
+    !    lower = .true. :   D/C and C/D parts are computed (needed for K-points calculations)
+    !----------------------------------------------------------------------------------------------!
+   
     IMPLICIT NONE 
 
     !In/Out

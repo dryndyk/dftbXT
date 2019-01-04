@@ -12,10 +12,12 @@ Unreleased
 Added
 -----
 
+- Integration with CP2K+XT.
 
 Changed
 -------
 
+- New git repository at GitHub and re-fork from github.com/dftbplus/dftbplus/master.
 
 Fixed
 -----
