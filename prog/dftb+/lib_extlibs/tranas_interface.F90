@@ -41,6 +41,7 @@ module tranas_interface
 
   use FormatOut  
   use globalenv
+  use message
   use taggedoutput                                                         
   
   implicit none
@@ -51,7 +52,6 @@ module tranas_interface
   public :: negf_init      ! general library initializations
   public :: negf_init_nogeom                                               
   public :: negf_init_str  ! passing structure parameters
-  public :: negf_init_str_NEW
   public :: negf_init_elph                                                 
   public :: negf_destroy
   
@@ -712,10 +712,14 @@ module tranas_interface
 
   !------------------------------------------------------------------------------------------------!
   
-  subroutine negf_init_str_NEW(denseDescr, transpar, greendens, iNeigh, nNeigh, img2CentCell)
+  subroutine negf_init_str(denseDescr, transpar, greendens, iNeigh, nNeigh, img2CentCell)
+
+    use tranas_types_mbngf, only : Tmbngf
+    
     Type(TDenseDescr), intent(in) :: denseDescr
     Type(TTranspar), intent(in) :: transpar
     Type(TGDFTBGreenDensInfo) :: greendens
+    type(Tmbngf) :: mbngf_tmp
     Integer, intent(in) :: nNeigh(:)
     Integer, intent(in) :: img2CentCell(:)
     Integer, intent(in) :: iNeigh(0:,:)
@@ -723,10 +727,11 @@ module tranas_interface
     Integer, allocatable :: PL_end(:), cont_end(:), surf_end(:), cblk(:), ind(:)
     Integer, allocatable :: atomst(:), plcont(:)
     integer, allocatable :: minv(:,:)
-    Integer :: natoms, ncont, nbl, iatc1, iatc2, iatm2
+    Integer :: natoms, ncont, nbl, iatm1, iatm2, iatc1, iatc2
     integer :: i, m, i1, j1, info
     integer, allocatable :: inRegion(:)
 
+    iatm1 = transpar%idxdevice(1)
     iatm2 = transpar%idxdevice(2)
     ncont = transpar%ncont
     nbl = 0
@@ -737,9 +742,9 @@ module tranas_interface
        nbl = greendens%nPLs
     endif
 
-!NEW    if (nbl.eq.0) then
-!NEW      call error('Internal ERROR: nbl = 0 ?!')
-!NEW    end if
+    if (nbl.eq.0) then
+      call error('Internal ERROR: nbl = 0 ?!')
+    end if
 
     natoms = size(denseDescr%iatomstart) - 1
 
@@ -851,6 +856,13 @@ module tranas_interface
 
     call init_structure(negf, ncont, cont_end, surf_end, nbl, PL_end, cblk)
 
+    if(negf%tMBNGF) then
+      mbngf_tmp%str=negf%str
+      mbngf_tmp%tHartreeFock=transpar%tHartreeFock
+      mbngf_tmp%tRPA=transpar%tRPA
+      if(.not.allocated(negf%mbngf)) allocate(negf%mbngf, source=mbngf_tmp)
+    end if
+
     deallocate(PL_end)
     deallocate(plcont)
     deallocate(atomst)
@@ -860,162 +872,6 @@ module tranas_interface
     deallocate(ind)
     deallocate(minv)
 
-  end subroutine negf_init_str_NEW
-
-  !------------------------------------------------------------------------------------------------!  
-
-  subroutine negf_init_str(structure, transpar, greendens, iNeigh, nNeigh, img2CentCell)
-
-    use tranas_types_mbngf, only : Tmbngf
-    
-    Type(TTranspar), intent(IN) :: transpar
-    Type(TGDFTBStructure), intent(IN) :: structure
-    Type(TGDFTBGreenDensInfo) :: greendens
-    type(Tmbngf) :: mbngf_tmp 
-    Integer, intent(in) :: nNeigh(:)
-    Integer, intent(in) :: img2CentCell(:)
-    Integer, intent(in) :: iNeigh(0:,:)
-    
-    Integer, allocatable :: PL_end(:), cont_end(:), surf_end(:), cblk(:), ind(:)
-    Integer, allocatable :: atomst(:), plcont(:)   
-    integer, allocatable :: minv(:,:)
-    Integer :: natoms, ncont, nbl, iatm1, iatm2, iatc1, iatc2
-    integer :: i, m, i1, j1
-
-    iatm1 = transpar%idxdevice(1)
-    iatm2 = transpar%idxdevice(2)
-
-    ncont = transpar%ncont
-
-    if (transpar%defined) then
-       nbl = transpar%nPLs
-    else if (greendens%defined) then
-       nbl = greendens%nPLs
-    endif
-    if (nbl.eq.0) STOP 'Internal ERROR: nbl = 0 ?!'
-    natoms = structure%nAtom
-
-    call log_allocate(PL_end,nbl)
-    call log_allocate(atomst,nbl+1)
-    call log_allocate(plcont,nbl)
-    call log_allocate(cblk,ncont)
-    call log_allocate(cont_end,ncont)
-    call log_allocate(surf_end,ncont)
-    call log_allocate(ind,natoms+1)
-    call log_allocate(minv,nbl,ncont)
-
-    ind(1:natoms+1)=structure%iatomstart(1:natoms+1) - 1
-
-    do i = 1, ncont
-       cont_end(i) = ind(transpar%contacts(i)%idxrange(2)+1)
-       surf_end(i) = ind(transpar%contacts(i)%idxrange(1))
-    enddo
-   
-    if (transpar%defined) then
-       do i = 1, nbl-1
-          PL_end(i) = ind(transpar%PL(i+1))
-       enddo
-       atomst(1:nbl) = transpar%PL(1:nbl)
-      PL_end(nbl) = ind(transpar%idxdevice(2)+1)
-      atomst(nbl+1) = iatm2 + 1
-    else if (greendens%defined) then
-       do i = 1, nbl-1
-          PL_end(i) = ind(greendens%PL(i+1))
-       enddo
-       atomst(1:nbl) = greendens%PL(1:nbl)
-      PL_end(nbl) = ind(natoms+1)
-      atomst(nbl+1) = natoms + 1
-    endif
-
-    ! For every contact finds the min-max atom indeces among
-    ! the atoms in the central region interacting with contact 
-    if (transpar%defined .and. ncont.gt.0) then
-
-      if(.not.transpar%tNoGeometry) then                                    !DAR
-
-       minv = 0
-
-       do m = 1, transpar%nPLs
-          ! Loop over all PL atoms      
-          do i = atomst(m), atomst(m+1)-1 
-
-             ! Loop over all contacts
-             do j1 = 1, ncont
-
-                iatc1 = transpar%contacts(j1)%idxrange(1)
-                iatc2 = transpar%contacts(j1)%idxrange(2)
-
-                i1 = minval(img2CentCell(iNeigh(1:nNeigh(i),i)), &
-                     mask = (img2CentCell(iNeigh(1:nNeigh(i),i)).ge.iatc1 .and. & 
-                     img2CentCell(iNeigh(1:nNeigh(i),i)).le.iatc2) )
-
-                if (i1.ge.iatc1 .and. i1.le.iatc2) then
-                    minv(m,j1) = j1
-                endif
-
-             end do
-          end do  
-       end do
-
-       do j1 = 1, ncont      
-          if (count(minv(:,j1).eq.j1).gt.1) then
-             write(*,*) '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-             write(*,*) 'WARNING: contact',j1,'interacts with more than one PL'
-             write(*,*) '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-             write(*,*) minv(:,j1)
-          end if
-          do m = 1, transpar%nPLs
-             !print *,transpar%nPLs,m,minv(m,j1) !debug
-             if (minv(m,j1).eq.j1) cblk(j1) = m
-          end do
-          !debug begin
-          !print *, cblk(1)
-          !print *, cblk(2)
-          !stop
-          !debug end
-       end do
-
-      else
-
-        cblk=transpar%cblk              !DAR!!!
-
-      end if   
-  
-      if (id0) then
-         write(*,*)
-         write(*,*) ' Structure info:'
-         write(*,*) ' Number of PLs:',nbl 
-         write(*,*) ' PLs coupled to contacts:',cblk(1:ncont)              !DAR
-      endif
-
-    end if
-
-    !debug begin
-    !print *, cblk(1)
-    !print *, cblk(2)
-    !stop
-    !debug end
-
-    call init_structure(negf, ncont, cont_end, surf_end, nbl, PL_end, cblk)
-
-    !DAR begin - init_structure
-    if(negf%tMBNGF) then
-      mbngf_tmp%str=negf%str
-      mbngf_tmp%tHartreeFock=transpar%tHartreeFock
-      mbngf_tmp%tRPA=transpar%tRPA
-      if(.not.allocated(negf%mbngf)) allocate(negf%mbngf, source=mbngf_tmp)
-    end if
-    !DAR end
-
-    call log_deallocate(PL_end)
-    call log_deallocate(plcont)
-    call log_deallocate(atomst)
-    call log_deallocate(cblk)
-    call log_deallocate(cont_end)
-    call log_deallocate(surf_end)
-    call log_deallocate(ind)
-    call log_deallocate(minv)
-  
   end subroutine negf_init_str
 
   !------------------------------------------------------------------------------------------------!

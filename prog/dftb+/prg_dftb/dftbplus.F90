@@ -27,6 +27,7 @@ program dftbplus
 #:else
   use initprogram, only : initProgramVariables
 #:endif
+  use densedescr
   
   implicit none
 
@@ -36,9 +37,9 @@ program dftbplus
   type(TEnvironment) :: env
   type(inputData), allocatable :: input
 #:if WITH_TRANSPORT  
-  integer :: iAtom !DAR
+  integer :: iAtom, nAtom !DAR
   logical :: tInitNEGF !DAR
-  Type(TGDFTBstructure) :: gdftbStr !DAR
+  type(TDenseDescr) :: denseDescr !DAR
 #:endif  
   integer, allocatable :: nNeigh(:)
   integer, allocatable :: img2CentCell(:)
@@ -66,13 +67,13 @@ program dftbplus
     
     call negf_init_nogeom(input%transpar,input%ginfo%greendens,input%ginfo%tundos,env%mpi%globalComm,tInitNEGF)
     if (.not.tInitNEGF) write(stdout, "('TraNaS Lib initialization error (negf_init_nogeom)')")
-    gdftbStr%nAtom=input%transpar%NumStates
-    allocate(gdftbStr%iAtomStart(gdftbStr%nAtom+1))
-    do iAtom=1,gdftbStr%nAtom+1          
-      gdftbStr%iAtomStart(iAtom)=iAtom
+    nAtom=input%transpar%NumStates
+    allocate(denseDescr%iAtomStart(nAtom+1))
+    do iAtom=1,nAtom+1          
+      denseDescr%iAtomStart(iAtom)=iAtom
     end do
-    call negf_init_str(gdftbStr, input%transpar, input%ginfo%greendens, &
-         iNeigh, nNeigh, img2CentCell)     
+    call negf_init_str(denseDescr, input%transpar, input%ginfo%greendens, &
+         iNeigh, nNeigh, img2CentCell)
     write(stdout, "(A)") repeat("-", 80)
     write(stdOut, "(A)") "-- Initialization is finished                                                 --"
     write(stdout, "(A)") repeat("-", 80)

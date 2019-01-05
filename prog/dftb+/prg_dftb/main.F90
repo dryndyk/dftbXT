@@ -1164,7 +1164,7 @@ contains
     call negf_init_csr(denseDescr%iAtomStart, neighbourList%iNeighbour, nNeighbour, img2CentCell,&
         & orb)
 
-    call negf_init_str_NEW(denseDescr, transpar, ginfo%greendens, neighbourList%iNeighbour, nNeighbour,&
+    call negf_init_str(denseDescr, transpar, ginfo%greendens, neighbourList%iNeighbour, nNeighbour,&
         & img2CentCell)
 
     !DAR call negf_init_dephasing(ginfo%tundos)  !? why tundos
