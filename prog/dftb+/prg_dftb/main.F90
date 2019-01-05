@@ -352,9 +352,7 @@ contains
         ! Transform Hamiltonian from qm to ud
         call transformHam(ham, iHam)
 
-        ! Compute Density Matrix
-!print *, 'main potential%intBlock'      
-!print *, potential%intBlock       
+        ! Compute Density Matrix 
         if(tSccCalc.or.(.not.tTunn)) then !DAR
         if(input%ctrl%verbose.gt.80) write(stdout,"('getDensity is called')") !DAR   
         call getDensity(env, iSCCIter, denseDesc, ham, over, neighbourList, nNeighbourSK,&
@@ -465,7 +463,7 @@ contains
 
       if(input%ctrl%verbose.gt.80) write(stdout,"('SCC loop is finished')") !DAR
 
-        #:if WITH_TRANSPORT
+    #:if WITH_TRANSPORT
       if (tPoisson) then
         call poiss_savepotential()
       end if
@@ -500,15 +498,17 @@ contains
       #:endcall DEBUG_CODE
       end if
 
-!NEW    #:if WITH_TRANSPORT
-!NEW      if (tLocalCurrents) then
-!NEW        call writeXYZFormat("supercell.xyz", coord, species, speciesName)
-!NEW        write(stdOut,*) " <<< supercell.xyz written on file"
-!NEW        call local_currents(env%mpi%globalComm, parallelKS%localKS, ham, over,& !!DAR!!
-!NEW            & neighbourList%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
-!NEW            & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, coord0Fold, .false., mu)
-!NEW      end if
-!NEW    #:endif
+      #:if WITH_TRANSPORT
+      if (tLocalCurrents) then
+        call writeXYZFormat("supercell.xyz", coord, species, speciesName)
+        write(stdOut,*) " <<< supercell.xyz written on file"
+        call local_currents(env%mpi%globalComm, parallelKS%localKS, ham, over,& 
+            & neighbourList%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
+            & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, coord0Fold, .false., mu, input%ginfo%tundos)
+            !!DAR!! - input%ginfo%tundos is added,
+            !         it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface)
+      end if
+      #:endif
 
       call env%globalTimer%startTimer(globalTimers%eigvecWriting)
 
@@ -776,16 +776,13 @@ contains
     end if
 
     if (tTunn) then
-      !call qm2ud(ham)
-      call calc_current(env%mpi%globalComm, groupKS, ham, over, &
+      call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over, &
           & descHS, neighbourList%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
           & img2CentCell, iCellVec, cellVec, orb, nEl, tempElec,&
           & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, writeLDOS,&
           & mu, input%ginfo%tundos)
       !!DAR!! - input%ginfo%tundos is added,
-      !         it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface
-
-      !call ud2qm(ham)   
+      !         it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface   
       !NEW call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over,&
       !NEW    & neighbourList%iNeighbour, nNeighbourSK, densedesc%iAtomStart, iSparseStart,&
       !NEW    & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, transmission, current, ldos,&
@@ -2005,7 +2002,7 @@ contains
     if (solver == solverGF) then
       call env%globalTimer%startTimer(globalTimers%densityMatrix)
 
-      call calcdensity_green(0, env%mpi%globalComm, groupKS, ham, over, &
+      call calcdensity_green(0, env%mpi%globalComm, parallelKS%localKS, ham, over, &
           & descHS, neighbourlist%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart, &
           & img2CentCell, iCellVec, cellVec, orb, nEl, & 
           & tempElec, kPoint, kWeight, rhoPrim, Eband, Ef, E0, TS, mu, input%ginfo%tundos) !!DAR!!
@@ -3887,7 +3884,7 @@ contains
 
   #:if WITH_TRANSPORT
     if (solver == solverGF) then
-      call calcEdensity_green(0, env%mpi%globalComm, groupKS, ham, over, &
+      call calcEdensity_green(0, env%mpi%globalComm, parallelKS%localKS, ham, over, &
           & descHS, neighbourlist%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart, &
           & img2CentCell, iCellVec, cellVec, orb, & 
           & kPoint, kWeight, ERhoPrim, mu, input%ginfo%tundos) !!DAR!! 
