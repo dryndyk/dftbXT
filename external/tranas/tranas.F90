@@ -225,7 +225,6 @@ contains
       write(*,'(80("-"))')
       write(*,*) '                           TraNaS: Current finished'   
       write(*,'(80("-"))') 
-      write(*,*)
     endif
 
     tranas%negf%readOldSGF = flagbkup

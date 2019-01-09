@@ -58,11 +58,13 @@ program dftbplus
   if(input%transpar%tNoGeometry) then
 
     call env%initMpi(1)
-    call mpifx_barrier(env%mpi%globalComm) 
-    write(stdout, "(A)") repeat("-", 80)
-    write(stdOut, "(A)") "-- Initialization is started (without geometry)                               --"
-    write(stdout, "(A)") repeat("-", 80)
-
+    call mpifx_barrier(env%mpi%globalComm)
+    if (input%ctrl%verbose.gt.0) then
+      write(stdout, "(/,A)") repeat("-", 80)
+      write(stdOut, "(A)") "-- Initialization is started (without geometry)                               --"
+      write(stdout, "(A)") repeat("-", 80)
+    end if
+      
     input%transpar%tWriteTagged = input%ctrl%tWriteTagged
     
     call negf_init_nogeom(input%transpar,input%ginfo%greendens,input%ginfo%tundos,env%mpi%globalComm,tInitNEGF)
@@ -74,17 +76,15 @@ program dftbplus
     end do
     call negf_init_str(denseDescr, input%transpar, input%ginfo%greendens, &
          iNeigh, nNeigh, img2CentCell)
-    write(stdout, "(A)") repeat("-", 80)
-    write(stdOut, "(A)") "-- Initialization is finished                                                 --"
-    write(stdout, "(A)") repeat("-", 80)
+    if (input%ctrl%verbose.gt.0) then
+      write(stdout, "(/,A)") repeat("-", 80)
+      write(stdOut, "(A)") "-- Initialization is finished                                                 --"
+      write(stdout, "(A)") repeat("-", 80)
+    end if
     !call destroy(input)    
     call tranasNoGeom(env%mpi%globalComm,input%ginfo%tundos, input%transpar)
     !DAR - input%ginfo%tundos is added,
     !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface_nogeom)
-    write(stdout,*)
-      
-    !call myclock_full%stop()
-    !call myclock_full%print_times(msg="program total", fp=stdout)
     deallocate(input)
     call env%destruct()
     call destructGlobalEnv()
@@ -103,4 +103,7 @@ program dftbplus
 #:if WITH_TRANSPORT
   end if
 #:endif
+  write(stdout, "(/,A)") repeat("=", 80)
+  write(stdout,"('DFTB+XT is finished')")
+  write(stdout, "(A,/)") repeat("=", 80)
 end program dftbplus

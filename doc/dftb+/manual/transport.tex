@@ -399,6 +399,7 @@ self-consistent calculations can be driven using the GF solver.
 
 The following table gives the important parameters of the solver:
 \begin{ptableh}
+  \kw{Verbosity} & i & & Options\%Verbosity & \\
   \kw{Delta} & r  &  & 1E-5 & \\
   \kw{ContourPoints} & 2i &  & 20 20 &  \\
   \kw{LowestEnergy}  & r  &  & -2.0 & \\
@@ -418,6 +419,9 @@ layers whose fundamental property is to interact with nearest-neighbour layers
 only (see section~\ref{sec:transport.geometry}).
 
 \begin{description}
+  \item[\is{Verbosity}] This parameter controls the level and amount of output
+  messages and takes values ranging from 1 to 100. The default value is equal to
+  the \is{Verbosity} parameter of \is{Options} block. 
 \item[\is{Delta}]\modif{\modtype{energy}} A small positive imaginary delta used
   in the GF definition and required for the x contour integration.
 \item[\is{ContourPoints}] The number of points along the complex contour
@@ -595,7 +599,7 @@ An additional restriction is that the box sides must be aligned with the
 Cartesian axes, $x$, $y$, $z$.
 
 \begin{ptableh}
-  \kw{Verbosity} & i & & 51 & \\
+  \kw{Verbosity} & i & & Options\%Verbosity & \\
   \kw{PoissonBox} & 3r & &  &  \\
   \kw{BoxExtension} & r &  & 0.0 &  \\
   \kw{MinimalGrid} & 3r  &  & 0.3 0.3 0.3 & \\
@@ -619,12 +623,12 @@ Cartesian axes, $x$, $y$, $z$.
 
 
 \begin{description}
-\item[\is{Verbosity}] This parameter controls the level and amount of output
-  messages and takes values ranging from 1 to 100.
-\item[\is{PoissonBox}]\modif{\modtype{length}} Dimension of the Poisson box
-  along the directions $x$, $y$ and $z$.
-
   
+\item[\is{Verbosity}] This parameter controls the level and amount of output
+  messages and takes values ranging from 1 to 100. The default value is equal to
+  the \is{Verbosity} parameter of \is{Options} block. 
+\item[\is{PoissonBox}]\modif{\modtype{length}} Dimension of the Poisson box
+  along the directions $x$, $y$ and $z$. 
 \item[\is{BoxExtension}]\modif{\modtype{length}} With this value it is possible
   to tune the position of the box interface between the device and contacts.  By
   default (\is{BoxExtension}=0.0) the boundary is placed at the midpoint between
@@ -1105,6 +1109,7 @@ function. This block can only be specified if an open boundary system has been
 defined in \iscb{Transport}.
  
 \begin{ptable}
+  \kw{Verbosity} & i & & Options\%Verbosity & \\
   \kw{EnergyRange} & 2r &  & &  \\
   \kw{EnergyStep} & r & &  &  \\
   \kw{TerminalCurrents} &p& & & \\
@@ -1117,7 +1122,9 @@ defined in \iscb{Transport}.
 
 \begin{description}
 
-
+\item[\is{Verbosity}] This parameter controls the level and amount of output
+  messages and takes values ranging from 1 to 100. The default value is equal to
+  the \is{Verbosity} parameter of \is{Options} block. 
 \item[\is{EnergyRange}]\modif{\modtype{energy}} Contains the energy range over
   which the transmission function and local density of states are computed.
 \item[\is{EnergyStep}]\modif{\modtype{energy}} Is the energy sampling step for

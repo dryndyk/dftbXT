@@ -993,9 +993,10 @@ contains
 
     @:ASSERT(input%tInitialized)
 
-    write(stdOut, "(A80)") repeat("-", 80)
-    write(stdOut, "(A)") "-- Initialization is started                                                  --"
-    write(stdOut, "(A80,/)") repeat("-", 80)
+    if(input%ctrl%verbose.gt.0) write(stdOut, "(/,A80)") repeat("-", 80)
+    if(input%ctrl%verbose.gt.0) write(stdOut, "(A)") &
+         "-- Initialization is started                                                  --"
+    if(input%ctrl%verbose.gt.0) write(stdOut, "(A80)") repeat("-", 80)
 
     call env%initGlobalTimer(input%ctrl%timingLevel, "DFTB+ running times", stdOut)
     call env%globalTimer%startTimer(globalTimers%globalInit)
@@ -2385,14 +2386,14 @@ contains
 
   #:if WITH_MPI
     if (env%mpi%nGroup > 1) then
-      write(stdOut, "('MPI processes: ',T30,I0,' (split into ',I0,' groups)')")&
+      if(input%ctrl%verbose.gt.50) write(stdOut, "('MPI processes: ',T30,I0,' (split into ',I0,' groups)')")&
           & env%mpi%globalComm%size, env%mpi%nGroup
     else
-      write(stdOut, "('MPI processes:',T30,I0)") env%mpi%globalComm%size
+      if(input%ctrl%verbose.gt.50) write(stdOut, "('MPI processes:',T30,I0)") env%mpi%globalComm%size
     end if
   #:endif
 
-    write(stdOut, "('OpenMP threads: ', T30, I0)") omp_get_max_threads()
+    if(input%ctrl%verbose.gt.50) write(stdOut, "('OpenMP threads: ', T30, I0)") omp_get_max_threads()
 
   #:if WITH_MPI
     if (omp_get_max_threads() > 1 .and. .not. input%ctrl%parallelOpts%tOmpThreads) then
@@ -2405,54 +2406,56 @@ contains
   #:endif
 
   #:if WITH_SCALAPACK
-    write(stdOut, "('BLACS orbital grid size:', T30, I0, ' x ', I0)")env%blacs%orbitalGrid%nRow,&
+    if(input%ctrl%verbose.gt.50)  write(stdOut, "('BLACS orbital grid size:', T30, I0, ' x ', I0)") &
+         env%blacs%orbitalGrid%nRow,&
         & env%blacs%orbitalGrid%nCol
-    write(stdOut, "('BLACS atom grid size:', T30, I0, ' x ', I0)")env%blacs%atomGrid%nRow,&
+    if(input%ctrl%verbose.gt.50)  write(stdOut, "('BLACS atom grid size:', T30, I0, ' x ', I0)") &
+         env%blacs%atomGrid%nRow,&
         & env%blacs%atomGrid%nCol
   #:endif
 
     if (tRandomSeed) then
-      write(stdOut, "(A,':',T30,I14)") "Chosen random seed", iSeed
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Chosen random seed", iSeed
     else
-      write(stdOut, "(A,':',T30,I14)") "Specified random seed", iSeed
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Specified random seed", iSeed
     end if
 
     if (input%ctrl%tMD) then
       select case(input%ctrl%iThermostat)
       case (0)
         if (tBarostat) then
-          write(stdOut, "('Mode:',T30,A,/,T30,A)") 'MD without scaling of velocities',&
+          if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A,/,T30,A)") 'MD without scaling of velocities',&
               & '(a.k.a. "NPE" ensemble)'
         else
-          write(stdOut, "('Mode:',T30,A,/,T30,A)") 'MD without scaling of velocities',&
+          if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A,/,T30,A)") 'MD without scaling of velocities',&
               & '(a.k.a. NVE ensemble)'
         end if
       case (1)
         if (tBarostat) then
-          write(stdOut, "('Mode:',T30,A,/,T30,A)")&
+          if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A,/,T30,A)")&
               & "MD with re-selection of velocities according to temperature",&
               & "(a.k.a. NPT ensemble using Andersen thermostating + Berensen barostat)"
         else
-          write(stdOut, "('Mode:',T30,A,/,T30,A)")&
+          if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A,/,T30,A)")&
               & "MD with re-selection of velocities according to temperature",&
               & "(a.k.a. NVT ensemble using Andersen thermostating)"
         end if
       case(2)
         if (tBarostat) then
-          write(stdOut, "('Mode:',T30,A,/,T30,A)")&
+          if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A,/,T30,A)")&
               & "MD with scaling of velocities according to temperature",&
               & "(a.k.a. 'not' NVP ensemble using Berendsen thermostating and barostat)"
         else
-          write(stdOut, "('Mode:',T30,A,/,T30,A)")&
+          if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A,/,T30,A)")&
               & "MD with scaling of velocities according to temperature",&
               & "(a.k.a. 'not' NVT ensemble using Berendsen thermostating)"
         end if
       case(3)
         if (tBarostat) then
-          write(stdOut, "('Mode:',T30,A,/,T30,A)")"MD with scaling of velocities according to",&
+          if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A,/,T30,A)")"MD with scaling of velocities according to",&
               & "Nose-Hoover-Chain thermostat + Berensen barostat"
         else
-          write(stdOut, "('Mode:',T30,A,/,T30,A)")"MD with scaling of velocities according to",&
+          if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A,/,T30,A)")"MD with scaling of velocities according to",&
               & "Nose-Hoover-Chain thermostat"
         end if
 
@@ -2467,65 +2470,65 @@ contains
       end if
       select case (input%ctrl%iGeoOpt)
       case (optSD)
-        write(stdOut, "('Mode:',T30,A)")'Steepest descent' // trim(strTmp)
+        if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A)")'Steepest descent' // trim(strTmp)
       case (optCG)
-        write(stdOut, "('Mode:',T30,A)") 'Conjugate gradient relaxation' // trim(strTmp)
+        if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A)") 'Conjugate gradient relaxation' // trim(strTmp)
       case (optDIIS)
-        write(stdOut, "('Mode:',T30,A)") 'Modified gDIIS relaxation' // trim(strTmp)
+        if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A)") 'Modified gDIIS relaxation' // trim(strTmp)
       case (optLBFGS)
-        write(stdout, "('Mode:',T30,A)") 'LBFGS relaxation' // trim(strTmp)
+        if(input%ctrl%verbose.gt.50) write(stdout, "('Mode:',T30,A)") 'LBFGS relaxation' // trim(strTmp)
       case default
         call error("Unknown optimisation mode")
       end select
     elseif (tDerivs) then
-      write(stdOut, "('Mode:',T30,A)") "2nd derivatives calculation"
-      write(stdOut, "('Mode:',T30,A)") "Calculated for atoms:"
-      write(stdOut, *) indMovedAtom
+      if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A)") "2nd derivatives calculation"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A)") "Calculated for atoms:"
+      if(input%ctrl%verbose.gt.50) write(stdOut, *) indMovedAtom
     elseif (tSocket) then
-      write(stdOut, "('Mode:',T30,A)") "Socket controlled calculation"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A)") "Socket controlled calculation"
     else
-      write(stdOut, "('Mode:',T30,A)") "Static calculation"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "('Mode:',T30,A)") "Static calculation"
     end if
 
     if (tSccCalc) then
-      write(stdOut, "(A,':',T30,A)") "Self consistent charges", "Yes"
-      write(stdOut, "(A,':',T30,E14.6)") "SCC-tolerance", sccTol
-      write(stdOut, "(A,':',T30,I14)") "Max. scc iterations", maxSccIter
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Self consistent charges", "Yes"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "SCC-tolerance", sccTol
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Max. scc iterations", maxSccIter
       if (input%ctrl%tOrbResolved) then
-         write(stdOut, "(A,':',T30,A)") "Shell resolved Hubbard", "Yes"
+         if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Shell resolved Hubbard", "Yes"
       else
-         write(stdOut, "(A,':',T30,A)") "Shell resolved Hubbard", "No"
+         if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Shell resolved Hubbard", "No"
       end if
       if (tDFTBU) then
-        write(stdOut, "(A,':',T35,A)")"Orbitally dependant functional", "Yes"
-        write(stdOut, "(A,':',T30,A)")"Orbital functional", trim(plusUFunctionals%names(nDFTBUfunc))
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T35,A)")"Orbitally dependant functional", "Yes"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)")"Orbital functional", trim(plusUFunctionals%names(nDFTBUfunc))
       end if
     else
-      write(stdOut, "(A,':',T30,A)") "Self consistent charges", "No"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Self consistent charges", "No"
     end if
 
     select case (nSpin)
     case(1)
-      write(stdOut, "(A,':',T30,A)") "Spin polarisation", "No"
-      write(stdOut, "(A,':',T30,F12.6,/,A,':',T30,F12.6)") "Nr. of up electrons", 0.5_dp*nEl(1),&
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Spin polarisation", "No"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,F12.6,/,A,':',T30,F12.6)") "Nr. of up electrons", 0.5_dp*nEl(1),&
           & "Nr. of down electrons", 0.5_dp*nEl(1)
     case(2)
-      write(stdOut, "(A,':',T30,A)") "Spin polarisation", "Yes"
-      write(stdOut, "(A,':',T30,F12.6,/,A,':',T30,F12.6)") "Nr. of up electrons", nEl(1),&
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Spin polarisation", "Yes"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,F12.6,/,A,':',T30,F12.6)") "Nr. of up electrons", nEl(1),&
           & "Nr. of down electrons", nEl(2)
     case(4)
-      write(stdOut, "(A,':',T30,A)") "Non-collinear calculation", "Yes"
-      write(stdOut, "(A,':',T30,F12.6)") "Nr. of electrons", nEl(1)
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Non-collinear calculation", "Yes"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,F12.6)") "Nr. of electrons", nEl(1)
     end select
 
     if (tPeriodic) then
-      write(stdOut, "(A,':',T30,A)") "Periodic boundaries", "Yes"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Periodic boundaries", "Yes"
       if (tLatOpt) then
-        write(stdOut, "(A,':',T30,A)") "Lattice optimisation", "Yes"
-        write(stdOut, "(A,':',T30,f12.6)") "Pressure", extPressure
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Lattice optimisation", "Yes"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,f12.6)") "Pressure", extPressure
       end if
     else
-      write(stdOut, "(A,':',T30,A)") "Periodic boundaries", "No"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Periodic boundaries", "No"
     end if
 
     select case (solver)
@@ -2542,7 +2545,7 @@ contains
     case default
       call error("Unknown eigensolver!")
     end select
-    write(stdOut, "(A,':',T30,A)") "Diagonalizer", trim(strTmp)
+    if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Diagonalizer", trim(strTmp)
 
     if (tSccCalc) then
       select case (iMixer)
@@ -2555,27 +2558,27 @@ contains
       case(mixerDIIS)
         write (strTmp, "(A)") "DIIS"
       end select
-      write(stdOut, "(A,':',T30,A,' ',A)") "Mixer", trim(strTmp), "mixer"
-      write(stdOut, "(A,':',T30,F14.6)") "Mixing parameter", mixParam
-      write(stdOut, "(A,':',T30,I14)") "Maximal SCC-cycles", maxSccIter
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A,' ',A)") "Mixer", trim(strTmp), "mixer"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,F14.6)") "Mixing parameter", mixParam
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Maximal SCC-cycles", maxSccIter
       select case (iMixer)
       case(mixerAnderson)
-        write(stdOut, "(A,':',T30,I14)") "Nr. of chrg. vectors to mix", nGeneration
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Nr. of chrg. vectors to mix", nGeneration
       case(mixerBroyden)
-        write(stdOut, "(A,':',T30,I14)") "Nr. of chrg. vec. in memory", nGeneration
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Nr. of chrg. vec. in memory", nGeneration
       case(mixerDIIS)
-        write(stdOut, "(A,':',T30,I14)") "Nr. of chrg. vectors to mix", nGeneration
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Nr. of chrg. vectors to mix", nGeneration
       end select
     end if
 
     if (tCoordOpt) then
-      write(stdOut, "(A,':',T30,I14)") "Nr. of moved atoms", nMovedAtom
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Nr. of moved atoms", nMovedAtom
     end if
     if (tGeoOpt) then
-      write(stdOut, "(A,':',T30,I14)") "Max. nr. of geometry steps", nGeoSteps
-      write(stdOut, "(A,':',T30,E14.6)") "Force tolerance", input%ctrl%maxForce
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Max. nr. of geometry steps", nGeoSteps
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "Force tolerance", input%ctrl%maxForce
       if (input%ctrl%iGeoOpt == optSD) then
-        write(stdOut, "(A,':',T30,E14.6)") "Step size", deltaT
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "Step size", deltaT
       end if
     end if
 
@@ -2588,7 +2591,7 @@ contains
       case(forceDynT)
         strTmp = "Dynamics, finite electronic temp."
       end select
-      write(stdOut, "(A,':',T30,A)") "Force evaluation method", trim(strTmp)
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Force evaluation method", trim(strTmp)
     end if
 
     tFirst = .true.
@@ -2602,22 +2605,22 @@ contains
             else
               write(strTmp, "(A)") ""
             end if
-            write(stdOut, "(A,T30,'At',I4,': ',3F10.6)") trim(strTmp), ii, (conVec(kk,jj), kk=1,3)
+            if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,'At',I4,': ',3F10.6)") trim(strTmp), ii, (conVec(kk,jj), kk=1,3)
           end if
         end do
       end do
     end if
 
     if (.not.input%ctrl%tSetFillingTemp) then
-      write(stdOut, "(A,':',T30,E14.6)") "Electronic temperature", tempElec
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "Electronic temperature", tempElec
     end if
     if (tMD) then
-      write(stdOut, "(A,':',T30,E14.6)") "Time step", deltaT
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "Time step", deltaT
       if (input%ctrl%iThermostat == 0 .and. .not.input%ctrl%tReadMDVelocities) then
-        write(stdOut, "(A,':',T30,E14.6)") "Temperature", tempAtom
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "Temperature", tempAtom
       end if
       if (input%ctrl%tRescale) then
-        write(stdOut, "(A,':',T30,E14.6)") "Rescaling probability", input%ctrl%wvScale
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "Rescaling probability", input%ctrl%wvScale
       end if
     end if
 
@@ -2627,7 +2630,7 @@ contains
       else
         write (strTmp, "(A,E11.3,A)") "Set automatically (system chrg: ", input%ctrl%nrChrg, ")"
       end if
-      write(stdOut, "(A,':',T30,A)") "Initial charges", trim(strTmp)
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Initial charges", trim(strTmp)
     end if
 
     do iSp = 1, nType
@@ -2643,7 +2646,7 @@ contains
           strTmp2 = trim(strTmp2) // ", " // trim(orbitalNames(orb%angShell(jj, iSp) + 1))
         end if
       end do
-      write(stdOut, "(A,T29,A2,':  ',A)") trim(strTmp), trim(speciesName(iSp)), trim(strTmp2)
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T29,A2,':  ',A)") trim(strTmp), trim(speciesName(iSp)), trim(strTmp2)
     end do
 
     if (tPeriodic) then
@@ -2653,30 +2656,30 @@ contains
         else
           write(strTmp, "(A)") ""
         end if
-        write(stdOut, "(A,T28,I6,':',3F10.6,3X,F10.6)") trim(strTmp), ii,&
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T28,I6,':',3F10.6,3X,F10.6)") trim(strTmp), ii,&
             & (kPoint(jj, ii), jj=1, 3), kWeight(ii)
       end do
-      write(stdout,*)
+      if(input%ctrl%verbose.gt.50) write(stdout,*)
       do ii = 1, nKPoint
         if (ii == 1) then
           write(strTmp, "(A,':')") "K-points in absolute space"
         else
           write(strTmp, "(A)") ""
         end if
-        write(stdout, "(A,T28,I6,':',3F10.6)") trim(strTmp), ii, matmul(invLatVec,kPoint(:,ii))
+        if(input%ctrl%verbose.gt.50) write(stdout, "(A,T28,I6,':',3F10.6)") trim(strTmp), ii, matmul(invLatVec,kPoint(:,ii))
       end do
-      write(stdout, *)
+      if(input%ctrl%verbose.gt.50) write(stdout, *)
     end if
 
     if (tDispersion) then
       select type (dispersion)
       type is (DispSlaKirk)
-        write(stdOut, "(A)") "Using Slater-Kirkwood dispersion corrections"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A)") "Using Slater-Kirkwood dispersion corrections"
       type is (DispUff)
-        write(stdOut, "(A)") "Using Lennard-Jones dispersion corrections"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A)") "Using Lennard-Jones dispersion corrections"
     #:if WITH_DFTD3
       type is (DispDftD3)
-        write(stdOut, "(A)") "Using DFT-D3 dispersion corrections"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A)") "Using DFT-D3 dispersion corrections"
     #:endif
       class default
         call error("Unknown dispersion model - this should not happen!")
@@ -2699,7 +2702,7 @@ contains
             else
               write(strTmp, "(A)") ""
             end if
-            write(stdOut, "(A,T30,A2,2X,I1,'(',A1,'): ',E14.6)") trim(strTmp), speciesName(iSp),&
+            if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A2,2X,I1,'(',A1,'): ',E14.6)") trim(strTmp), speciesName(iSp),&
                 & jj, orbitalNames(orb%angShell(jj, iSp)+1), hubbU(jj, iSp)
           end do
         end do
@@ -2717,7 +2720,7 @@ contains
             else
               write(strTmp, "(A)") ""
             end if
-            write(stdOut, "(A,T30,A2,2X,I1,'(',A1,')-',I1,'(',A1,'): ',E14.6)")trim(strTmp),&
+            if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A2,2X,I1,'(',A1,')-',I1,'(',A1,'): ',E14.6)")trim(strTmp),&
                 & speciesName(iSp), jj, orbitalNames(orb%angShell(jj, iSp)+1), kk,&
                 & orbitalNames(orb%angShell(kk, iSp)+1), spinW(kk, jj, iSp)
           end do
@@ -2728,7 +2731,7 @@ contains
     tFirst = .true.
     if (tSpinOrbit) then
       if (tDualSpinOrbit) then
-        write(stdOut, "(A)")"Dual representation spin orbit"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A)")"Dual representation spin orbit"
       end if
       do iSp = 1, nType
         do jj = 1, orb%nShell(iSp)
@@ -2738,7 +2741,7 @@ contains
           else
             write(strTmp, "(A)") ""
           end if
-          write(stdOut, "(A,T30,A2,2X,I1,'(',A1,'): ',E14.6)")trim(strTmp), speciesName(iSp),&
+          if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A2,2X,I1,'(',A1,'): ',E14.6)")trim(strTmp), speciesName(iSp),&
                 & jj, orbitalNames(orb%angShell(jj, iSp)+1), xi(jj, iSp)
           if (xi(jj, iSp) /= 0.0_dp .and. orb%angShell(jj, iSp) == 0) then
             call error("Program halt due to non-zero s-orbital spin-orbit coupling constant!")
@@ -2749,57 +2752,57 @@ contains
 
     if (tSccCalc) then
       if (t3rdFull) then
-        write(stdOut, "(A,T30,A)") "Full 3rd order correction", "Yes"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Full 3rd order correction", "Yes"
         if (input%ctrl%tOrbResolved) then
-          write(stdOut, "(A,T30,A)") "Orbital-resolved 3rd order", "Yes"
-          write(stdOut, "(A30)") "Shell-resolved Hubbard derivs:"
-          write(stdOut, "(A)") "        s-shell   p-shell   d-shell   f-shell"
+          if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Orbital-resolved 3rd order", "Yes"
+          if(input%ctrl%verbose.gt.50) write(stdOut, "(A30)") "Shell-resolved Hubbard derivs:"
+          if(input%ctrl%verbose.gt.50) write(stdOut, "(A)") "        s-shell   p-shell   d-shell   f-shell"
           do iSp = 1, nType
-            write(stdOut, "(A3,A3,4F10.4)") "  ", trim(speciesName(iSp)),&
+            if(input%ctrl%verbose.gt.50) write(stdOut, "(A3,A3,4F10.4)") "  ", trim(speciesName(iSp)),&
                 & input%ctrl%hubDerivs(:orb%nShell(iSp),iSp)
           end do
         end if
       end if
 
       if (any(tDampedShort)) then
-        write(stdOut, "(A,T30,A)") "Damped SCC", "Yes"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Damped SCC", "Yes"
         ii = count(tDampedShort)
         write(strTmp, "(A,I0,A)") "(A,T30,", ii, "(A,1X))"
-        write(stdOut, strTmp) "Damped species(s):", pack(speciesName, tDampedShort)
+        if(input%ctrl%verbose.gt.50) write(stdOut, strTmp) "Damped species(s):", pack(speciesName, tDampedShort)
         deallocate(tDampedShort)
       end if
 
       if (input%ctrl%h5SwitchedOn) then
-        write(stdOut, "(A,T30,A)") "H-bond correction:", "H5"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "H-bond correction:", "H5"
       end if
       if (tHHRepulsion) then
-        write(stdOut, "(A,T30,A)") "H-H repulsion correction:", "H5"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "H-H repulsion correction:", "H5"
       end if
     end if
 
-    write(stdOut, "(A,':')") "Extra options"
+    if (input%ctrl%verbose.gt.50) write(stdOut, "(A,':')") "Extra options"
     if (tPrintMulliken) then
-      write(stdOut, "(T30,A)") "Mulliken analysis"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(T30,A)") "Mulliken analysis"
     end if
     if (tPrintForces .and. .not. (tMD .or. tGeoOpt .or. tDerivs)) then
-      write(stdOut, "(T30,A)") "Force calculation"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(T30,A)") "Force calculation"
     end if
     if (tPrintEigVecs) then
-      write(stdOut, "(T30,A)") "Eigenvector printing"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(T30,A)") "Eigenvector printing"
     end if
     if (tExtChrg) then
-      write(stdOut, "(T30,A)") "External charges specified"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(T30,A)") "External charges specified"
     end if
 
     if (tEField) then
       if (tTDEfield) then
-        write(stdOut, "(T30,A)") "External electric field specified"
-        write(stdOut, "(A,':',T30,E14.6)") "Angular frequency", EfieldOmega
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(T30,A)") "External electric field specified"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "Angular frequency", EfieldOmega
       else
-        write(stdOut, "(T30,A)") "External static electric field specified"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(T30,A)") "External static electric field specified"
       end if
-      write(stdOut, "(A,':',T30,E14.6)") "Field strength", EFieldStrength
-      write(stdOut, "(A,':',T30,3F9.6)") "Direction", EfieldVector
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "Field strength", EFieldStrength
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,3F9.6)") "Direction", EfieldVector
       if (tPeriodic) then
         call warning("Saw tooth potential used for periodic geometry - make sure there is a vacuum&
             & region!")
@@ -2810,10 +2813,10 @@ contains
       do iSp = 1, nType
         if (nUJ(iSp)>0) then
           write(strTmp, "(A,':')") "U-J coupling constants"
-          write(stdOut, "(A,T25,A2)")trim(strTmp), speciesName(iSp)
+          if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T25,A2)")trim(strTmp), speciesName(iSp)
           do jj = 1, nUJ(iSp)
             write(strTmp, "(A,I1,A)")'(A,',niUJ(jj,iSp),'I2,T25,A,F6.4)'
-            write(stdOut, trim(strTmp))'Shells:',iUJ(1:niUJ(jj,iSp),jj,iSp),'UJ:', UJ(jj,iSp)
+            if(input%ctrl%verbose.gt.50) write(stdOut, trim(strTmp))'Shells:',iUJ(1:niUJ(jj,iSp),jj,iSp),'UJ:', UJ(jj,iSp)
           end do
         end if
       end do
@@ -2822,12 +2825,12 @@ contains
 
     select case (forceType)
     case(forceOrig)
-      write(stdOut, "(A,T30,A)") "Force type", "original"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Force type", "original"
     case(forceDynT0)
-      write(stdOut, "(A,T30,A)") "Force type", "erho with re-diagonalized eigenvalues"
-      write(stdOut, "(A,T30,A)") "Force type", "erho with DHD-product (T_elec = 0K)"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Force type", "erho with re-diagonalized eigenvalues"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Force type", "erho with DHD-product (T_elec = 0K)"
     case(forceDynT)
-      write(stdOut, "(A,T30,A)") "Force type", "erho with S^-1 H D (Te <> 0K)"
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Force type", "erho with S^-1 H D (Te <> 0K)"
     end select
 
     if (tSpinOrbit .and. tDFTBU .and. .not. tDualSpinOrbit)  then
@@ -2872,9 +2875,10 @@ contains
 
     call initProcessorGroups(1, nKPoint, nSpin, groupKS) !!DAR!!
     
-    write(stdout, "(/,A)") repeat("-", 80)
-    write(stdOut, "(A)") "-- Initialization is finished                                                 --"
-    write(stdout, "(A)") repeat("-", 80)
+    if(input%ctrl%verbose.gt.0) write(stdout, "(/,A)") repeat("-", 80)
+    if(input%ctrl%verbose.gt.0) write(stdOut, "(A)") &
+         "-- Initialization is finished                                                 --"
+    if(input%ctrl%verbose.gt.0) write(stdout, "(A)") repeat("-", 80)
     
     call env%globalTimer%stopTimer(globalTimers%globalInit)
 
@@ -3002,7 +3006,7 @@ contains
     logical :: tDummy
 
     if (env%tGlobalMaster) then
-      write(stdOut, "(A,1X,A)") "Initialising for socket communication to host",&
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,1X,A)") "Initialising for socket communication to host",&
           & trim(socketInput%host)
       socket = IpiSocketComm(socketInput)
     end if
@@ -3022,7 +3026,7 @@ contains
     integer :: iSpin, isz
     integer :: nSpinChannels
 
-    write(stdOut,"(/,'> initTransport is started')")
+    if(input%ctrl%verbose.gt.30) write(stdOut,"(/,'> initTransport is started')")
   
     ! These two checks are redundant, I check if they are equal
     if (input%poisson%defined .neqv. input%ctrl%tPoisson) then
@@ -3091,7 +3095,7 @@ contains
     end if
 
     if (tNegf) then
-      write(stdOut,*) 'init negf'
+      if(input%ctrl%verbose.gt.30) write(stdOut,*) 'init negf'
       if (size(DenseDesc%iAtomStart) /= nAtom+1) then
         call error('Internal error: DenseDesc not created')
       end if
@@ -3124,7 +3128,7 @@ contains
     writeTunn = ginfo%tundos%writeTunn
     writeLDOS = ginfo%tundos%writeLDOS
 
-    write(stdOut,"('> initTransport is finished')")
+    if(input%ctrl%verbose.gt.30) write(stdOut,"('> initTransport is finished')")
 
   end subroutine initTransport
 

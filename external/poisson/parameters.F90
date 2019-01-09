@@ -191,7 +191,6 @@ Module parameters
 
   subroutine set_verbose(verb)
     integer, intent(in) :: verb
-    verbose = verb
   end subroutine set_verbose
 
   subroutine set_temperature(tt)

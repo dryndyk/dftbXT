@@ -117,10 +117,6 @@ contains
     integer :: ii !DAR
     real(dp) :: temperature !DAR
 
-    write(stdout, "(A)") repeat("-", 80)
-    write(stdOut, "(A)") "-- Parsing is started                                                         --"
-    write(stdout, "(A,/)") repeat("-", 80)
-
     ! Read in the input
     call readHSDOrXML(hsdInputName, xmlInputName, rootTag, hsdTree, tHSD, &
         &missing)
@@ -130,14 +126,6 @@ contains
       call error("No input file found.")
     end if
 
-    write(stdout, '(A,1X,I0,/)') 'Parser version:', parserVersion
-    if (tHSD) then
-      write(stdout, "(A)") "Interpreting input file '" // hsdInputName // "'"
-    else
-      write(stdout, "(A)") "Interpreting input file '" // xmlInputName //  "'"
-    end if
-    write(stdout, "(A)") repeat("-", 80)
-
     ! Get the root of all evil ;-)
     call getChild(hsdTree, rootTag, root)
 
@@ -145,34 +133,49 @@ contains
     call getChildValue(root, "ParserOptions", dummy, "", child=child, &
         &list=.true., allowEmptyValue=.true., dummyValue=.true.)
     call readParserOptions(child, root, parserFlags)
+        
+    #:if WITH_TRANSPORT    
+    call getChild(root, "Geometry", tmp)
+    call getChildValue(tmp, "", value, child=child)    
+    call getNodeName(value, buffer)
+    if(char(buffer).eq."nogeometry") input%transpar%tNoGeometry = .true.
+    #:endif
+    
+    ! Options for calculation
+      call getChildValue(root, "Options", dummy, "", child=child, list=.true., &
+        & allowEmptyValue=.true., dummyValue=.true.)
+      call readOptions(child, input%ctrl)
+      #:if WITH_TRANSPORT
+      input%transpar%verbose = input%ctrl%verbose
+      #:endif 
+      
+    if (input%ctrl%verbose.gt.0) write(stdout, "(A)") repeat("-", 80)
+    if (input%ctrl%verbose.gt.0) write(stdOut, "(A)") &
+         "-- Parsing is started                                                         --"
+    if (input%ctrl%verbose.gt.0) write(stdout, "(A,/)") repeat("-", 80)
+
+    if (input%ctrl%verbose.gt.0) write(stdout, '(A,1X,I0,/)') 'Parser version:', parserVersion
+    if (tHSD) then
+      if (input%ctrl%verbose.gt.0) write(stdout, "(A)") "Interpreting input file '" // hsdInputName // "'"
+    else
+      if (input%ctrl%verbose.gt.0) write(stdout, "(A)") "Interpreting input file '" // xmlInputName //  "'"
+    end if
+    if (input%ctrl%verbose.gt.30) write(stdout, "(A)") repeat("-", 80)
     
     !----------------------------------------------------------------------------------------------!
     !DAR begin - NoGeometry parser
     !----------------------------------------------------------------------------------------------!
     
-#:if WITH_TRANSPORT    
+    #:if WITH_TRANSPORT
     
-    call getChild(root, "Geometry", tmp)
-    call getChildValue(tmp, "", value, child=child)    
-    call getNodeName(value, buffer)
-    if(char(buffer).eq."nogeometry") input%transpar%tNoGeometry = .true.
-
     if(input%transpar%tNoGeometry) then
-      write(stdout,*)
-      write(stdout,"('-NoGeometry- option is activated.')")
-      write(stdout,"('Only transport with the external Hamiltonian [and overlap].')")
-      write(stdout,"('Reading transport options.')")
-
-      ! Options for calculation
-      call getChildValue(root, "Options", dummy, "", child=child, list=.true., &
-        & allowEmptyValue=.true., dummyValue=.true.)
-      call readOptions(child, input%ctrl)
-      input%transpar%verbose = input%ctrl%verbose
-
-#:if WITH_TRANSPORT      
+      if (input%ctrl%verbose.gt.30) write(stdout,*)
+      if (input%ctrl%verbose.gt.30) write(stdout,"('-NoGeometry- option is activated.')")
+      if (input%ctrl%verbose.gt.30) write(stdout,"('Only transport with the external Hamiltonian [and overlap].')")
+      if (input%ctrl%verbose.gt.30) write(stdout,"('Reading transport options.')")
+     
       !> Read in all new functionalities for transport.
       call readTransport(root,input%transpar)
-#:endif
       
       call getChild(root, "Transport", dummy, requested=.false.)
       tUpload = .false.
@@ -224,14 +227,15 @@ contains
 
       call destroyNode(hsdTree)
 
-      write(stdout, "(A)") repeat("-", 80)
-      write(stdOut, "(A)") "-- Parsing is finished                                                        --"
-      write(stdout, "(A)") repeat("-", 80)
+      if (input%ctrl%verbose.gt.0) write(stdout, "(/,A)") repeat("-", 80)
+      if (input%ctrl%verbose.gt.0) write(stdOut, "(A)") &
+           "-- Parsing is finished                                                        --"
+      if (input%ctrl%verbose.gt.0) write(stdout, "(A)") repeat("-", 80)
 
       return
     end if
   
-#:endif
+    #:endif
   
     !---------------------------------------------------------------------------
     !DAR end
@@ -246,13 +250,8 @@ contains
     ! Read in transport and modify geometry if only contact calculation
     call getChild(root, "Transport", dummy, requested=.false.)
 
-!OLD    if (associated(dummy)) then
-!OLD      call readTransportGeometry(dummy, input%geom, input%transpar)
-!OLD    end if
-
     ! Electronic Hamiltonian
     call getChildValue(root, "Hamiltonian", hamNode)
-!OLD    call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako, input%transpar, input%ginfo%greendens,  input%ginfo%poisson)
 
 #:if WITH_TRANSPORT
 
@@ -296,7 +295,7 @@ contains
 
 #:if WITH_TRANSPORT
     !> Read in all new functionalities for transport.
-    call readTransport(root,input%transpar) !DAR
+    call readTransport(root,input%transpar)
 #:endif
     
     ! Analysis of properties
@@ -336,12 +335,12 @@ contains
     ! Dump processed tree in HSD and XML format
     if (tIoProc .and. parserFlags%tWriteHSD) then
       call dumpHSD(hsdTree, hsdProcInputName)
-      write(stdout, '(/,A,/)') "Processed input in HSD format written to '" &
+      if (input%ctrl%verbose.gt.0) write(stdout, '(/,A)') "Processed input in HSD format written to '" &
           &// hsdProcInputName // "'"
     end if
     if (tIoProc .and. parserFlags%tWriteXML) then
       call dumpHSDAsXML(hsdTree, xmlProcInputName)
-      write(stdout, '(A,/)') "Processed input in XML format written to '" &
+      if (input%ctrl%verbose.gt.0) write(stdout, '(A)') "Processed input in XML format written to '" &
           &// xmlProcInputName // "'"
     end if
 
@@ -352,9 +351,10 @@ contains
 
     call destroyNode(hsdTree)
 
-    write(stdout, "(A)") repeat("-", 80)
-    write(stdOut, "(A)") "-- Parsing is finished                                                        --"
-    write(stdout, "(A)") repeat("-", 80)
+    if (input%ctrl%verbose.gt.0) write(stdout, "(/,A)") repeat("-", 80)
+    if (input%ctrl%verbose.gt.0) write(stdOut, "(A)") &
+         "-- Parsing is finished                                                        --"
+    if (input%ctrl%verbose.gt.0) write(stdout, "(A)") repeat("-", 80)
 
   end subroutine parseHsdInput
 
@@ -1567,11 +1567,11 @@ contains
       call warning("Artificially truncating the SK table, this is normally a bad idea!")
       call SKTruncations(child, rSKCutOff, skInterMeth)
       call readSKFiles(skFiles, geo%nSpecies, slako, slako%orb, angShells, ctrl%tOrbResolved,&
-          & skInterMeth, repPoly, rSKCutOff)
+          & skInterMeth, repPoly, tp%verbose, rSKCutOff)
     else
       rSKCutOff = 0.0_dp
       call readSKFiles(skFiles, geo%nSpecies, slako, slako%orb, angShells, ctrl%tOrbResolved,&
-          & skInterMeth, repPoly)
+          & skInterMeth, repPoly, tp%verbose)
     end if
 
     do iSp1 = 1, geo%nSpecies
@@ -2233,7 +2233,9 @@ contains
     case ("poisson")
       ctrl%tPoisson = .true.
       call readPoisson(value, poisson, geo%tPeriodic, tp%tPeriodic1D)
-    
+      
+      if (poisson%verbose.eq.-1) poisson%verbose=tp%verbose
+  
     case default
       call getNodeHSDName(value, buffer)
       call detailedError(child, "Unknown electrostatics '" // char(buffer) // "'")
@@ -2563,7 +2565,7 @@ contains
   !> Should be replaced with a more sophisticated routine, once the new SK-format has been
   !> established
   subroutine readSKFiles(skFiles, nSpecies, slako, orb, angShells, orbRes, skInterMeth, repPoly,&
-      & truncationCutOff)
+      & verbose, truncationCutOff)
 
     !> List of SK file names to read in for every interaction
     type(ListCharLc), intent(inout) :: skFiles(:,:)
@@ -2592,6 +2594,8 @@ contains
 
     !> Distances to artificially truncate tables of SK integrals
     real(dp), intent(in), optional :: truncationCutOff
+    
+    integer, intent(in) :: verbose
 
     integer :: iSp1, iSp2, nSK1, nSK2, iSK1, iSK2, ind, nInteract, iSh1
     integer :: angShell(maxL+1), nShell
@@ -2628,7 +2632,7 @@ contains
     allocate(slako%repCont)
     call init(slako%repCont, nSpecies)
 
-    write(stdout, "(A)") "Reading SK-files:"
+    if (verbose.gt.30) write(stdout, "(A)") "Reading SK-files:"
     lpSp1: do iSp1 = 1, nSpecies
       nSK1 = len(angShells(iSp1))
       lpSp2: do iSp2 = iSp1, nSpecies
@@ -2641,7 +2645,7 @@ contains
             readRep = (iSK1 == 1 .and. iSK2 == 1)
             readAtomic = (iSp1 == iSp2 .and. iSK1 == iSK2)
             call get(skFiles(iSp2, iSp1), fileName, ind)
-            write(stdout, "(2X,A)") trim(fileName)
+            if (verbose.gt.30) write(stdout, "(2X,A)") trim(fileName)
             if (readRep .and. repPoly(iSp2, iSp1)) then
               call readFromFile(skData12(iSK2,iSK1), fileName, readAtomic, &
                   &repPolyIn=repPolyIn1)
@@ -2737,7 +2741,7 @@ contains
           allocate(pSlakoEqGrid1, pSlakoEqGrid2)
           call init(pSlakoEqGrid1, dist, skHam(:nEntries,:), skInterMeth)
           call init(pSlakoEqGrid2, dist, skOver(:nEntries,:), skInterMeth)
-          call addTable(slako%skHamCont, pSlakoEqGrid1, iSp2, iSp1)
+         call addTable(slako%skHamCont, pSlakoEqGrid1, iSp2, iSp1)
           call addTable(slako%skOverCont, pSlakoEqGrid2, iSp2, iSp1)
           deallocate(skHam)
           deallocate(skOver)
@@ -2776,7 +2780,7 @@ contains
         end if
       end do lpSp2
     end do lpSp1
-    write(stdout, "(A)") "Done."
+    if (verbose.gt.30) write(stdout, "(A)") "Done."
 
   end subroutine readSKFiles
 
@@ -3848,7 +3852,7 @@ contains
     real(dp) :: acc, contactRange(2), lateralContactSeparation
     type(listInt) :: li
 
-    write(stdout,"('> readTransportGeometry is started')")
+    if (tp%verbose.gt.30) write(stdout,"('> readTransportGeometry is started')")
     
     tp%defined = .true.
     tp%tPeriodic1D = .not. geom%tPeriodic
@@ -3887,7 +3891,7 @@ contains
     allocate(tp%contacts(tp%ncont))
     !! Parse contact geometry
 
-    call readContacts(pNodeList, tp%contacts, geom, (buffer .eq. "uploadcontacts"))
+    call readContacts(pNodeList, tp%contacts, geom, (buffer .eq. "uploadcontacts"), tp%verbose)
 
     select case (char(buffer))
 
@@ -3920,7 +3924,7 @@ contains
 
    call destroyNodeList(pNodeList)
 
-   write(stdout,"('> readTransportGeometry is finished')") !DAR 
+   if (tp%verbose.gt.30) write(stdout,"('> readTransportGeometry is finished')") !DAR 
 
    contains
 
@@ -4084,7 +4088,7 @@ contains
     end if
 
     call getChildValue(pNode, "LocalCurrents", greendens%doLocalCurr, .false.)
-    call getChildValue(pNode, "Verbosity", greendens%verbose, 51)
+    call getChildValue(pNode, "Verbosity", greendens%verbose, transpar%verbose)
     call getChildValue(pNode, "Delta", greendens%delta, 1.0e-5_dp, modifier=modif, child=field)
     call convertByMul(char(modif), energyUnits, field, greendens%delta)
     call getChildValue(pNode, "SaveSurfaceGFs", greendens%saveSGF, .true.)
@@ -4208,7 +4212,7 @@ contains
 
     call getChildValue(pNode, "CutoffCheck", poisson%cutoffcheck,&
         & .true.)
-    call getChildValue(pNode, "Verbosity", poisson%verbose, 51)
+    call getChildValue(pNode, "Verbosity", poisson%verbose, -1)
     call getChildValue(pNode, "SavePotential", poisson%savePotential,&
         & .false.)
     call getChildValue(pNode, "PoissonAccuracy", poisson%poissAcc,&
@@ -4424,7 +4428,7 @@ contains
 
   !> Sanity checking of atom ranges and returning contact vector and direction.
   subroutine getContactVector(atomrange, geom, id, name, pContact, contactLayerTol, contactVec,&
-      & contactDir)
+      & contactDir, verbose)
 
     !> Range of atoms in the contact
     integer, intent(in) :: atomrange(2)
@@ -4449,6 +4453,8 @@ contains
 
     !> Which supercell vector the contact vector is parallel to
     integer, intent(out) :: contactDir
+    
+    integer :: verbose
 
     integer :: iStart, iStart2, iEnd, ii
     logical :: mask(3)
@@ -4478,9 +4484,9 @@ contains
     if (any(sum( (geom%coords(:,iStart:iStart2-1) - geom%coords(:,iStart2:iEnd)&
         & - spread(contactVec, dim=2, ncopies=iStart2-iStart))**2, dim=1) > contactLayerTol**2))&
         & then
-      write(stdout,"(1X,A,I0,A,I0)")'Contact vector defined from atoms ', iStart, ' and ',iStart2
-      write(stdout,"(1X,A,I0,'-',I0)")'Contact layer 1 atoms: ',iStart, iStart2-1
-      write(stdout,"(1X,A,I0,'-',I0)")'Contact layer 2 atoms: ',iStart2, iEnd
+      if (verbose.gt.0) write(stdout,"(1X,A,I0,A,I0)")'Contact vector defined from atoms ', iStart, ' and ',iStart2
+      if (verbose.gt.0) write(stdout,"(1X,A,I0,'-',I0)")'Contact layer 1 atoms: ',iStart, iStart2-1
+      if (verbose.gt.0) write(stdout,"(1X,A,I0,'-',I0)")'Contact layer 2 atoms: ',iStart2, iEnd
       do ii = 0, iStart2 -1 -iStart
         if (sum((geom%coords(:,ii+iStart)-geom%coords(:,ii+iStart2) - contactVec)**2)&
             & > contactLayerTol**2) then
@@ -4537,7 +4543,7 @@ contains
     real(dp), allocatable :: atmCoupling(:)
     logical :: block_model, semilocal_model
 
-    write(stdout,"('Vibronic dephasing model is being red')")
+    if (tp%verbose.gt.0) write(stdout,"('Vibronic dephasing model is being red')")
 
     call getNodeName2(node, method1)
 
@@ -4659,7 +4665,7 @@ contains
     real(dp), allocatable :: atmCoupling(:)
     logical :: block_model, semilocal_model
 
-    write(stdout,"('BP dephasing model is being red')")
+    if (tp%verbose.gt.0) write(stdout,"('BP dephasing model is being red')")
 
     call getNodeName2(node, method1)
 
@@ -4782,12 +4788,12 @@ contains
     character(lc), allocatable :: regionLabelPrefixes(:)
     type(listReal) :: temperature
 
-    write(stdOut,"('> readTunAndDos is started')")
+    if (transpar%verbose.gt.30) write(stdOut,"('> readTunAndDos is started')")
     
     tundos%defined = .true.
     ncont = transpar%ncont
 
-    call getChildValue(root, "Verbosity", tundos%verbose, 51)
+    call getChildValue(root, "Verbosity", tundos%verbose, transpar%verbose)
     call getChildValue(root, "WriteLDOS", tundos%writeLDOS, .false.)
     call getChildValue(root, "WriteTunn", tundos%writeTunn, .true.)
 
@@ -4912,17 +4918,18 @@ contains
           & regionLabelPrefixes, orb, geo%species, tundos%dosOrbitals, &
           & tundos%dosLabels)
 
-      write(stdOut,"('> readTunAndDos is finished')")
+      if (transpar%verbose.gt.30) write(stdOut,"('> readTunAndDos is finished')")
       
   end subroutine readTunAndDos
 
-  !> Read bias information, used in Analysis and Green's function eigensolver
-  subroutine readContacts(pNodeList, contacts, geom, upload)
+  !> Read bias information, used in Analysis and Green function eigensolver
+  subroutine readContacts(pNodeList, contacts, geom, upload, verbose)
   
     type(ContactInfo), allocatable, dimension(:), intent(inout) :: contacts
     type(fnodeList), pointer :: pNodeList
     type(TGeometry), intent(in) :: geom
     logical, intent(in) :: upload
+    integer, intent(in) :: verbose 
 
     real(dp) :: contactLayerTol
     integer :: ii, jj
@@ -4930,7 +4937,7 @@ contains
     type(string) :: buffer, modif
     type(listReal) :: fermiBuffer
     
-    write(stdout,"('Contacts:')")
+    if (verbose.gt.50) write(stdout,"('Contacts:')")
 
 
     do ii = 1, size(contacts)
@@ -4955,7 +4962,7 @@ contains
       call convertByMul(char(modif), lengthUnits, field, contactLayerTol)
       call getChildValue(pNode, "AtomRange", contacts(ii)%idxrange, child=pTmp)
       call getContactVector(contacts(ii)%idxrange, geom, ii, contacts(ii)%name, pTmp,&
-          & contactLayerTol, contacts(ii)%lattice, contacts(ii)%dir)
+          & contactLayerTol, contacts(ii)%lattice, contacts(ii)%dir, verbose)
       contacts(ii)%length = sqrt(sum(contacts(ii)%lattice**2))
 
       ! Contact temperatures. A negative default is used so it is quite clear when the user sets a
@@ -5009,20 +5016,22 @@ contains
         call getChildValue(pNode, "Unformatted", contacts(ii)%tUnformatted, .false.)
         call getChildValue(pNode, "WriteSeparatedSGF", contacts(ii)%tWriteSeparatedSGF, .false.)
         call getChildValue(pNode, "ReadSeparatedSGF", contacts(ii)%tReadSeparatedSGF, .false.)
+        if (verbose.gt.50) then
         write(stdout,"('Name of contact ',I0,' : ',A)")ii,contacts(ii)%name
-        write(stdout,"('   AtomRange           = ',I6,I6)")contacts(ii)%idxrange
-        write(stdout,"('   Temperature         = ',F12.6)")contacts(ii)%kbT
-        write(stdout,"('   Potential           = ',F12.6)")contacts(ii)%potential
-        write(stdout,"('   tWideBand           = ',L12)")contacts(ii)%wideBand
-        write(stdout,"('   LevelSpacing        = ',F12.6)")contacts(ii)%wideBandDos
-        write(stdout,"('   FermiLevel          = ',2F12.6)")contacts(ii)%eFermi(1)
-        write(stdout,"('   tWriteSelfEnergy    = ',L12)")contacts(ii)%tWriteSelfEnergy
-        write(stdout,"('   tReadSelfEnergy     = ',L12)")contacts(ii)%tReadSelfEnergy
-        write(stdout,"('   tWriteSurfaceGF     = ',L12)")contacts(ii)%tWriteSurfaceGF
-        write(stdout,"('   tReadSurfaceGF      = ',L12)")contacts(ii)%tReadSurfaceGF
-        write(stdout,"('   tUnformatted        = ',L12)")contacts(ii)%tUnformatted
-        write(stdout,"('   tWriteSeparatedSGF  = ',L12)")contacts(ii)%tWriteSeparatedSGF
-        write(stdout,"('   tReadSeparatedSGF   = ',L12)")contacts(ii)%tReadSeparatedSGF
+        write(stdout,"('  AtomRange           = ',I6,I6)")contacts(ii)%idxrange
+        write(stdout,"('  Temperature         = ',F12.6)")contacts(ii)%kbT
+        write(stdout,"('  Potential           = ',F12.6)")contacts(ii)%potential
+        write(stdout,"('  tWideBand           = ',L12)")contacts(ii)%wideBand
+        write(stdout,"('  LevelSpacing        = ',F12.6)")contacts(ii)%wideBandDos
+        write(stdout,"('  FermiLevel          = ',2F12.6)")contacts(ii)%eFermi(1)
+        write(stdout,"('  tWriteSelfEnergy    = ',L12)")contacts(ii)%tWriteSelfEnergy
+        write(stdout,"('  tReadSelfEnergy     = ',L12)")contacts(ii)%tReadSelfEnergy
+        write(stdout,"('  tWriteSurfaceGF     = ',L12)")contacts(ii)%tWriteSurfaceGF
+        write(stdout,"('  tReadSurfaceGF      = ',L12)")contacts(ii)%tReadSurfaceGF
+        write(stdout,"('  tUnformatted        = ',L12)")contacts(ii)%tUnformatted
+        write(stdout,"('  tWriteSeparatedSGF  = ',L12)")contacts(ii)%tWriteSeparatedSGF
+        write(stdout,"('  tReadSeparatedSGF   = ',L12)")contacts(ii)%tReadSeparatedSGF
+        end if
         !DAR end
       end if
 
@@ -5174,8 +5183,8 @@ contains
 
       case ("model")
         tp%tModel = .true.
-        write(stdout,"('Number of states (with electrodes)      = ',I5)")tp%NumStates
-        write(stdout,"('Number of states in the central region  = ',I5)")tp%NumCenter
+        if (tp%verbose.gt.50) write(stdout,"('Number of states (with electrodes)      = ',I5)")tp%NumStates
+        if (tp%verbose.gt.50) write(stdout,"('Number of states in the central region  = ',I5)")tp%NumCenter
 
         call getChild(node, "HamiltonianMatrix", value, modifier=modif, requested=.false.)
           if(associated(value)) then
@@ -5184,17 +5193,17 @@ contains
             call getChildValue(node, "HamiltonianMatrix", tp%H_all, modifier=modif, child=field)
             tp%units_energy = char(modif)
             if (tp%verbose.gt.90) then
-              write(stdout,"('Read Hamiltonian from the input file:')") 
+              if (tp%verbose.gt.50) write(stdout,"('Read Hamiltonian from the input file:')") 
               do i=1,tp%NumStates
-                write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
+                if (tp%verbose.gt.50) write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
               end do
             end if
-            write(stdout,"('Energy units = ',A75)")tp%units_energy 
+            if (tp%verbose.gt.50) write(stdout,"('Energy units = ',A75)")tp%units_energy 
             call convertByMul(char(modif), energyUnits, field, tp%H_all)
             if (tp%verbose.gt.90) then
-              write(stdout,"('Hamiltonian in internal units:')") 
+              if (tp%verbose.gt.50) write(stdout,"('Hamiltonian in internal units:')") 
               do i=1,tp%NumStates
-                write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
+                if (tp%verbose.gt.50) write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
               end do
             end if
           end if          
@@ -5206,24 +5215,24 @@ contains
             call getChildValue(node, "HamiltonianFile", buffer, "H.mtr", modifier=modif, child=field)
             tp%HamiltonianFile = char(buffer)
             tp%units_energy = char(modif)
-            write(stdout,"('Hamiltonian File Name  = ',A75)")tp%HamiltonianFile
-            write(stdout,"('Energy units           = ',A75)")tp%units_energy
+            if (tp%verbose.gt.50) write(stdout,"('Hamiltonian File Name  = ',A75)")tp%HamiltonianFile
+            if (tp%verbose.gt.50) write(stdout,"('Energy units           = ',A75)")tp%units_energy
             open(11,file=tp%HamiltonianFile,action="read")
             do i=1,tp%NumStates
               read(11,*)tp%H_all(1:tp%NumStates,i)
             end do
             close(11)
             if (tp%verbose.gt.90) then
-              write(stdout,"('Read Hamiltonian from the external file')") 
+              if (tp%verbose.gt.50) write(stdout,"('Read Hamiltonian from the external file')") 
               do i=1,tp%NumStates
-                write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
+                if (tp%verbose.gt.50) write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
               end do
             end if
             call convertByMul(char(modif), energyUnits, field, tp%H_all)
             if (tp%verbose.gt.90) then
-              write(stdout,"('Hamiltonian in internal units:')") 
+              if (tp%verbose.gt.50) write(stdout,"('Hamiltonian in internal units:')") 
               do i=1,tp%NumStates
-                write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
+                if (tp%verbose.gt.50) write(stdout,"(10000ES16.8)")tp%H_all(1:tp%NumStates,i)
               end do
             end if 
           end if
@@ -5234,9 +5243,9 @@ contains
           if(associated(value)) then    
             call getChildValue(node, "OverlapMatrix", tp%S_all)
             if (tp%verbose.gt.90) then
-              write(stdout,"('Read Overlap from the input file:')") 
+              if (tp%verbose.gt.50) write(stdout,"('Read Overlap from the input file:')") 
               do i=1,tp%NumStates
-                write(stdout,"(10000ES16.8)")tp%S_all(1:tp%NumStates,i)
+                if (tp%verbose.gt.50) write(stdout,"(10000ES16.8)")tp%S_all(1:tp%NumStates,i)
               end do
             end if
           else
@@ -5249,7 +5258,7 @@ contains
           if (tp%tReadOverlap) then
             call getChildValue(node, "OverlapFile", buffer, "S.mtr")
             tp%OverlapFile = char(buffer)
-            write(stdout,"('Overlap File Name      = ',A)")tp%OverlapFile
+            if (tp%verbose.gt.50) write(stdout,"('Overlap File Name      = ',A)")tp%OverlapFile
           end if  
 
       case default
@@ -5290,11 +5299,11 @@ contains
         !------------------------------------------------------------------------------------------!
         call getChildValue(value, "ElectronElectron", dummy, "", allowEmptyValue=.true.)
         if(associated(dummy)) then
-          write(stdout,"('Electron-electron interaction is switched on!')")
+          if (tp%verbose.gt.30) write(stdout,"('Electron-electron interaction is switched on!')")
           call getNodeName(dummy, buffer)
           select case (char(buffer))
           case ("hubbard")
-            write(stdout,"('Hubbard model is activated.')") 
+            if (tp%verbose.gt.30) write(stdout,"('Hubbard model is activated.')") 
             call getChildValue(dummy, "HartreeFock", tp%tHartreeFock,.false.)
             call getChildValue(dummy, "RPA", tp%tRPA,.false.)
           case default
@@ -5304,20 +5313,20 @@ contains
         !------------------------------------------------------------------------------------------!
         call getChildValue(value, "ElectronPhoton", dummy, "", allowEmptyValue=.true.)
         if(associated(dummy)) then
-          write(stdout,"('> Electron-photon interaction is switched on!')")
+          if (tp%verbose.gt.30) write(stdout,"('> Electron-photon interaction is switched on!')")
           call getNodeName(dummy, buffer)
           select case (char(buffer))
           case ("matrix")
-            write(stdout,"('Matrix electron-photon coupling is activated.')") 
+            if (tp%verbose.gt.30) write(stdout,"('Matrix electron-photon coupling is activated.')") 
             tp%tranas_input%tPhotons = .true.
             call getChildValue(dummy, "NumberModes", tp%tranas_input%photons%NumModes, 0)
-            write(stdout,"('Number of photon modes        =   ',I0)")tp%tranas_input%photons%NumModes
+            if (tp%verbose.gt.50) write(stdout,"('Number of photon modes        =   ',I0)")tp%tranas_input%photons%NumModes
             allocate(tp%tranas_input%photons%Frequencies(tp%tranas_input%photons%NumModes))
             call getChildValue(dummy, "Frequencies", tp%tranas_input%photons%Frequencies, modifier=modif, child=field)
-            write(stdout,"('Frequencies                   = ',1000ES16.8)")tp%tranas_input%photons%Frequencies
-            write(stdout,"('Frequency units = ',A)")char(modif)
+            if (tp%verbose.gt.50) write(stdout,"('Frequencies                   = ',1000ES16.8)")tp%tranas_input%photons%Frequencies
+            if (tp%verbose.gt.50) write(stdout,"('Frequency units = ',A)")char(modif)
             call convertByMul(char(modif), energyUnits, field, tp%tranas_input%photons%Frequencies)
-            write(stdout,"('Frequencies in internal units = ',1000ES16.8)")tp%tranas_input%photons%Frequencies
+            if (tp%verbose.gt.50) write(stdout,"('Frequencies in internal units = ',1000ES16.8)")tp%tranas_input%photons%Frequencies
             call getChild(dummy, "CouplingMatrix", value, modifier=modif) !, requested=.false.)
             if(associated(value)) then
               allocate(tp%tranas_input%photons%Coupling(tp%tranas_input%photons%NumModes,tp%NumCenter,tp%NumCenter))
@@ -5326,25 +5335,29 @@ contains
               call getChildValue(dummy, "CouplingMatrix", Coupling, modifier=modif, child=field)
               tp%units_energy = char(modif)
               if (tp%verbose.gt.90) then
-                write(stdout,"('Read couplings from the input file:')") 
+                if (tp%verbose.gt.50) write(stdout,"('Read couplings from the input file:')") 
                 do i=1,tp%tranas_input%photons%NumModes
                   tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter) = &
                        Coupling(1:tp%NumCenter,tp%NumCenter*(i-1)+1:tp%NumCenter*i)
-                  write(stdout,"('  Frequency                   = ',ES16.8)")tp%tranas_input%photons%Frequencies(i) 
-                  write(stdout,"(10000ES16.8)")tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter)
+                  if (tp%verbose.gt.50) write(stdout,"('  Frequency                   = ',ES16.8)") &
+                  tp%tranas_input%photons%Frequencies(i) 
+                  if (tp%verbose.gt.50) write(stdout,"(10000ES16.8)") &
+                  tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter)
                 end do
               end if
-              write(stdout,"('Coupling units = ',A)")char(modif) 
+              if (tp%verbose.gt.50) write(stdout,"('Coupling units = ',A)")char(modif) 
               call convertByMul(char(modif), energyUnits, field, Coupling)
               do i=1,tp%tranas_input%photons%NumModes
                   tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter) = &
                        Coupling(1:tp%NumCenter,tp%NumCenter*(i-1)+1:tp%NumCenter*i)
                 end do
               if (tp%verbose.gt.90) then
-                write(stdout,"('Couplings in internal units:')") 
+                if (tp%verbose.gt.50) write(stdout,"('Couplings in internal units:')") 
                 do i=1,tp%tranas_input%photons%NumModes
-                  write(stdout,"('  Frequency                   = ',ES16.8)")tp%tranas_input%photons%Frequencies(i) 
-                  write(stdout,"(10000ES16.8)")tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter)
+                  if (tp%verbose.gt.50) write(stdout,"('  Frequency                   = ',ES16.8)") &
+                        tp%tranas_input%photons%Frequencies(i) 
+                  if (tp%verbose.gt.50) write(stdout,"(10000ES16.8)") &
+                        tp%tranas_input%photons%Coupling(i,1:tp%NumCenter,1:tp%NumCenter)
                 end do
               end if
             end if
@@ -5381,9 +5394,9 @@ contains
     type(fnodeList), pointer :: pNodeList
     integer :: ii, contact
     real(dp) :: acc, contactRange(2), sep
-    type(listInt) :: li                                           !DAR
+    type(listInt) :: li                                           
    
-    write(stdout,"('> readTransportGeometry_NoGeom is started')") !DAR 
+    if (tp%verbose.gt.30) write(stdout,"('> readTransportGeometry_NoGeom is started')")  
    
     tp%defined = .true.
     tp%tPeriodic1D = .true.
@@ -5400,9 +5413,9 @@ contains
         call destruct(li)
         end if
 
-    write(stdout,"('AtomRange              = ',I6,I6)")tp%idxdevice
-    write(stdout,"('Number of PLs          = ',I6)")tp%nPLs
-    write(stdout,"('FirstLayerAtoms        = ',1000I6)")tp%PL(:)
+    if (tp%verbose.gt.50) write(stdout,"('AtomRange              = ',I6,I6)")tp%idxdevice
+    if (tp%verbose.gt.50) write(stdout,"('Number of PLs          = ',I6)")tp%nPLs
+    if (tp%verbose.gt.50) write(stdout,"('FirstLayerAtoms        = ',1000I6)")tp%PL(:)
     
     if (.not.associated(pTmp)) then
       call setChildValue(pDevice, "FirstLayerAtoms", tp%PL)
@@ -5421,13 +5434,13 @@ contains
       call detailedError(pGeom, "At least two contacts must be defined")
     end if
 
-    write(stdout,"('Task                   = ',A)")char(buffer)
-    write(stdout,"('Number of contacts     = ',I6)")tp%ncont
+    if (tp%verbose.gt.50) write(stdout,"('Task                   = ',A)")char(buffer)
+    if (tp%verbose.gt.50) write(stdout,"('Number of contacts     = ',I6)")tp%ncont
     
     ALLOCATE(tp%contacts(tp%ncont))
     !! Parse contact geometry151
 
-    call readContacts_NoGeom(pNodeList, tp%contacts, (buffer .eq. "uploadcontacts"))
+    call readContacts_NoGeom(pNodeList, tp%contacts, (buffer .eq. "uploadcontacts"), tp%verbose)
 
     select case (char(buffer))
 
@@ -5460,7 +5473,7 @@ contains
 
     call destroyNodeList(pNodeList)
 
-    write(stdout,"('> readTransportGeometry_NoGeom is finished')") !DAR 
+    if (tp%verbose.gt.30) write(stdout,"('> readTransportGeometry_NoGeom is finished')") 
 
     contains
 
@@ -5521,11 +5534,12 @@ contains
 
     !----------------------------------------------------------------------------------------------!
   
-    subroutine readContacts_NoGeom(pNodeList, contacts, upload)
+    subroutine readContacts_NoGeom(pNodeList, contacts, upload, verbose)
     type(ContactInfo), allocatable, dimension(:), intent(inout) :: contacts
     type(fnodeList), pointer :: pNodeList
     type(TGeometry) :: geom
     logical, intent(in) :: upload
+    integer, intent(in) :: verbose
 
     real(dp) :: acc
     integer :: ncont, ii, jj
@@ -5534,7 +5548,7 @@ contains
 
     type(listReal) :: fermiBuffer
 
-    ncont = size(contacts)
+    if (verbose.gt.50) ncont = size(contacts)
     
     do ii = 1,ncont
       contacts(ii)%wideBand = .false.
@@ -5613,23 +5627,24 @@ contains
         call getChildValue(pNode, "Unformatted", contacts(ii)%tUnformatted, .false.)
         call getChildValue(pNode, "WriteSeparatedSGF", contacts(ii)%tWriteSeparatedSGF, .false.)
         call getChildValue(pNode, "ReadSeparatedSGF", contacts(ii)%tReadSeparatedSGF, .false.)
+        if (verbose.gt.50) then
+        write(stdout,"('Name of contact ',I0,' : ',A)")ii,contacts(ii)%name
+        write(stdout,"('   AtomRange           = ',I6,I6)")contacts(ii)%idxrange
+        write(stdout,"('   Temperature         = ',F12.6)")contacts(ii)%kbT
+        write(stdout,"('   Potential           = ',F12.6)")contacts(ii)%potential
+        write(stdout,"('   tWideBand           = ',L12)")contacts(ii)%wideBand
+        write(stdout,"('   LevelSpacing        = ',F12.6)")contacts(ii)%wideBandDos  
+        write(stdout,"('   FermiLevel          = ',2F12.6)")contacts(ii)%eFermi(1)     
+        write(stdout,"('   tWriteSelfEnergy    = ',L12)")contacts(ii)%tWriteSelfEnergy
+        write(stdout,"('   tReadSelfEnergy     = ',L12)")contacts(ii)%tReadSelfEnergy
+        write(stdout,"('   tWriteSurfaceGF     = ',L12)")contacts(ii)%tWriteSurfaceGF
+        write(stdout,"('   tReadSurfaceGF      = ',L12)")contacts(ii)%tReadSurfaceGF
+        write(stdout,"('   tUnformatted        = ',L12)")contacts(ii)%tUnformatted
+        write(stdout,"('   tWriteSeparatedSGF  = ',L12)")contacts(ii)%tWriteSeparatedSGF
+        write(stdout,"('   tReadSeparatedSGF   = ',L12)")contacts(ii)%tReadSeparatedSGF
+        end if
       end if
-
-      write(stdout,"('Name of contact ',I0,' : ',A)")ii,contacts(ii)%name
-      write(stdout,"('   AtomRange           = ',I6,I6)")contacts(ii)%idxrange
-      write(stdout,"('   Temperature         = ',F12.6)")contacts(ii)%kbT
-      write(stdout,"('   Potential           = ',F12.6)")contacts(ii)%potential
-      write(stdout,"('   tWideBand           = ',L12)")contacts(ii)%wideBand
-      write(stdout,"('   LevelSpacing        = ',F12.6)")contacts(ii)%wideBandDos  
-      write(stdout,"('   FermiLevel          = ',2F12.6)")contacts(ii)%eFermi(1)     
-      write(stdout,"('   tWriteSelfEnergy    = ',L12)")contacts(ii)%tWriteSelfEnergy
-      write(stdout,"('   tReadSelfEnergy     = ',L12)")contacts(ii)%tReadSelfEnergy
-      write(stdout,"('   tWriteSurfaceGF     = ',L12)")contacts(ii)%tWriteSurfaceGF
-      write(stdout,"('   tReadSurfaceGF      = ',L12)")contacts(ii)%tReadSurfaceGF
-      write(stdout,"('   tUnformatted        = ',L12)")contacts(ii)%tUnformatted
-      write(stdout,"('   tWriteSeparatedSGF  = ',L12)")contacts(ii)%tWriteSeparatedSGF
-      write(stdout,"('   tReadSeparatedSGF   = ',L12)")contacts(ii)%tReadSeparatedSGF
-
+   
     enddo
 
     end subroutine readContacts_NoGeom
@@ -5698,11 +5713,11 @@ contains
 
     tundos%defined = .true.
     ncont = transpar%ncont
-    call getChildValue(root, "Verbosity", tundos%verbose, 51)
+    call getChildValue(root, "Verbosity", tundos%verbose, transpar%verbose)
     call getChildValue(root, "WriteLDOS", tundos%writeLDOS, .false.)
     call getChildValue(root, "WriteTunn", tundos%writeTunn, .true.)
 
-    write(stdout,"('Verbosity           = ',I6)")tundos%verbose
+    if (transpar%verbose.gt.50) write(stdout,"('Verbosity           = ',I6)")tundos%verbose
     
     ! Parsing of energy range
     ! If the calculation is in equilibrium (all potentials to 0.0)
@@ -5763,8 +5778,8 @@ contains
     tundos%emin = eRange(1)
     tundos%emax = eRange(2)
 
-    write(stdout,"('EnergyRange         = ',F12.6,F12.6)")tundos%emin,tundos%emax
-    write(stdout,"('EnergyStep          = ',F12.6)")tundos%estep
+    if (transpar%verbose.gt.50) write(stdout,"('EnergyRange         = ',F12.6,F12.6)")tundos%emin,tundos%emax
+    if (transpar%verbose.gt.50) write(stdout,"('EnergyStep          = ',F12.6)")tundos%estep
     
     ! Terminal currents
     call getChild(root, "TerminalCurrents", pTmp, requested=.false.)

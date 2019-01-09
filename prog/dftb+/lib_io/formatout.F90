@@ -349,7 +349,7 @@ contains
     write(outunit, '(5A)') hBar,hBar,' [2] B. Aradi, B. Hourahine and T. Frauenheim,                              ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,'     J. Phys. Chem. A 111, 5678 (2007); dftbplus.org                        ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' [3] A. Pecchia, G. Penazzi, L. Salvucci and A. Di Carlo,                   ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'     New Journal of Physics 10, 065022 (2008) [for transport calculations]  ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,'     New Journal of Physics 10, 065022 (2008)                               ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' You should also cite additional publications crediting the parametrization ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' data you use. Please consult the documentation of the SK-files for the     ',hBar,hBar

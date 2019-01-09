@@ -205,10 +205,12 @@ contains
     call error("The Poisson solver currently requires MPI parallelism to be enabled")
   #:endif
 
+    if (verbose.gt.30) then
     write(stdOut,*)
     write(stdOut,*) 'Poisson Initialisation:'
     write(stdOut,'(a,i0,a)') ' Poisson parallelized on ',numprocs,' node(s)'
     write(stdOut,*)
+    end if
 
     ! notify solver of standard out unit
     call set_stdout(stdOut)
@@ -218,7 +220,7 @@ contains
 
     if (id0) then
       ! only use a scratch folder on the master node
-!DAR!      call create_directory(trim(scratchfolder),iErr)
+!!DAR!!      call create_directory(trim(scratchfolder),iErr)
     end if
 
     if (active_id) then
@@ -303,11 +305,11 @@ contains
 
       ! if deltaR_max > 0 is a radius cutoff, if < 0 a tolerance
       if (deltaR_max < 0.0_dp) then
-        write(stdOut,*) "Atomic density tolerance: ", -deltaR_max
+        if(transpar%verbose.gt.50) write(stdOut,*) "Atomic density tolerance: ", -deltaR_max
         deltaR_max = getAtomDensityCutoff(-deltaR_max, uhubb)
       end if
 
-      write(stdOut,*) "Atomic density cutoff: ", deltaR_max, "a.u."
+      if(transpar%verbose.gt.50) write(stdOut,*) "Atomic density cutoff: ", deltaR_max, "a.u."
 
       if (ncont /= 0 .and. poissoninfo%cutoffcheck) then
         call checkDensityCutoff(deltaR_max, transpar%contacts(:)%length)
@@ -363,7 +365,7 @@ contains
       ! DoTip,tip_atom,base_atom1,base_atom2
       !-----------------------------------------------------------------------------+
 
-      write(stdOut,'(79(">"))')
+      if(transpar%verbose.gt.50) write(stdOut,'(79(">"))')
 
     endif
 
@@ -373,7 +375,7 @@ contains
   !> Release gDFTB varibles in poisson library
   subroutine poiss_destroy()
 
-    if (active_id) then
+    if (active_id.and.(verbose.gt.0)) then
       write(stdOut,'(A)')
       write(stdOut,'(A)') 'Release Poisson Memory:'
       call poiss_freepoisson()

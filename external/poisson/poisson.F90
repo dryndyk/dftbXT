@@ -96,7 +96,7 @@ module poisson
    if(allocated(uhubb)) call log_gdeallocate(uhubb)
    if(allocated(lmax)) call log_gdeallocate(lmax)
    if(allocated(renorm)) call log_gdeallocate(renorm)
-   if (id0) then
+   if (id0.and.(verbose.gt.0)) then
      call writePeakInfo(6)
      call writeMemInfo(6)
    endif

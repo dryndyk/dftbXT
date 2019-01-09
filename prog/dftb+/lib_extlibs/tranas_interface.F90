@@ -199,7 +199,7 @@ module tranas_interface
         params%FictCont(i) = transpar%contacts(i)%wideBand
         params%contact_DOS(i) = transpar%contacts(i)%wideBandDOS
       
-        if (id0) then
+        if (id0.and.transpar%verbose.gt.50) then
           write(*,*) '(negf_init) CONTACT INFO #',i
             if (params%FictCont(i)) then
               write(*,*) 'FICTICIOUS CONTACT '
@@ -215,7 +215,7 @@ module tranas_interface
 
       ! Define electrochemical potentials
       params%mu(1:ncont) = eFermi(1:ncont) - pot(1:ncont)
-      if (id0) write(*,*) 'Electro-chemical potentials: ', params%mu(1:ncont)
+      if (id0.and.transpar%verbose.gt.50) write(*,*) 'Electro-chemical potentials: ', params%mu(1:ncont)
       deallocate(pot)
 
     else !transpar not defined 
@@ -444,23 +444,23 @@ module tranas_interface
         params%FictCont(i) = transpar%contacts(i)%wideBand
         params%contact_DOS(i) = transpar%contacts(i)%wideBandDOS
       
-        if (id0) then
-          write(*,*) '(negf_init) CONTACT INFO #',i
+        if (id0.and.transpar%verbose.gt.50) then
+          write(*,"(/,'(negf_init) CONTACT INFO #',I0)")i
             if (params%FictCont(i)) then
               write(*,*) 'FICTICIOUS CONTACT '
               write(*,*) 'DOS: ', params%contact_DOS(i)
             end if
-          write(*,*) 'Temperature: ', params%kbT(i)
-          write(*,*) 'Potential (with built-in): ', pot(i)
-          write(*,*) 'eFermi: ', eFermi(i) 
-          write(*,*) 
+          write(*,*) '  Temperature: ', params%kbT(i)
+          write(*,*) '  Potential (with built-in): ', pot(i)
+          write(*,*) '  eFermi: ', eFermi(i) 
         endif 
 
       enddo
 
       ! Define electrochemical potentials
       params%mu(1:ncont) = eFermi(1:ncont) - pot(1:ncont)
-      if (id0) write(*,*) 'Electro-chemical potentials: ', params%mu(1:ncont)
+      if (id0.and.transpar%verbose.gt.50) write(*,*)
+      if (id0.and.transpar%verbose.gt.50) write(*,*) '  Electro-chemical potentials: ', params%mu(1:ncont)
       deallocate(pot)
 
     else !transpar not defined 
@@ -847,11 +847,12 @@ module tranas_interface
 
       end if
 
-      write(stdOut,*) ' Structure info:'
-      write(stdOut,*) ' Number of PLs:',nbl
-      write(stdOut,*) ' PLs coupled to contacts:',cblk(1:ncont)
-      write(stdOut,*)
-
+      if (transpar%verbose.gt.50) then
+        write(stdOut,"(/,'Structure info:')")
+        write(stdOut,*) '  Number of PLs:',nbl
+        write(stdOut,*) '  PLs coupled to contacts:',cblk(1:ncont)
+      end if
+      
     end if
 
     call init_structure(negf, ncont, cont_end, surf_end, nbl, PL_end, cblk)
@@ -912,9 +913,9 @@ module tranas_interface
        call set_params(negf,params)
        call pass_DM(negf,rho=DensMat)
        if (id0.and.params%verbose.gt.30) then
-         write(*,'(73("="))')
-         write(*,*) '                    COMPUTING DENSITY MATRIX      '
-         write(*,'(73("="))') 
+         write(*,'(80("-"))')
+         write(*,*) '                        COMPUTATION OF THE DENSITY MATRIX             '
+         write(*,'(80("-"))') 
        endif
     endif
     if(present(EnMat)) then
@@ -922,9 +923,9 @@ module tranas_interface
        call set_params(negf,params)
        call pass_DM(negf,rhoE=EnMat)
        if (id0.and.params%verbose.gt.30) then
-         write(*,'(73("="))')
-         write(*,*) '                 COMPUTING E-WEIGHTED DENSITY MATRIX '
-         write(*,'(73("="))') 
+         write(*,'(80("-"))')
+         write(*,*) '                     COMPUTATION OF E-WEIGHTED DENSITY MATRIX         '
+         write(*,'(80("-"))') 
        endif
     endif
     if (present(DensMat).and.present(EnMat)) then
@@ -944,8 +945,6 @@ module tranas_interface
     negf = tranas%negf    
     
     call destroy_matrices(negf)
-    
-    if (id0.and.params%verbose.gt.30) write(*,'(73("*"))')
 
   end subroutine negf_density
 
@@ -1143,7 +1142,7 @@ module tranas_interface
     unitOfEnergy%name = "H"
     unitOfCurrent%name = "A"
     
-    if (id0.and.negf%verbose.gt.30) then
+    if (id0.and.negf%verbose.gt.0) then
       write(*,*)
       write(*,'(80("="))')
       write(*,*) '                            COMPUTATION OF TRANSPORT         '
@@ -1327,10 +1326,11 @@ module tranas_interface
 
       currents = currents * convertCurrent(unitOfEnergy, unitOfCurrent) 
     
-      if (id0) then 
+      if (id0.and.negf%verbose.gt.0) then
+        write(*,"(/,'Current is calculated')") 
         do i=1, size(currents)
           write(*,'(1x,a,i3,i3,a,ES14.5,a,a)') &
-             & 'contacts: ',negf%ni(i),negf%nf(i), &
+             & ' contacts: ',negf%ni(i),negf%nf(i), &
              & '   current: ', currents(i),' ',unitOfCurrent%name
         enddo
       endif
@@ -1707,14 +1707,15 @@ module tranas_interface
 
       if(negf%NumStates.eq.0) negf%NumStates=csrHam%ncol
       
-      if (id0.and.params%verbose.gt.30) then
+      if (id0.and.params%verbose.gt.0) then
       write(*,*)
       write(*,'(80("="))')
       write(*,*) '                            COMPUTATION OF TRANSPORT         '
       write(*,'(80("="))') 
       write(*,*)
-      write(*,*)'Transport is started'
-      write(*,"(' Number of States = ',I0)")negf%NumStates
+      write(*,"('Transport is started.')")
+      write(*,"('Number of states (with electrodes)      = ',I5)")negf%NumStates
+      write(*,"('Number of states in the central region  = ',I5)")negf%str%central_dim
       endif
       
       if( negf%tWriteDFTB &
@@ -1886,11 +1887,12 @@ module tranas_interface
     ! converts from internal atomic units into A
     currTot = currTot * convertCurrent(unitOfEnergy, unitOfCurrent) 
     
-    if (id0) then 
+    if (id0.and.negf%verbose.gt.0) then
+      write(*,"(/,'Current is calculated')") 
       do ii=1, size(currTot)
         write(*,'(1x,a,i3,i3,a,ES14.5,a,a)') &
              & ' contacts: ',params%ni(ii),params%nf(ii), &
-             & ' current: ', currTot(ii),' ',unitOfCurrent%name
+             & '   current: ', currTot(ii),' ',unitOfCurrent%name
       enddo
     endif
      
@@ -1935,10 +1937,7 @@ module tranas_interface
 
   end if
     
-    if (id0.and.params%verbose.gt.30) print*,'calc_current done'             
-
   end subroutine calc_current
-  !------------------------------------------------------------------------------------------------!
 
   !------------------------------------------------------------------------------------------------!
   !------------------------------------------------------------------------------------------------!

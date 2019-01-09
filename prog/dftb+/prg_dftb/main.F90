@@ -218,7 +218,7 @@ contains
 
       call env%globalTimer%startTimer(globalTimers%preSccInit)
 
-      call printGeoStepInfo(tCoordOpt, tLatOpt, iLatGeoStep, iGeoStep)
+      if (input%ctrl%verbose.gt.0) call printGeoStepInfo(tCoordOpt, tLatOpt, iLatGeoStep, iGeoStep)
 
       tWriteRestart = env%tGlobalMaster&
           & .and. needsRestartWriting(tGeoOpt, tMd, iGeoStep, nGeoSteps, restartFreq)
@@ -242,10 +242,10 @@ contains
 
     #:if WITH_TRANSPORT
       if (tNegf) then
-        write(stdout,"(/,'> tNegf = ',L1,/,'> initNegfStuff is started')")tNegf 
+        if (input%ctrl%verbose.gt.30) write(stdout,"('> initNegfStuff is started')")
         call initNegfStuff(denseDesc, transpar, ginfo, neighbourList, nNeighbourSK, img2CentCell,&
             & orb)
-        write(stdout,"('> initNegfStuff is finished',/)")    
+        if (input%ctrl%verbose.gt.30) write(stdout,"('> initNegfStuff is finished',/)")    
       end if
     #:endif
 
@@ -424,12 +424,12 @@ contains
               & qiBlockOut, iEqBlockDftbULS, species0, nUJ, iUJ, niUJ, qiBlockIn)
 
           call getSccInfo(iSccIter, energy%Eelec, Eold, diffElec)
-          if (tNegf) then
+          if (tNegf.and.(input%ctrl%verbose.gt.30)) then
             call printSccHeader()
           end if
-          call printSccInfo(tDftbU, iSccIter, energy%Eelec, diffElec, sccErrorQ)
+          if(input%ctrl%verbose.gt.30) call printSccInfo(tDftbU, iSccIter, energy%Eelec, diffElec, sccErrorQ)
 
-          if (tNegf) then
+          if (tNegf.and.(input%ctrl%verbose.gt.30)) then
             call printBlankLine()
           end if
 
@@ -437,7 +437,7 @@ contains
               & needsSccRestartWriting(restartFreq, iGeoStep, iSccIter, minSccIter, maxSccIter,&
               & tMd, tGeoOpt, tDerivs, tConverged, tReadChrg, tStopScc)
           if (tWriteSccRestart) then
-            call writeCharges(fCharges, tWriteChrgAscii, orb, qInput, qBlockIn, qiBlockIn)
+            call writeCharges(fCharges, tWriteChrgAscii, orb, qInput, qBlockIn, qiBlockIn, input%ctrl%verbose)
           end if
         end if
 
@@ -532,7 +532,7 @@ contains
             & nSpin, qOutput, velocities)
       end if
 
-      call printEnergies(energy)
+      if (input%ctrl%verbose.gt.0) call printEnergies(energy)
 
       if (tForces) then
         call env%globalTimer%startTimer(globalTimers%forceCalc)
@@ -627,7 +627,7 @@ contains
         tWriteCharges = tWriteRestart .and. tMulliken .and. tSccCalc .and. .not. tDerivs&
             & .and. maxSccIter > 1
         if (tWriteCharges) then
-          call writeCharges(fCharges, tWriteChrgAscii, orb, qInput, qBlockIn, qiBlockIn)
+          call writeCharges(fCharges, tWriteChrgAscii, orb, qInput, qBlockIn, qiBlockIn, input%ctrl%verbose)
         end if
 
         ! initially assume coordinates are not being updated
@@ -727,8 +727,6 @@ contains
     end do lpGeomOpt
 
     call env%globalTimer%startTimer(globalTimers%postGeoOpt)
-
-    write(stdout,"('Geometry is finished')") !DAR
     
   #:if WITH_SOCKETS
     if (tSocket .and. env%tGlobalMaster) then

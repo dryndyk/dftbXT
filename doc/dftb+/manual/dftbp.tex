@@ -2737,6 +2737,7 @@ ForceEvaluation = 'dynamics'
 
 This block collects some global options for the run.
 \begin{ptable}
+  \kwl{{\new Verbosity}}{kw:dftbp.Verbosity} & l & & 51 & \\
   \kw{WriteAutotestTag} &l & & No & \\
   \kw{WriteDetailedXML} & l & & No & \\
   \kw{WriteResultsTag} & l & & No & \\
@@ -2751,10 +2752,12 @@ This block collects some global options for the run.
   \kwl{ReadChargesAsText}{kw:dftbp.ReadChargesAsText} & l &
   ReadInitialCharges = Yes & No & \\
   \kwl{WriteChargesAsText}{kw:dftbp.WriteChargesAsText} & l & & No & \\
-  \kwl{{\new Verbosity}}{kw:dftbp.Verbosity} & l & & 51 & \\
   \kw{SkipChargeTest} & l & ReadInitialCharges = Yes & No & \\
 \end{ptable}
 \begin{description}
+
+\item[\is{Verbosity}] This parameter controls the amount of output messages globally
+    and takes values ranging from 1 to 100.  
 
 \item[\is{WriteAutotestTag}] Turns the creation of the
   \verb|autotest.tag| file on and off. (This file can get quite big
@@ -2838,10 +2841,6 @@ This block collects some global options for the run.
 \item[\is{WriteChargesAsText}] If \is{No}, the program stores charges in the
   binary file \verb|charges.bin|, while if \is{Yes} then \verb|charges.dat|
   contains text of this data. See section \ref{sec:charges.bin}.
-  {\new
-  \item[\is{Verbosity}] This parameter controls the amount of output messages globally
-    and takes values ranging from 1 to 100.
-  }
 
 \item[\is{SkipChargeTest}] If \is{Yes}, testing of whether the charges read from
   file match the total charge (and magnetisation) specified in the {\dftbp}
