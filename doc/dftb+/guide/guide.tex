@@ -18,6 +18,8 @@
 \usepackage{titlesec}
 \usepackage{verbatim}
 \usepackage{textcomp}
+\usepackage{microtype}
+\DisableLigatures[<]{encoding = T1}
 
 \addto\captionsenglish{\renewcommand{\figurename}{Fig. }}
 \addto\captionsenglish{\renewcommand{\tablename}{Table }}
@@ -28,12 +30,13 @@
   {\partname\ \thepart}{20pt}{\Huge}
 
 \title{TraNaS OpenSuite Guide}
-\release{\today}
-%\release{January 18, 2018}
+%\release{\today}
+\release{January 18, 2019}
 \author{}
 \newcommand{\sphinxlogo}{}
 %\renewcommand{\releasename}{Release}
-\renewcommand{\releasename}{version 1.02 (development)}
+%\renewcommand{\releasename}{version 1.02 (development)}
+\renewcommand{\releasename}{version 1.02 (release)}
 
 \newcommand{\dftbp}{\textsf{DFTB$^{\text{+}}$\ }} %% noodle (alias dftb+)
 \newcommand{\dftbpa}{\textsf{DFTB$^{\text{+}}$}} %% noodle (alias dftb+)
@@ -47,6 +50,10 @@
 \newcommand{\verbatimfont}[1]{\def\verbatim@font{#1}}%
 \makeatother
 \verbatimfont{\sf}
+
+\usepackage{bm}
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\matr}[1]{\bm{#1}}
 
 \date{\normalfont\sffamily {tranas.org/opensuite}\\[0.2cm]
   detailed description of input and output is given in the \dftbpxt USER MANUAL \\[0.2cm]
@@ -454,19 +461,19 @@ becomes smaller than the given tolerance. Then the maximal cutoff found for all 
 Starting from the version {\textsf{DFTB$^{\text{+}}$XT 1.01}} the calculations with external model tight-binding Hamiltonians are possible. In particular ``without geometry'', it means that the coordinates are not used and are not required. It must be announced in the input file as
 
 \begin{verbatim}
-Geometry = NoGeometry{}
+  Geometry = NoGeometry{}
 \end{verbatim}
 
-In the \is{Transport} block it is only one important addition: \is{ContactPLs} describes the numbers of PLs to which the electrodes are coupled:
+In the \is{Transport} block it is only one important addition: \is{ContactPLs} describes the indices of PLs to which the electrodes are coupled:
 
 \begin{verbatim}
-Transport {
-   Device {
+  Transport {
+    Device {
       AtomRange = 1 37
       FirstLayerAtoms =  1 9 19
-      ContactPLs = 1 3            #Required for NoGeometry
-   }
-}
+      ContactPLs = 1 3           
+    }
+  }
 \end{verbatim}
 
 Otherwise, it is described the geometry in the same way as before with the same assumptions about the order of tight-binding states (which are assumed to be ``atoms'' now). One atom corresponds to one electronic state. As a life hack, one can use the geometry from only hydrogen atoms (with only one electronic state) to create the real space tight-binding geometry, for example to include the self-consistent electric fields.
@@ -476,21 +483,28 @@ The \is{Analysis} block is also unchanged.
 Most important is the change in the \is{Hamiltonian} block. It looks like
 
 \begin{verbatim}
-Hamiltonian = Model { 
-   NumStates = 44                   #Required for NoGeometry 
-   HamiltonianFile [eV] = H.mtr   #Relevant for NoGeometry (default is H.mtr, [eV])
-   SpinDegeneracy = Yes            #Relevant for NoGeometry 
-}  
+  Hamiltonian = Model { 
+    NumStates = 44                          
+    HamiltonianMatrix [eV] = {<<< "filename"}   
+    SpinDegeneracy = Yes                    
+  }  
 \end{verbatim}
 
-The new method is \iscb{Model}, it includes the required parameter \is{NumStates}, which gives the full number of states including the central region and the electrodes. The \is{HamiltonianFile} can be used to change the name of the Hamiltonian and the energy units. Finally, \is{SpinDegeneracy = Yes} says that there are two electrons in every state (just to multiply the DOS and transmission by 2).
+The new method is \iscb{Model}, it includes the required parameter \is{NumStates}, which gives the full number of states including the central region and the electrodes. The \is{HamiltonianMatrix} can be used to change the Hamiltonian and the energy units. The default \is{filename} is \is{H.mtr}. The Hamiltonian in the file should be saved as an array of real numbers. Or it can be inserted explicitly instead of \is{<<< "filename"}. Finally, \is{SpinDegeneracy = Yes} says that it can be two electrons in every state and the same Hamiltonian is assumed for spin-up and spin-down (in the simplest case just to multiply the DOS and transmission by 2).
 
-The Hamiltonian \is{H.mtr} should be saved as an array of real numbers. It should be ordered in the right way corresponding to the numbering of sites and be consistent with the ordering of sites (atoms) in the \is{Transport} block!
-
-{\bf The ordering of the PLs and sites in PLs follows directly from the ordering of the states in the external Hamiltonian.}
+The Hamiltonian should be ordered in the right way to be consistent with the ordering of sites (atoms) in the \is{Transport} block! First the central region, then electrodes one by one, every from two blocks. For two electrodes it looks like
+%
+\begin{equation}
+{\matr H}=\left(\begin{array}{ccccc}
+{\matr H}_C & {\matr V}_{CL} & 0 & {{\matr V}_{CR}} & 0 \\
+{\matr V}^\dag_{CL} & {{\matr H}_{L0}} & {{\matr H}_{L1}} & {0} & 0 \\
+0 & {{\matr H}^\dag_{L1}} & {{\matr H}_{L0}} & 0 & 0 \\
+{{\matr V}^\dag_{CR}} & {0} & 0 & {{\matr H}_{R0}} & {\matr H}_{R1} \\
+0 & 0 & 0 & {\matr H}^{\dag}_{R1} & {\matr H}_{R0} 
+\end{array}\right)
+\end{equation}
 
 At the moment users should care about the right ordering.
-
 
 \section{Precalculation of electrodes}
 \label{sec-contacts}

@@ -1160,7 +1160,6 @@ module tranas_interface
     
     if(negf%tReadDFTB) call ReadDFTB
       
-    !if(negf%tModel) call ReadModel ! Is done now from parser! -- REMOVE
     if(.not.allocated(negf%H_all)) allocate(negf%H_all(negf%NumStates,negf%NumStates))
     negf%H_all=transpar%H_all
     if (id0.and.negf%verbose.gt.100) then
@@ -1180,10 +1179,7 @@ module tranas_interface
       close(11)
     else   
       if (.not.allocated(negf%S_all)) allocate(negf%S_all(negf%NumStates,negf%NumStates))
-      negf%S_all=0.0_dp
-      do i=1,negf%NumStates
-        negf%S_all(i,i)=1._dp
-      end do
+      negf%S_all=transpar%S_all
     end if
     if (id0.and.negf%verbose.gt.100) then
     write(*,"('Overlap:')")   

@@ -1,0 +1,87 @@
+Geometry = NoGeometry {}
+
+Transport {
+  Device {
+    AtomRange = 1 1
+    FirstLayerAtoms = 1 
+    ContactPLs = 1 1                   #Required for NoGeometry
+  }
+  Contact {
+    Id = "source"
+    AtomRange = 2 3
+    FermiLevel [eV] = 0.   
+    Potential [eV] = 1.
+    Temperature [eV] = 0.0025          # = 29.01126067 K
+    #WideBand = Yes   
+    #LevelSpacing = 2.31
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    #ReadSurfaceGF = Yes
+    #Unformatted = Yes
+    #WriteSeparatedSGF = Yes
+    #ReadSeparatedSGF = Yes
+  }
+  Contact {
+    Id = "drain"
+    AtomRange = 4 5
+    FermiLevel [eV] = 0.   
+    Potential [eV] = -1.
+    Temperature [K] = 29.01126067
+    #WideBand = Yes  
+    #LevelSpacing = 2.31
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    #ReadSurfaceGF = Yes
+    #Unformatted = Yes
+    #WriteSeparatedSGF = Yes
+    #ReadSeparatedSGF = Yes
+  }
+  Task = UploadContacts {
+  }
+}
+
+Hamiltonian = Model {
+  NumStates = 5                        #Required for NoGeometry
+  #HamiltonianMatrix [eV] = {
+  #  0.00    0.10    0.00    0.20    0.00    
+  #  0.10    0.00    1.00    0.00    0.00    
+  #  0.00    1.00    0.00    0.00    0.00    
+  #  0.20    0.00    0.00    0.00    1.00    
+  #  0.00    0.00    0.00    1.00    0.00  
+  #}
+  HamiltonianMatrix [eV] = {
+    <<< "H2.mtr"
+  }
+  #OverlapMatrix = {
+  #  <<< "S.mtr"
+  #}
+  #SpinDegeneracy = Yes                #Relevant for NoGeometry
+  #Orthonormal = Yes      
+  #OrthonormalDevice = Yes
+  Eigensolver = TransportOnly {}
+}
+
+Analysis = {
+  TransmissionAndDos {
+    Verbosity = 51
+    EnergyRange [eV] = -5.00001  5.  
+    EnergyStep [eV] = 0.05
+    Region = {
+      Atoms = 1:1
+    }
+    #WriteTunn = No
+    WriteLDOS = Yes
+  }
+}
+
+Options = {
+  Verbosity = 51
+}
+
+
+
+
+
+

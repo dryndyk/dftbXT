@@ -92,7 +92,8 @@ looking at the examples distributed with the code. The input structure is often
 the first suspect when there are problems in transport calculations.
 
 
-\htsection{Transport}
+\htcbsection{Transport}
+\label{sec:transport.transport}
 
 The Transport section collects together the information needed whenever open
 boundary conditions are used. It contains the description of the partitioning of
@@ -895,33 +896,81 @@ bugs.  Please report any problems you encounter to the developers.
 %and the partial current for every k point. In a multi-terminal calculation, this
 %data will be written for every terminal couple.
 
-{\new
-
 \section{Model Hamiltonians} 
 \label{sec_model}
 
 To use the external Hamiltonian without geometry \big(if \is{Geometry = NoGeometry\{\}}\big), the type of the Hamiltonian must be set to \iscb{Model}:
-%
+\invparskip
 \begin{verbatim}
-Hamiltonian = Model{}
+  Hamiltonian = Model{}
 \end{verbatim}
 
-The \iscb{Model} method may contain the
-following properties:
+The \iscb{Model} method must contain the \is{NumStates} parameter and optional \iscb{HamiltonianMatrix} and \iscb{OverlapMatrix}. If \iscb{HamiltonianMatrix} is not given, default file H.mtr with the Hamiltonian matrix should present.  
 
+All properties of the \iscb{Model} method are:
 \begin{ptableh}
-  \kw{NumStates} & i &  & No default!  & \\
-  \kw{HamiltonianFile} & s &  & H.mtr & \\
- 
+  \kw{NumStates} & i &  & -  & \\
+  \kw{HamiltonianMatrix} & N$^2$r\footnotetext{N=NumStates} & & $<<<$ H.mtr & \\
+  \kw{OverlapMatrix} & N$^2$r & & Unity matrix & \\
+  \kw{Dephasing} & p & & &  \pref{sec_deph} \\
+  \kw{SpinDegeneracy} & l & & No & \\
+  \kw{Orthonormal} & l & & No & \\
+  \kw{OrthonormalDevice} & l & & No & \\
   \hline
 \end{ptableh}
 
 \begin{description}
-  \item[\is{NumStates}] Is a full number of states in the Hamiltonian. Required for model calculations without geometry. 
 
-  \item[\is{HamiltonianFile}]\modif{\modtype{energy}} The name of the data file with the Hamiltonian, saved as an array of real numbers. 
-    
+\item[\is{NumStates}] is a full number of states in the Hamiltonian including the electrodes. Required for model calculations without geometry. 
+
+\item[\is{HamiltonianMatrix}]\modif{\modtype{energy}} is an array of real numbers.
+  
+\item[\is{OverlapMatrix}] is an array of real numbers. This property is not required, the default is unity matrix (orthogonal basis).
+
+\item[\is{Dephasing}] Two models of elastic dephasing ("B\"uttiker probe" and "vibronic dephasing") can be used now to include the dephasing and dissipation beyond the coherent Green function method. Thus, we made a new step towards realistic material and device modeling. See Sec.\,\ref{sec_deph}.
+
+\item[\is{SpinDegeneracy}] When set to \is{Yes}, the same Hamiltonian is assumed for spin-up and spin-down.   
+
+\item[\is{Orthonormal}] When set to \is{Yes}, L\"{o}wdin orthogonalization is performed to full Hamiltonian.
+
+\item[\is{OrthonormalDevice}] When set to \is{Yes}, L\"{o}wdin orthogonalization is performed only to the central ``device'' part.
+  
 \end{description}
+
+{\bf Note}: The structure of the Hamiltonian must be consistent with the definition of transport geometry in  Sec.\,\ref{sec:transport.transport} and follow the same rules as discussed in Sec.\,\ref{sec:transport.geometry}: first the central region, then electrodes one by one, every from two blocks. For two electrodes it looks like
+%
+\begin{equation}
+{\matr H}=\left(\begin{array}{ccccc}
+{\matr H}_C & {\matr V}_{CL} & 0 & {{\matr V}_{CR}} & 0 \\
+{\matr V}^\dag_{CL} & {{\matr H}_{L0}} & {{\matr H}_{L1}} & {0} & 0 \\
+0 & {{\matr H}^\dag_{L1}} & {{\matr H}_{L0}} & 0 & 0 \\
+{{\matr V}^\dag_{CR}} & {0} & 0 & {{\matr H}_{R0}} & {\matr H}_{R1} \\
+0 & 0 & 0 & {\matr H}^{\dag}_{R1} & {\matr H}_{R0} 
+\end{array}\right)
+\end{equation}
+
+Example\footnote{The input/output for this and other examples one can find in /external/examples/Model/.}:  
+\invparskip    
+\begin{verbatim}
+  Hamiltonian = Model {
+    NumStates = 5 
+    HamiltonianMatrix [eV] = {
+      1.00    0.10    0.00    0.20    0.00    
+      0.10    0.00    1.00    0.00    0.00    
+      0.00    1.00    0.00    0.00    0.00    
+      0.20    0.00    0.00    0.00    1.00    
+      0.00    0.00    0.00    1.00    0.00   
+    }
+  }
+\end{verbatim}
+%
+In this example a single level with the energy 1 eV is coupled to the left electrode with the coupling $V_{CL}=0.1$ eV and to the right electrode $V_{CR}=0.2$ eV.
+    
+Instead, the name of the data file can be included in the standard way:
+\invparskip
+\begin{verbatim}
+  HamiltonianMatrix [eV] = { <<< "filename" }
+\end{verbatim} 
 
 Model Hamiltonians are used at the moment only for transport calculations. It is important to add the property \iscb{ContactPLs} to the \iscb{Device} section (see Sec.\,\ref{sec_device}). 
 
@@ -943,36 +992,36 @@ The \iscb{Dephasing} group may contain the following methods/properties:
 \begin{description}
   
 \item[\is{BuettikerProbes}] switches on the B\"uttiker probe dephasing. There are two methods: \iscb{ZeroPotential} and \iscb{ZeroCurrent}. The first one describes physical conducting environment with fixed (at the moment zero) electrical potential. The second is for the {\it B\"uttiker Probe Model} of dephasing, when the zero-current condition is fulfilled by artificial adjustment of local electrical potentials.
-
+\invparskip
 \begin{verbatim}   
-BuettikerProbes = ZeroPotential {
-  Coupling [eV] = constant { 0.01 }
-}
+  BuettikerProbes = ZeroPotential {
+    Coupling [eV] = constant { 0.01 }
+  }
 
-BuettikerProbes = ZeroCurrent {
-  Coupling [eV] = constant { 0.01 }
-}
+  BuettikerProbes = ZeroCurrent {
+    Coupling [eV] = constant { 0.01 }
+  }
 \end{verbatim}
 
 \end{description}  
 
 \begin{description}
 \item[\is{Coupling}]\modif{\modtype{energy}} describes coupling to the environment. The method \iscb{constant} couples all states equivalently. The other possible methods are \iscb{AtomCoupling} -- with different couplings for different atoms, and \iscb{AllOrbitals} -- with different couplings for all atomic orbitals. For the model calculations these two options are equivalent. 
-
+\invparskip
 \begin{verbatim}   
-Coupling [eV] = AtomCoupling {
-  AtomList { Atoms = 1
-             Value = 0.1
+  Coupling [eV] = AtomCoupling {
+    AtomList { Atoms = 1
+               Value = 0.1
+    }
+    AtomList { Atoms = 2 3
+               Value = 0.01
+    }
+    AtomList { Atoms = 4 5
+               Value = 0.03
+    }
   }
-  AtomList { Atoms = 2 3
-             Value = 0.01
-  }
-  AtomList { Atoms = 4 5
-             Value = 0.03
-  }
-}
 
-Coupling [eV] = AllOrbitals { 0.1 0.1 0.1 ... }
+  Coupling [eV] = AllOrbitals { 0.1 0.1 0.1 ... }
 \end{verbatim}
 
 \end{description}  
@@ -983,24 +1032,21 @@ Coupling [eV] = AllOrbitals { 0.1 0.1 0.1 ... }
 
 \item[\is{VibronicElastic}] switches on the elastic vibronic dephasing method. There is only one method \iscb{local} available at the moment. The \iscb{Coupling} method can get the same values as for B\"uttiker probe dephasing. There are several additional options: 
 \is{AtomBlock} (default=.false.), which changes the way of coupling between electrons and phonons; \is{MaxNumIter} -- the maximum number of iterations (default=100); \is{Mixing} -- control of mixing in the self-consistent cycle (default = 0.05); \is{Tolerance} -- control of the convergency tolerance (default = 0.001). 
-  
+\invparskip  
 \begin{verbatim}
-VibronicElastic = local {
-  AtomBlock = Yes
-  Coupling [eV] = Constant {0.01}
-  MaxNumIter = 1000
-  Mixing = 0.5
-  Tolerance = 0.001
-}
+  VibronicElastic = local {
+    AtomBlock = Yes
+    Coupling [eV] = Constant {0.01}
+    MaxNumIter = 1000
+    Mixing = 0.5
+    Tolerance = 0.001
+  }
 \end{verbatim}
   
 \end{description}
 
 \section{Application to STM spectroscopy}
 \label{sec_stm}
-
-
-} %end of \new
 
 \htsection{Parallelisations}
 
@@ -1039,7 +1085,7 @@ section~\ref{sec:dftbp.Parallel}) are not supported.
 
 The \kw{Analysis} block is used to specify post-scf calculations such as
 transmission or projected DOS.
-
+\invparskip
 \begin{verbatim}
 Analysis{
   TransmissionAndDOS{

@@ -1,4 +1,4 @@
-\chapter{Input for {\dftbp}}
+\chapter{Input for {\dftbpxt}}
 
 
 {\dftbp} can read two formats, either XML or the Human-friendly
@@ -966,11 +966,24 @@ remove (usually unneeded) file writing: \is{WriteDetailedOut} = \is{No} and
 %%%  Hamiltonian
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\newpage
 \section{Hamiltonian}
 \label{sec:dftbp.Hamiltonian}
 
-Currently only a DFTB Hamiltonian is implemented, so you must set
-\is{Hamiltonian = DFTB\{\}}. The \iscb{DFTB} method may contain the
+{\new
+
+For calculations without geometry \big(if \is{Geometry = NoGeometry\{\}}\big), the type of the Hamiltonian must be set to \iscb{Model}:
+\begin{verbatim}
+Hamiltonian = Model{}
+\end{verbatim}
+
+The properties of the \iscb{Model} method are discussed in Sec.\,\ref{sec_model}.
+}
+
+Currently only a DFTB Hamiltonian is implemented for {\it ab initio} atomistic calculations, so you must set
+\is{Hamiltonian = DFTB\{\}} or \is{Hamiltonian = Model\{\}}.
+
+The \iscb{DFTB} method may contain the
 following properties:
 
 \begin{ptable}
@@ -1010,6 +1023,8 @@ following properties:
   \kw{ForceEvaluation} &s& & "Legacy" & \\
   \kw{CustomisedHubbards} & p & & & \\
   \kw{\new Dephasing} & p & & &  \pref{sec_deph} \\
+  \kw{Orthonormal} & l & & No & \\
+  \kw{OrthonormalDevice} & l & & No & \\
   \kw{TruncateSKRange} & p & & & \\
   \hline
 \end{ptable}
@@ -1273,6 +1288,10 @@ following properties:
 
 \item[\is{Dephasing}] Two models of elastic dephasing ("B\"uttiker probe" and "vibronic dephasing") can be used now to include the dephasing and dissipation beyond the coherent Green function method. Thus, we made a new step towards realistic material and device modeling. See Sec.\,\ref{sec_deph}. 
 
+\item[\is{Orthonormal}] When set to \is{Yes}, L\"{o}wdin orthogonalization is performed to full Hamiltonian.
+
+\item[\is{OrthonormalDevice}] When set to \is{Yes}, L\"{o}wdin orthogonalization is performed only to the central ``device'' part.
+  
 \item[\is{TruncateSKRange}] Enables overriding of the number of elements to be
   read from the Slater-Koster parameters, shortening the interaction range of
   atoms. 

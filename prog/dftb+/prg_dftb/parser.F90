@@ -5228,6 +5228,23 @@ contains
             end if 
           end if
 
+        call getChild(node, "OverlapMatrix", value, requested=.false.)
+          allocate(tp%S_all(tp%NumStates,tp%NumStates))
+          tp%S_all=0.0_dp
+          if(associated(value)) then    
+            call getChildValue(node, "OverlapMatrix", tp%S_all)
+            if (tp%verbose.gt.90) then
+              write(stdout,"('Read Overlap from the input file:')") 
+              do i=1,tp%NumStates
+                write(stdout,"(10000ES16.8)")tp%S_all(1:tp%NumStates,i)
+              end do
+            end if
+          else
+            do i=1,tp%NumStates
+              tp%S_all(i,i)=1._dp
+            end do
+          end if
+
         call getChildValue(node, "ReadOverlap", tp%tReadOverlap,.false.)
           if (tp%tReadOverlap) then
             call getChildValue(node, "OverlapFile", buffer, "S.mtr")
@@ -5252,13 +5269,6 @@ contains
         call getChildValue(value, "ReadDFTB", tp%tReadDFTB,.false.)
         call getChildValue(value, "ReadU", tp%tReadU,.false.)
         call getChildValue(value, "ReadLibNEGF",tp%tRead_negf_in,.false.)
-        !call getChildValue(value, "SpinDegeneracy", tp%tSpinDegeneracy,.false.) -- to be removed
-        !call getChildValue(value, "Orthonormal", tp%tOrthonormal,.false.) -- to be removed
-        !call getChildValue(value, "OrthonormalDevice", tp%tOrthonormalDevice,.false.) -- to be removed
-        !call getChildValue(value, "NoGeometry", tp%tNoGeometry,.false.) -- to be removed
-        !call getChildValue(value, "ReadModel", tp%tModel,.false.) -- to be removed
-        !call getChildValue(value, "NumStates", tp%NumStates,0) -- to be removed           
-        !call getChildValue(value, "FileName", tp%FileName)
       end if
        
       call getChild(node, "Dephasing", value, requested=.false.)

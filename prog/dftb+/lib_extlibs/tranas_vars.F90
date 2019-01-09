@@ -194,7 +194,7 @@ module tranas_vars
     character(lc) :: HamiltonianFile
     character(lc) :: OverlapFile
     character(lc) :: units_energy
-    real(kind=dp), dimension(:,:), allocatable :: H_all
+    real(kind=dp), dimension(:,:), allocatable :: H_all, S_all
     logical :: tManyBody =.false.
     logical :: tElastic =.true.
     logical :: tDephasingVE = .false.
