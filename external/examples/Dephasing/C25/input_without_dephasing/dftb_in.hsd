@@ -1,0 +1,102 @@
+Geometry = GenFormat {
+<<< 'C25.gen'
+}
+
+Transport {
+  Device {
+    AtomRange = 1 5
+    FirstLayerAtoms =  1
+  }
+  Contact {
+    Id = "source"
+    AtomRange = 6 15
+    FermiLevel [eV] = -5.6407  
+    Potential [eV] =  4.
+    Temperature [eV] = 0.025  # = 290.1126067 K
+    #WideBand = Yes   
+    #LevelSpacing = 0.231
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    #ReadSurfaceGF = Yes
+    #Unformatted = Yes
+    #WriteSeparatedSGF = Yes
+    #ReadSeparatedSGF = Yes
+  }
+  Contact {
+    Id = "drain"
+    AtomRange = 16 25
+    FermiLevel [eV] = -5.6407  
+    Potential [eV] = -4.
+    Temperature [eV] = 0.025
+    #WideBand = Yes  
+    #LevelSpacing = 0.231
+    #WriteSelfEnergy = Yes
+    #ReadSelfEnergy = Yes
+    #WriteSurfaceGF = Yes
+    #ReadSurfaceGF = Yes
+    #Unformatted = Yes
+    #WriteSeparatedSGF = Yes
+    #ReadSeparatedSGF = Yes
+  }    
+  Task = UploadContacts{}
+}
+
+Hamiltonian = DFTB {
+  #SCC = Yes
+  #SCCTolerance = 1e-6
+  #EwaldParameter = 0.1
+  #ReadInitialCharges = Yes
+  #Orthonormal = Yes      
+  #OrthonormalDevice = Yes
+  MaxAngularMomentum = {
+    C = "p"
+  }  
+  SlaterKosterFiles = Type2FileNames {
+    Prefix = "../../../../slakos/origin/mio-1-1/"
+    Separator = "-"
+    Suffix = ".skf"
+  }  
+  #Electrostatics = Poisson {
+    #Verbosity = 51
+  # Poissonbox [Angstrom] = 45.0 10.0 10.0
+  # MinimalGrid [Angstrom] = 0.5 0.5 0.5
+  # SavePotential = Yes
+  #}
+  Eigensolver = TransportOnly{}
+  #Eigensolver = GreensFunction {
+    #Verbosity = 51
+  #  ReadSurfaceGFs = Yes
+  #  SaveSurfaceGFs = No
+  #}
+  #Mixer = Broyden {
+  #  MixingParameter = 0.02
+  #}
+}
+
+Analysis = {
+  TransmissionAndDos {
+    #Verbosity = 51
+    EnergyRange [eV] = -9. -1.   
+    EnergyStep [eV] =0.05
+    Region = {
+      Atoms = 1:3
+    }
+    Region = {
+      Atoms = 4:5
+    }
+    WriteLDOS = Yes
+  }
+}
+
+Options = {
+  Verbosity = 51
+}
+
+
+
+
+
+
+
+

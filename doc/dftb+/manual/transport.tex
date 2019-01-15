@@ -978,25 +978,27 @@ Instead, the name of the data file can be included in the standard way:
 
 Model Hamiltonians are used at the moment only for transport calculations. It is important to add the property \iscb{ContactPLs} to the \iscb{Device} section (see Sec.\,\ref{sec_device}). 
 
-\section{Elastic dephasing}
+\section{Quasi-elastic dephasing}
 \label{sec_deph}
 
 To switch on the dephasing effects, the group \iscb{Dephasing} must be included into the Hamiltonian group.
 The \iscb{Dephasing} group may contain the following methods/properties:
 
 \begin{ptableh}
-  \kw{BuettikerProbes} & m &  & none\{\}  & \\
-  \kw{VibronicElastic} & m &  & none\{\}  & \\
+  \kw{BuettikerProbes} & m &  & none\{\}  & \pref{BuettikerProbes} \\
+  \kw{VibronicElastic} & m &  & none\{\}  & \pref{VibronicElastic} \\
   
   \hline
 \end{ptableh}
 
-\subsection{B\"uttiker probes}
+\htcbsubsection{BuettikerProbes}
 
 \begin{description}
   
 \item[\is{BuettikerProbes}] switches on the B\"uttiker probe dephasing. There are two methods: \iscb{ZeroPotential} and \iscb{ZeroCurrent}. The first one describes physical conducting environment with fixed (at the moment zero) electrical potential. The second is for the {\it B\"uttiker Probe Model} of dephasing, when the zero-current condition is fulfilled by artificial adjustment of local electrical potentials.
-\invparskip
+  
+Examples\footnote{The examples of input/output one can find in /external/examples/Dephasing/.}:  
+\invparskip    
 \begin{verbatim}   
   BuettikerProbes = ZeroPotential {
     Coupling [eV] = constant { 0.01 }
@@ -1030,12 +1032,14 @@ The \iscb{Dephasing} group may contain the following methods/properties:
 
 \end{description}  
   
-\subsection{Vibronic dephasing}
+\htcbsubsection{VibronicElastic}
 
 \begin{description}
 
-\item[\is{VibronicElastic}] switches on the elastic vibronic dephasing method. There is only one method \iscb{local} available at the moment. The \iscb{Coupling} method can get the same values as for B\"uttiker probe dephasing. There are several additional options: 
-\is{AtomBlock} (default=.false.), which changes the way of coupling between electrons and phonons; \is{MaxNumIter} -- the maximum number of iterations (default=100); \is{Mixing} -- control of mixing in the self-consistent cycle (default = 0.05); \is{Tolerance} -- control of the convergency tolerance (default = 0.001). 
+\item[\is{VibronicElastic}] switches on the quasi-elastic vibronic dephasing method. There is only one method \iscb{local} available at the moment. The \iscb{Coupling} method can get the same values as for B\"uttiker probe dephasing. There are several additional options: 
+  \is{AtomBlock} (default=.false.), which changes the way of coupling between electrons and phonons; \is{MaxNumIter} -- the maximum number of iterations (default=100); \is{Mixing} -- control of mixing in the self-consistent cycle (default = 0.05); \is{Tolerance} -- control of the convergency tolerance (default = 0.001).
+
+Example:  
 \invparskip  
 \begin{verbatim}
   VibronicElastic = local {
@@ -1084,7 +1088,7 @@ until speedups are observed.
 \textbf{Note:} At the moment, calculations with more than one process group (see
 section~\ref{sec:dftbp.Parallel}) are not supported.
 
-\section{Analysis}
+\htcbsection{Analysis}
 \label{sec:transport.Analysis}
 
 The \kw{Analysis} block is used to specify post-scf calculations such as
@@ -1100,7 +1104,7 @@ Analysis{
 \end{verbatim}
 
 
-\htsection{TransmissionAndDos}
+\htcbsection{TransmissionAndDos}
 
 This method block can be specified in \iscb{Analysis} and it is
 used to calculate the transmission by means of Caroli formula, the current by

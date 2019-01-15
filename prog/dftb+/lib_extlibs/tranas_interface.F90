@@ -652,22 +652,22 @@ module tranas_interface
     type(TElPh), intent(in) :: elph
 !    real(dp), dimension(:), allocatable :: coupling
     
-    if (id0) write(*,*)
+    if (id0.and.negf%verbose.gt.30) write(*,*)
        
     if (elph%model .eq. 1) then
-       if (id0) write(*,*) 'Setting local fully diagonal (FD) BP dephasing model'
+       if (id0.and.negf%verbose.gt.30) write(*,*) 'Setting local fully diagonal (FD) BP dephasing model'
        if(.not.allocated(negf%deph%bp%coupling)) &
             call log_allocate(negf%deph%bp%coupling,size(elph%coupling))      
        negf%deph%bp%coupling=elph%coupling
     else if (elph%model .eq. 2) then
-       if (id0) write(*,*) 'Setting local block diagonal (BD) BP dephasing model'
-       if (id0) write(*,*) 'NOT IMPLEMENTED! INTERRUPTED!'
+       if (id0.and.negf%verbose.gt.30) write(*,*) 'Setting local block diagonal (BD) BP dephasing model'
+       if (id0.and.negf%verbose.gt.30) write(*,*) 'NOT IMPLEMENTED! INTERRUPTED!'
        !call set_bp_block_dephasing(negf, elph%coupling, elph%orbsperatm, &
        !     elph%scba_niter)
        stop
     else if (elph%model .eq. 3) then
-       if (id0) write(*,*) 'Setting overlap mask (OM) block diagonal BP dephasing model'
-       if (id0) write(*,*) 'NOT IMPLEMENTED! INTERRUPTED!'
+       if (id0.and.negf%verbose.gt.30) write(*,*) 'Setting overlap mask (OM) block diagonal BP dephasing model'
+       if (id0.and.negf%verbose.gt.30) write(*,*) 'NOT IMPLEMENTED! INTERRUPTED!'
        !call set_bp_s_dephasing(negf, elph%coupling, elph%orbsperatm, &
        !     elph%scba_niter)
        stop
@@ -675,7 +675,7 @@ module tranas_interface
        write(*,*) "ERROR: BP model is not supported"
     endif
 
-    if (id0) write(*,*)'BP dephasing initialization is finished'
+    if (id0.and.negf%verbose.gt.30) write(*,*)'BP dephasing initialization is finished'
 
   end subroutine negf_init_bp
   
@@ -1268,7 +1268,7 @@ module tranas_interface
               end do
             end if 
             close(14)
-            write(*,"('The retarded contact self-energy is written into the file ',A)") &
+            if (negf%verbose.gt.30) write(*,"('The retarded contact self-energy is written into the file ',A)") &
                   trim(negf%tranas%cont(icont)%name)//'-SelfEnergy.mgf'
           end if
        end do
@@ -1312,7 +1312,7 @@ module tranas_interface
               end do
             end if 
             close(14)
-            write(*,"('The retarded surface Green function is written into the file ',A)") &
+            if (negf%verbose.gt.30) write(*,"('The retarded surface Green function is written into the file ',A)") &
                   trim(negf%tranas%cont(icont)%name)//'-SurfaceGF.mgf'
           end if
        end do
@@ -1727,12 +1727,12 @@ module tranas_interface
          !Writing H to file H_dftb.mtr      
          call writeSparseAsSquare_old('H_dftb.mtr', ham(:,iS)*27.21138469, iNeighbor, nNeighbor, &
                                        &iAtomStart, iPair, img2CentCell)
-         write(*,"(' Hamiltonian is written to the file ',A)")trim('H_dftb.mtr')
+         if (negf%verbose.gt.30) write(*,"(' Hamiltonian is written to the file ',A)")trim('H_dftb.mtr')
          
          !Writing S to file S_dftb.mtr
          call writeSparseAsSquare_old('S_dftb.mtr', over, iNeighbor, nNeighbor, &
                                        &iAtomStart, iPair, img2CentCell)
-         write(*,"(' Overlap is written to the file ',A)")trim('S_dftb.mtr')
+         if (negf%verbose.gt.30) write(*,"(' Overlap is written to the file ',A)")trim('S_dftb.mtr')
          end if
          call mpifx_barrier(mpicomm) 
       end if
@@ -1809,7 +1809,7 @@ module tranas_interface
               end do
             end if 
             close(14)
-            write(*,"('The retarded contact self-energy is written into the file ',A)") &
+            if (negf%verbose.gt.30) write(*,"('The retarded contact self-energy is written into the file ',A)") &
                   trim(negf%tranas%cont(icont)%name)//'-SelfEnergy.mgf'
           end if
        end do
@@ -1837,7 +1837,7 @@ module tranas_interface
               end do
             end if 
             close(14)
-            write(*,"('The retarded surface Green function is written into the file ',A)") &
+            if (negf%verbose.gt.30) write(*,"('The retarded surface Green function is written into the file ',A)") &
                   trim(negf%tranas%cont(icont)%name)//'-SurfaceGF.mgf'
           end if
        end do

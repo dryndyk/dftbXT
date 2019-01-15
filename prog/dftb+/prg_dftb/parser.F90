@@ -4665,7 +4665,7 @@ contains
     real(dp), allocatable :: atmCoupling(:)
     logical :: block_model, semilocal_model
 
-    if (tp%verbose.gt.0) write(stdout,"('BP dephasing model is being red')")
+    if (tp%verbose.gt.30) write(stdout,"('BP dephasing model is being red')")
 
     call getNodeName2(node, method1)
 

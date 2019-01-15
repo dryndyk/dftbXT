@@ -1167,7 +1167,7 @@ contains
     integer, allocatable :: IPIV(:)                       ! LAPACK
     complex, allocatable :: GG(:,:),WORK(:)               ! LAPACK
 
-    if (id0.and.negf%verbose.gt.50) print *, 'transmission_BP_corrected is started'
+    if (id0.and.negf%verbose.gt.80) print *, 'transmission_BP_corrected is started'
 
     NumLevels=negf%str%central_dim
 
@@ -1293,7 +1293,7 @@ contains
 
     deallocate(Trans,Gam1,Gam2,W,R,GG,WORK,IPIV,GreenR,SigmaR)
 
-    if (id0.and.negf%verbose.gt.50) print *, 'transmission_BP_corrected is finished'
+    if (id0.and.negf%verbose.gt.80) print *, 'transmission_BP_corrected is finished'
 
   end subroutine transmission_BP_corrected
  

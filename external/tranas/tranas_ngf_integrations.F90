@@ -1759,7 +1759,7 @@ end subroutine transmission_int_def
           end do
         end if   
         close(14)
-        if (id0) write(*,"('The retarded contact self-energy is red from the file ',A)") &
+        if (id0.and.negf%verbose.gt.30) write(*,"('The retarded contact self-energy is red from the file ',A)") &
           trim(negf%tranas%cont(icont)%name)//'-SelfEnergy.mgf'
       else
         negf%tCalcSelfEnergies = .true.
@@ -1792,7 +1792,7 @@ end subroutine transmission_int_def
         end do
       end if
       close(14)
-      if (id0) write(*,"('The retarded contact Surface GF is red from the file ',A)") &
+      if (id0.and.negf%verbose.gt.30) write(*,"('The retarded contact Surface GF is red from the file ',A)") &
            trim(negf%tranas%cont(icont)%name)//'-SurfaceGF.mgf'
     end if
 

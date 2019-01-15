@@ -1,4 +1,4 @@
-Geometry = NoGeometry {}
+Geometry = NoGeometry{}
 
 Transport {
   Device {
@@ -38,8 +38,7 @@ Transport {
     #WriteSeparatedSGF = Yes
     #ReadSeparatedSGF = Yes
   }
-  Task = UploadContacts {
-  }
+  Task = UploadContacts{}
 }
 
 Hamiltonian = Model {
@@ -60,7 +59,7 @@ Hamiltonian = Model {
   #SpinDegeneracy = Yes                #Relevant for NoGeometry
   #Orthonormal = Yes      
   #OrthonormalDevice = Yes
-  Eigensolver = TransportOnly {}
+  Eigensolver = TransportOnly{}
 }
 
 Analysis = {
