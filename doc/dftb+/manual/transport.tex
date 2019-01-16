@@ -183,6 +183,9 @@ The Device blocks contains the following properties:
   \kw{ReadSelfEnergy} & l & & No & \\
   \kw{ReadSurfaceGF} & l & & No & \\
   \kw{WriteSurfaceGF} & l & & No & \\
+  \kw{Unformatted} & l & & No & \\
+  \kw{WriteSeparatedSGF} & l & & No & \\
+  \kw{ReadSeparatedSGF} & l & & No & \\
 \end{ptable}
 
 The sections \verb|Device| and \verb|Contact| are used to define the atomic
@@ -220,16 +223,23 @@ PLs (tolerance for rule~\ref{rule4} of structures, i.e.\ that accuracy to which
   approximation. As an example, the DOS of gold at the Fermi level is
   0.05~eV$^{-1}$atom$^{-1}$, which corresponds to an energy spacing of 20~eV
   $\approx$0.735~Hartree (the default value).
-\item[\is{WriteSelfEnergy}] Write the contact's self energy to a binary file
+\item[\is{WriteSelfEnergy}] Write the contact self energy to a single formatted text file
   matching its \is{contactId} and called \verb|contactId-SelfEnergy.mgf|.
-\item[\is{ReadSelfEnergy}] Read the contact's self energy from a binary file
+\item[\is{ReadSelfEnergy}] Read the contact self energy from a single formatted text file
   matching its \is{contactId} and called \verb|contactId-SelfEnergy.mgf|.
-\item[\is{ReadSurfaceGF}] Read the contact's retarded Green's function from a
-  binary file matching its \is{contactId} and called
+\item[\is{ReadSurfaceGF}] Read the contact retarded Green function from a single
+  formatted text file matching its \is{contactId} and called
   \verb|contactId-SurfaceGF.mgf|.
-\item[\is{WriteSurfaceGF}] Write the contact's retarded Green's function to a
-  binary file matching its \is{contactId} and called
+\item[\is{WriteSurfaceGF}] Write the contact retarded Green function to a single
+  formatted text file matching its \is{contactId} and called
   \verb|contactId-SurfaceGF.mgf|.
+\item[\is{Unformatted}] If set to \is{Yes}, the above mentioned files are written
+  in binary instead of text format.
+\item[\is{WriteSeparatedSGF}] Write the contact retarded Green functions for every energy separately
+  to binary files in the GS directory. 
+\item[\is{ReadSeparatedSGF}] Read the contact retarded Green functions for every energy separately
+  from binary files in the GS directory. If there are no required files, the SGFs are calculated and
+  saved.
 \end{description}
 
 \htcbsubsection{Task = ContactHamiltonian} \label{Task} The \is{Task} option is
@@ -471,7 +481,7 @@ only (see section~\ref{sec:transport.geometry}).
   used by the Green solver to fill up the electronic states, unless already
   specified by there being contacts already present.
 
-\item[\is{LocalCurrents}] if set to Yes, local bond-currents are computed using
+\item[\is{LocalCurrents}] If set to \is{Yes}, local bond-currents are computed using
   the non-equilibrium density matrix.  This task is currently limited to
   \textbf{non-periodic} systems. The output is placed in a file
   \verb|lcurrent_u.dat| (or \verb|lcurrent_d.dat| depending on spin).  The files

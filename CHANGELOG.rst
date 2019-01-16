@@ -5,19 +5,37 @@ Change Log DFTB+XT
 Notable project changes from release 1.01 (2018-01-18).
 Changes in DFTB+ are below.
 
-
 Unreleased
 =================
 
 Added
 -----
 
-- Integration with CP2K+XT.
 
 Changed
 -------
 
+
+Fixed
+-----
+
+
+1.02 (2019-01-18)
+=================
+
+Added
+-----
+
 - New git repository at GitHub and re-fork from github.com/dftbplus/dftbplus/master.
+
+- Integration with CP2K+XT.
+
+
+Changed
+-------
+
+- Write/Read options for contact Green functions and self-energies.
+
 
 Fixed
 -----
