@@ -1127,9 +1127,9 @@ defined in \iscb{Transport}.
   \kw{EnergyRange} & 2r &  & &  \\
   \kw{EnergyStep} & r & &  &  \\
   \kw{TerminalCurrents} &p& & & \\
-  \kw{Region} & p & & & \pref{Region} \\
   \kw{WriteTunn} & l & & Yes & \\
   \kw{WriteLDOS} & l & & No & \\
+  \kw{Region} & p & & & \pref{Region} \\
   \hline
 \end{ptable}
 
@@ -1156,16 +1156,15 @@ defined in \iscb{Transport}.
   sets all possible independent combinations for the terminal currents. For
   example in a 4-contact calculations the currents are 1-2, 1-3, 1-4, 2-3, 2-4,
   3-4.
+\item[\is{WriteTunn}] The energy-dependent transmission coefficients are calculated
+  and written to the file {\em transmission.dat}.
+\item[\is{WriteLDOS}] The energy-dependent local DOS is calculated and written to
+  the file {\em localDOS.dat}.   
 \item[\iscb{Region}] \label{Region} This block defines atomic ranges or orbitals
   on to which the local density of states is projected. The definition in the
   block follow the same syntax as a \dftbp{} calculation without transport (see
   section~\ref{sec:dftbp.ProjectStates}).
-\item[\is{WriteTunn}] The transmission coefficients are written also to a
-  separate file for quick reference. If set to \is{No}, the transmission
-  coefficient are only written to \dftbp{} output files (detailed.out and
-  detailed.xml, autotest.tag).
-\item[\is{WriteLDOS}] same as above, but for the density of states.   
-
+  
 \end{description}
 
 \section{Setting electronic temperature}

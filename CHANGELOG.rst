@@ -26,9 +26,12 @@ Fixed
 Added
 -----
 
-- New git repository at GitHub and re-fork from github.com/dftbplus/dftbplus/master.
+- New git repository at GitHub github.com/tranas-open/dftbXT
+  and re-fork from github.com/dftbplus/dftbplus/master.
 
 - Integration with CP2K+XT.
+
+- New web site tranas.org/opensuite/dftb+xt.html.
 
 
 Changed

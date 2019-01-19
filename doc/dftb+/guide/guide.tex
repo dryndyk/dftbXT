@@ -584,8 +584,8 @@ Binding (DFTB) method, the Landauer method and the Green function technique of t
 
 \section{System environment}
 \label{introduction:system-environment}
-The easiest way to use this tutorial is to download the {\textsf{DFTB$^{\text{+}}$XT LiveDVD}} ISO
-image from the \href{http://quantranspro.org/dftb+xt/}{quantranspro.org/dftb+xt/} site, which contains a preconfigured x86\_64/Linux system with all the
+The easiest way to use this tutorial is to download the {\textsf{TraNaS OpenSuite LiveDVD}} ISO
+image from the \href{http://tranas.org/opensuite}{tranas.org/opensuite} site, which contains a preconfigured x86\_64/Linux system with all the
 necessary tools for the tutorial. One can directly boot the ISO image
 within a virtual machine (e.g. \emph{VirtualBox}). Alternatively, one can
 create a bootable USB-drive (e.g. with \emph{usb-creator} under Linux or
@@ -598,7 +598,7 @@ will need the following tools to be installed:
 \begin{itemize}
   
 \item {} 
-\emph{dftb+} -- \dftbpxt binary (version 1.01 or higher).
+\emph{dftb+} -- \dftbpxt binary (version 1.02 or higher).
 
 \item {} 
 \emph{waveplot} -- Command line tool to create volumetric data files
@@ -610,7 +610,7 @@ use your preferred editor instead.
 
 \item {} 
 \emph{gen2xyz}, \emph{xyz2gen}, \emph{dp\_dos}, \emph{dp\_bands}, \emph{repeatgen}, \emph{makecube} -- Various conversion scripts from
-the \emph{dp\_tools} package. (included into the \dftbpxt package, but should be installed separately)
+the \emph{dptools} package. (included into the \dftbpxt package, \emph{tools/dptools/}, but should be installed separately)
 
 \item {} 
 \emph{jmol} -- Graphical molecular visualisation tool. You can
@@ -618,13 +618,13 @@ alternatively use any molecular visualiser able to plot volumetric
 data and isosurfaces.
 
 \item {} 
-\emph{buildwire} -- Can be used to build a 1D geometry with the right ordering (included into the \dftbpxt package, but should be installed separately).
+\emph{buildwire} -- Can be used to build a 1D geometry with the right ordering (included into the \dftbpxt package, \emph{tools/transport/}, but should be installed separately).
 
 \item {} 
 \emph{paraview} -- Software to visualise \emph{.vtk} or \emph{.cube} files.
 
 \item {} 
-\emph{plotxy[.py]} -- Command line wrapper around the matplotlib python library (included into the \dftbpxt package).  
+\emph{plotxy[.py]} -- Command line wrapper around the matplotlib python library (included into the \dftbpxt package, \emph{tools/misc/}).  
 
 \end{itemize}
 
@@ -642,7 +642,7 @@ It is impossible to describe all options accepted by \dftbpxt within
 the tutorial. The detailed description of input and output is given in the \is{USER MANUAL}.
 Always make sure, that you understand the input file
 for \dftbp (\emph{dftb\_in.hsd}). If you find any unexplained options,
-consult the \href{http://quantranspro.org/dftb+xt/documentation.html}{\dftbpxt documentation page} and the \href{http://www.dftb-plus.info/documentation/}{\dftbp documentation page} for details.
+consult the \href{http://tranas.org/opensuite/documentation.html}{\dftbpxt documentation page} and the \href{http://www.dftbplus.org/documentation/}{\dftbp documentation page} for details.
 
 \item {} 
 In order to save you some typing, many of the necessary commands
@@ -652,14 +652,14 @@ you understand why those commands must be executed in that order to
 obtain the necessary results.
 
 \item {} 
-The {\textsf{DFTB$^{\text{+}}$XT LiveDVD}} version of the \dftbpxt code is free for use and full functional.
+The {\textsf{TraNaS OpenSuite LiveDVD}} version of the \dftbpxt code is free for use and full functional.
 It can be used to install the standard Debian GNU/Linux operating system.
 
 \end{itemize}
 
 \section{Creating of the directory with inputs}
 
-Please download the file \emph{tutorial\_input.zip} from the \dftbpxt site or copy it from the \emph{/doc/dftb+/tutorial/} folder of the package. Then decompress it with:
+Please download the file \emph{tutorial\_input.zip} from the \dftbpxt site or copy it from the \emph{doc/dftb+/tutorial/} folder of the package. Then decompress it with:
 %
 \begin{Verbatim}[commandchars=\\\{\}]
 unzip tutorial\_input.zip
@@ -668,7 +668,7 @@ unzip tutorial\_input.zip
 in some directory. The directory tree with input files and some additional files to speed up the calculations is created.
 
 \null
-If use the {\textsf{DFTB$^{\text{+}}$XT LiveDVD}}, the tree with input files is placed in \emph{/home/user/Tutorial}, where one can also find the \emph{guide.pdf} and \emph{manual.pdf} files.
+If use the {\textsf{TraNaS OpenSuite LiveDVD}}, the tree with input files is placed in \emph{/home/user/Tutorial}, where one can also find the \emph{guide.pdf} and \emph{manual.pdf} files.
 
 \null
 Note, that if you first install the Debian GNU/Linux from LiveDVD to the hard disk, the tutorial materials will be still in \emph{/home/user/Tutorial} and you should use the root access to copy it to your actual home directory and change access rights. The same should be done for \emph{/home/user/bin} with executable files and, finally, \emph{export PATH=\$PATH:\$HOME/bin} to make short commands available.
@@ -1758,7 +1758,7 @@ buildwire 2cell\PYGZus{}7.gen
 \end{Verbatim}
 
 you will be asked to type the name of the file containing the input
-supercell (\emph{2cell\_7.gen}) and the number of principal layers in the
+supercell (\emph{2cell\_7.gen}), direction and the number of principal layers in the
 device region (we will set this to be 2). \emph{buildwire} will always give
 its output as a supercell structure, but in some cases we will need to
 manually modify this structure file so that it corresponds to the
@@ -1767,15 +1767,18 @@ ordering explained in the previous paragraph.
 The following output will be visualised:
 
 \begin{Verbatim}[commandchars=\\\{\}]
-Insert PL .gen file name:
-2cell\PYGZus{}7.gen
-Insert number of PLs in channel: 2
-structure built
-*iatc=
-       137         272 0
-       273         408 0
-*PLs=
-   1    69;
+ Insert PL .gen file name: 
+2cell_7.gen
+ Insert direction (e.g. 0 0 1)
+0 0 1
+ Insert number of PLs in channel: 
+2
+ structure built
+ *iatc=
+         137         272 0
+         273         408 0
+ *PLs=
+     1    69;  
 \end{Verbatim}
 
 The indexes \textbf{iatc} and \textbf{PLs} define the atoms belonging to the
