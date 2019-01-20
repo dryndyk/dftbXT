@@ -3,21 +3,7 @@ Change Log DFTB+XT
 ******************
 
 Notable project changes from release 1.01 (2018-01-18).
-Changes in DFTB+ are below.
-
-Unreleased
-=================
-
-Added
------
-
-
-Changed
--------
-
-
-Fixed
------
+Changes in base DFTB+ are below.
 
 
 1.02 (2019-01-18)

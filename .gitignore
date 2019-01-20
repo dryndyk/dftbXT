@@ -8,7 +8,6 @@ external/dftd3/status
 _build*
 _install
 make.arch
-make.config
 __pycache__
 .idea
 test/prog/dftb+/transtests
@@ -31,5 +30,5 @@ doc/dftb+/guide/guide.log
 doc/dftb+/guide/guide.out
 doc/dftb+/guide/guide.synctex.gz
 doc/dftb+/guide/guide.toc
-
+tools/transport/buildwire
 
