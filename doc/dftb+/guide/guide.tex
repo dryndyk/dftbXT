@@ -58,7 +58,8 @@
 \date{\normalfont\sffamily {tranas.org/opensuite}\\[0.2cm]
   detailed description of input and output is given in the \dftbpxt USER MANUAL \\[0.2cm]
   this guide focuses on quantum transport \\
-  please go to {dftbplus.org} for additional \dftbp documentation}
+  please go to {dftbplus.org} for additional \dftbp documentation  \\[0.2cm]
+  the guide is under development and presents the state-of-the-art version}
 
 \makeindex
 
@@ -200,6 +201,8 @@ The {\hyperref[2Dtutorial]{``Tutorial on 2D Carbon Materials'' (Part\,\ref{2Dtut
 \phantomsection\label{index::doc}
 
 \part{Overveiw and recipes}
+
+\nocite{OpenSuite,dftbp-paper}
 
 \chapter{Transport calculations (introduction)}
 \label{chap-intro}
@@ -3012,10 +3015,12 @@ an armchair ribbon.
 \includegraphics[width=0.700\linewidth]{scc-tunn-comparison.png}
 \caption{SCC transmission for vacancy B (green), pristine (blue) and vacancy A (red)}\label{transport:fig-scc-tunn-comparison}\end{figure}
 
-\part{Examples}
+\part[Examples]{Examples\footnote{This part is under development and will appear in next versions.}}
 
-\part{Developer guide}
+\part[Developer guide]{Developer guide\footnote{This part is under development and will appear in next versions.}}
 
+\begin{comment}
+  
 \chapter{{\bf\sffamily TraNaS} library}
 
 \section{{\sffamily TTraNaS} type}
@@ -3061,12 +3066,14 @@ Here we describe the structure of the global container {\sffamily TTraNaS}.
 \end{itemize}
 }  
 
+\end{comment}
+
 \part{Appendices}
 
 \chapter*{\Large\bf\sffamily License}
 \addcontentsline{toc}{chapter}{License}
 \label{license:license}\label{license::doc}
-This {\textsf{DFTB$^{\text{+}}$XT Guide}} is licensed under the \href{http://creativecommons.org/licenses/by/4.0/}{Creative Common Attribution 4.0
+This {\textsf{TraNas OpenSuite Guide}} is licensed under the \href{http://creativecommons.org/licenses/by/4.0/}{Creative Common Attribution 4.0
 International license}.
 
 \textbf{You are free to:}

@@ -1,5 +1,12 @@
 \begin{thebibliography}{1}
 
+\bibitem{OpenSuite}
+D.~A. Ryndyk, {\it TraNaS OpenSuite}, tranas.org/opensuite.
+
+\bibitem{dftbp-paper}
+B. Aradi, B. Hourahine, and T. Frauenheim, ``{DFTB+}, a Sparse Matrix-Based
+  Implementation of the {DFTB} Method,''  {\bf 111,} 5678 (2007), dftbplus.org.
+
 \bibitem{Pecchia08njp}
 A. Pecchia, G. Penazzi, L. Salvucci, and A. {Di Carlo}, ``Non-equilibrium
   Green's functions in density functional tight binding: method and
