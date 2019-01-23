@@ -6,6 +6,21 @@ Notable project changes from release 1.01 (2018-01-18).
 Changes in base DFTB+ are below.
 
 
+Unreleased
+==========
+
+Added
+-----
+
+
+Changed
+-------
+
+
+Fixed
+-----
+
+
 1.02 (2019-01-18)
 =================
 

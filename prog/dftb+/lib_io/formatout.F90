@@ -333,7 +333,7 @@ contains
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.02                                ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.03                                ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for model and atomistic quantum transport,          ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' many-body nonequilibrium phenomena, material & device modeling             ',hBar,hBar
