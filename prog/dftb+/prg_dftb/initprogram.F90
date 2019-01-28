@@ -2415,9 +2415,9 @@ contains
   #:endif
 
     if (tRandomSeed) then
-      write(stdOut, "(A,':',T30,I0)") "Chosen random seed", iSeed
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I0)") "Chosen random seed", iSeed
     else
-      write(stdOut, "(A,':',T30,I0)") "Specified random seed", iSeed
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I0)") "Specified random seed", iSeed
     end if
 
     if (input%ctrl%tMD) then
