@@ -50,3 +50,4 @@ contributed to DFTB+ :
 
 * Frank Stuckenberg (University of Bremen, Germany)
 
+* Victor Yu (Duke University, USA)
