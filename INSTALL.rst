@@ -37,6 +37,8 @@ results, you will additionally need:
 
 * Python (version >= 2.6) with NumPy
 
+* time - GNU time program for measuring CPU resource usage
+
 * The Slater-Koster data used in the tests (see below)
 
 Obtaining the source
@@ -46,9 +48,9 @@ The source code of the last stable release can be downloaded from the
 `TraNaS OpenSuite homepage <http://tranas.org/opensuite>`_.
 
 Alternatively you can clone the `public git repository
-<https://github.com/tranas-open/dftbXT>`_. The tagged revisions correspond to
-stable releases, while the master branch contains the latest development
-version. As the project uses git-submodules, those must be additionally
+<https://github.com/tranas-open/dftbXT>`_. 
+The master branch contains the latest development version. 
+As the project uses git-submodules, those must be additionally
 downloaded ::
 
   git clone https://github.com/tranas-open/dftbXT.git

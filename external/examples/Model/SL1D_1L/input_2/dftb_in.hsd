@@ -44,7 +44,7 @@ Transport {
 Hamiltonian = Model {
   NumStates = 5                        #Required for NoGeometry
   #HamiltonianMatrix [eV] = {
-  #  0.00    0.10    0.00    0.20    0.00    
+  #  1.00    0.10    0.00    0.20    0.00    
   #  0.10    0.00    1.00    0.00    0.00    
   #  0.00    1.00    0.00    0.00    0.00    
   #  0.20    0.00    0.00    0.00    1.00    
