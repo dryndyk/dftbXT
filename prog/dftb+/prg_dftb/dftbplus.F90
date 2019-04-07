@@ -11,23 +11,22 @@
 #:include 'common.fypp'
 
 program dftbplus
-  
-  use globalenv
-  use environment
-  use main, only : runDftbPlus
-  use inputdata_module, only : inputData
-  use formatout, only : printDftbHeader
-  use parser, only : parseHsdInput
+  use dftbp_globalenv
+  use dftbp_environment
+  use dftbp_main, only : runDftbPlus
+  use dftbp_inputdata_module, only : inputData
+  use dftbp_formatout, only : printDftbHeader
+  use dftbp_hsdhelpers, only : parseHsdInput
+  use dftbp_initprogram, only : initProgramVariables, destructProgramVariables
 #:if WITH_TRANSPORT
-  use initprogram, only : initProgramVariables, &
+  use dftbp_initprogram, only : initProgramVariables, &
                           negf_init_nogeom, negf_init_str, tranasNoGeom !DAR
   use libmpifx_module !DAR
   use tranas_vars !DAR
-  use periodic !DAR
+  use dftbp_periodic !DAR
 #:else
-  use initprogram, only : initProgramVariables
 #:endif
-  use densedescr
+  use dftbp_densedescr
   
   implicit none
 
@@ -50,15 +49,14 @@ program dftbplus
   allocate(input)
   call parseHsdInput(input)
   call TEnvironment_init(env)
-
+  
   !------------------------------------------------------------------------------------------------!
   !DAR begin - NoGeometry
   !------------------------------------------------------------------------------------------------!
 #:if WITH_TRANSPORT
   if(input%transpar%tNoGeometry) then
-
-    call env%initMpi(1)
-    call mpifx_barrier(env%mpi%globalComm)
+    call env%initMpi(1)    
+    call mpifx_barrier(env%mpi%globalComm)    
     if (input%ctrl%verbose.gt.0) then
       write(stdout, "(/,A)") repeat("-", 80)
       write(stdOut, "(A)") "-- Initialization is started (without geometry)                               --"
@@ -86,6 +84,7 @@ program dftbplus
     !DAR - input%ginfo%tundos is added,
     !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface_nogeom)
     deallocate(input)
+  call destructProgramVariables()
     call env%destruct()
     call destructGlobalEnv()
     

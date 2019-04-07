@@ -9,17 +9,16 @@
 
 !> Interface to libPoisson routines
 module poisson_init
-
-  use accuracy, only : dp
-  use constants, only : pi
+  use dftbp_accuracy, only : dp
+  use dftbp_constants, only : pi
+  use dftbp_commontypes, only : TOrbitals
+  use dftbp_globalenv, only : stdOut
+  use dftbp_message
   use tranas_vars, only : TTransPar
-  use commonTypes, only : TOrbitals
-  use globalenv, only : stdOut
-  use poisson
 #:if WITH_MPI
   use libmpifx_module
 #:endif
-  use message
+  use poisson
   !DAR use system_calls, only: create_directory
   implicit none
   private

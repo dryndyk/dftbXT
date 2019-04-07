@@ -19,7 +19,18 @@
 
 module tranas_interface
 
-  use Accuracy, only : mc, lc
+  use dftbp_accuracy, only : mc, lc
+  !use dftbp_constants
+  use dftbp_matconv
+  use dftbp_sparse2dense
+  use dftbp_densedescr
+  use dftbp_commontypes, only : TOrbitals
+  use dftbp_mpifx
+  use dftbp_formatout
+  use dftbp_globalenv
+  use dftbp_message
+  use dftbp_elecsolvertypes, only : electronicSolverTypes
+  
   use ln_precision
   use ln_constants
   use ln_allocation
@@ -34,15 +45,9 @@ module tranas_interface
   use tranas_types_main                
   use tranas
   use ln_extract
-  use mat_conv 
-  use densedescr
-  use commonTypes, only : TOrbitals
   use libmpifx_module
 
-  use FormatOut  
-  use globalenv
-  use message
-  use taggedoutput                                                         
+  use dftbp_taggedoutput                                                         
   
   implicit none
   private
@@ -1138,6 +1143,9 @@ module tranas_interface
     real(dp), allocatable :: H(:,:),S(:,:)
 
     type(TTraNaS) :: tranas
+    
+    ! Tagged writer
+    type(TTaggedWriter) :: taggedWriter
 
     unitOfEnergy%name = "H"
     unitOfCurrent%name = "A"
@@ -1382,11 +1390,11 @@ module tranas_interface
 
     if (negf%tWriteTagged) then
     
-      call initTaggedWriter()
+      call TTaggedWriter_init(taggedWriter)
     
       open(unit=10, file='autotest.tag', action="write", status="replace")
 
-      if (id0 .and. tundos%writeTunn) call writeTagged(10, tag_transmission, tunn)
+      if (id0 .and. tundos%writeTunn) call taggedWriter%write(10, tagLabels%tag_transmission, tunn)
     
 !    if (tPeriodic) then
 !      call writeTagged(10, tag_volume, cellVol)
@@ -2262,7 +2270,7 @@ module tranas_interface
 
   subroutine ReadDFTB
 
-    use unitconversion
+    use dftbp_unitconversion
     
     integer :: i,j,k,l,m,n,NumStates
 
@@ -2301,7 +2309,7 @@ module tranas_interface
 
   subroutine ReadModel
                                                      
-    use unitconversion
+    use dftbp_unitconversion
     
     integer :: i,j,k,l,m,n,NumStates
 
@@ -2347,7 +2355,7 @@ module tranas_interface
   !> Implementation of convertByMul for real scalar.
   subroutine convertByMul_NoNode(modifier, units, convertValue)
                                                            
-    use unitconversion
+    use dftbp_unitconversion
 
     !> Modifier (name of the unit to use)
     character(len=*), intent(in) :: modifier
@@ -2370,8 +2378,8 @@ module tranas_interface
   !> Gets the index of a modifier from an array of possible modifier names.
   function getModifierIndex_NoNode(modifier, modifiers) result(ind)
                                                        
-    use charmanip                                                            
-    use unitconversion
+    use dftbp_charmanip                                                            
+    use dftbp_unitconversion
     
     !> String containing the parsed modifier
     character(len=*), intent(in) :: modifier

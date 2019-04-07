@@ -21,11 +21,11 @@ module tranas_vars
 
   use tranas_types_main, only : TTraNaSInput
 
-  use Accuracy, only : mc, lc
+  use dftbp_accuracy, only : mc, lc
   use ln_precision
-  use CommonTypes
-  use WrappedIntrinsics
-  use xmlf90                                                                               
+  use dftbp_commontypes
+  use dftbp_wrappedintr
+  use dftbp_xmlf90                                                                               
 
   implicit none
   private
