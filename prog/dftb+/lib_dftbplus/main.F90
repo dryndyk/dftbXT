@@ -464,7 +464,7 @@ contains
 
     lpSCC: do iSccIter = 1, maxSccIter
 
-        if(input%ctrl%verbose.gt.80) write(stdout,"('SCC loop ',I5,' from ',I5,' started')") iSccIter, maxSccIter !DAR 
+      if(input%ctrl%verbose.gt.80) write(stdout,"('SCC loop ',I5,' from ',I5,' started')") iSccIter, maxSccIter !DAR 
       
       call resetInternalPotentials(tDualSpinOrbit, xi, orb, species, potential)
 
@@ -520,18 +520,20 @@ contains
 
       call convertToUpDownRepr(ham, iHam)
 
-        ! Compute Density Matrix 
-        if(tSccCalc.or.(.not.tTunn)) then !DAR
+      ! Compute Density Matrix 
+      if(.not.((iSccIter.eq.maxSccIter).and.input%ctrl%tNoLastDensity)) then !DAR 
+      if(tSccCalc.or.(.not.tTunn)) then !DAR
         if(input%ctrl%verbose.gt.80) write(stdout,"('getDensity is called')") !DAR 
         call getDensity(env, iSccIter, denseDesc, ham, over, neighbourList, nNeighbourSK,&
           & iSparseStart, img2CentCell, iCellVec, cellVec, kPoint, kWeight, orb, species,&
           & electronicSolver, tRealHS, tSpinSharedEf, tSpinOrbit, tDualSpinOrbit, tFillKSep,&
           & tFixEf, tMulliken, iDistribFn, tempElec, nEl, parallelKS, Ef, mu, energy, eigen,&
           & filling, rhoPrim, Eband, TS, E0, iHam, xi, orbitalL, HSqrReal, SSqrReal, eigvecsReal,&
-            & iRhoPrim, HSqrCplx, SSqrCplx, eigvecsCplx, rhoSqrReal, tLargeDenseMatrices, input)  !!DAR!! + input
+          & iRhoPrim, HSqrCplx, SSqrCplx, eigvecsCplx, rhoSqrReal, tLargeDenseMatrices, input)  !!DAR!! + input
         if(input%ctrl%verbose.gt.80) write(stdout,"('getDensity is finished')") !DAR
-        end if !DAR    
-
+      end if !DAR    
+      end if !DAR
+        
       if (tWriteBandDat) then
         call writeBandOut(bandOut, eigen, filling, kWeight)
       end if
@@ -589,7 +591,7 @@ contains
       tStopScc = hasStopFile(fStopScc)
 
       ! Mix charges Input/Output
-      if (tSccCalc) then
+      if (tSccCalc.and.(.not.((iSccIter.eq.maxSccIter).and.input%ctrl%tNoLastDensity))) then !DAR
         call getNextInputCharges(env, pChrgMixer, qOutput, qOutRed, orb, nIneqOrb, iEqOrbitals,&
             & iGeoStep, iSccIter, minSccIter, maxSccIter, sccTol, tStopScc, tMixBlockCharges,&
             & tReadChrg, qInput, qInpRed, sccErrorQ, tConverged, qBlockOut, iEqBlockDftbU,&
@@ -597,12 +599,12 @@ contains
             & iEqBlockOnSite, iEqBlockOnSiteLS)
 
         call getSccInfo(iSccIter, energy%Eelec, Eold, diffElec)
-          if (tNegf.and.(input%ctrl%verbose.gt.30)) then
+        if (tNegf.and.(input%ctrl%verbose.gt.30)) then
           call printSccHeader()
         end if
-          if(input%ctrl%verbose.gt.30) call printSccInfo(tDftbU, iSccIter, energy%Eelec, diffElec, sccErrorQ)
+        if(input%ctrl%verbose.gt.30) call printSccInfo(tDftbU, iSccIter, energy%Eelec, diffElec, sccErrorQ)
 
-          if (tNegf.and.(input%ctrl%verbose.gt.30)) then
+        if (tNegf.and.(input%ctrl%verbose.gt.30)) then
           call printBlankLine()
         end if
 
@@ -610,7 +612,7 @@ contains
             & needsSccRestartWriting(restartFreq, iGeoStep, iSccIter, minSccIter, maxSccIter,&
             & tMd, tGeoOpt, tDerivs, tConverged, tReadChrg, tStopScc)
         if (tWriteSccRestart) then
-            call writeCharges(fCharges, tWriteChrgAscii, orb, qInput, qBlockIn, qiBlockIn, input%ctrl%verbose)
+          call writeCharges(fCharges, tWriteChrgAscii, orb, qInput, qBlockIn, qiBlockIn, input%ctrl%verbose)
         end if
       end if
 

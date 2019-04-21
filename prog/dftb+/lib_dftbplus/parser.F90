@@ -2142,6 +2142,7 @@ contains
         ii = 100
       end if
       call getChildValue(node, "MaxSCCIterations", ctrl%maxIter, ii)
+      call getChildValue(node, "NoLastDensity", ctrl%tNoLastDensity, .false.)
     end if
 
     if (tBadIntegratingKPoints .and. ctrl%tSCC .and. ctrl%maxIter /= 1) then

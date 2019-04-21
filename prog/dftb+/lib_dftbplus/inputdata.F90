@@ -221,6 +221,7 @@ module dftbp_inputdata_module
 
     integer :: iMixSwitch    = 0
     integer :: maxIter       = 0
+    logical :: tNoLastDensity = .false.
     real(dp) :: almix         = 0.0_dp
     integer :: iGenerations  = 0
     logical :: tFromStart    = .true.
