@@ -826,8 +826,8 @@ addition to the common XLBOMD settings above:
   then use a less strict SCC tolerance once the integrator is active).
 \end{description}
 
-The \is{XlbomdFast} block allows has the following specific options in addition
-to the common XLBOMD settings above:
+The \is{XlbomdFast} block has the following specific options in addition to
+the common XLBOMD settings above:
 
 \begin{ptable}
   \kw{TransientSteps} & i & & 10 & \\
@@ -1022,7 +1022,8 @@ following properties:
   \kw{OnSiteCorrection} & p & SCC = Yes & - & \pref{sec:dftbp.Onsites} \\
   \kw{Differentiation} &m&  & FiniteDiff & \pref{sec:dftbp.Differentiation} \\
   \kw{ForceEvaluation} &s& & "Legacy" & \\
-  \kw{CustomisedHubbards} & p & & & \\
+  \kw{CustomisedHubbards} & p & SCC = Yes & & \\
+  \kw{CustomOccupations} & p & SCC = Yes & & \\
   \kw{\new Dephasing} & p & & &  \pref{sec_deph} \\
   \kw{Orthonormal} & l & & No & \\
   \kw{OrthonormalDevice} & l & & No & \\
@@ -1289,6 +1290,36 @@ following properties:
     Si = 0.32 0.24
   }
   \end{verbatim}
+
+\item[\kw{CustomOccupations}] Enables overriding the reference neutral atom
+  electronic occupations of the shells. Note that the atom remains neutral since
+  a corresponding ionic counter charge is implicitly added to its core. This
+  option can be used, for example, to simulate effective doping by setting a
+  slightly larger or smaller number of electrons on certain atoms.
+
+  Example:
+  \begin{verbatim}
+  CustomOccupations{
+    ReferenceOccupation{
+      Atoms={1:30}
+      p=2.01
+    }
+    ReferenceOccupation{
+      Atoms={31:60}
+      p=1.99
+    }
+  }
+  \end{verbatim}
+  
+  The example above sets a filling population of +0.01e or -0.01e in the p shell
+  of the corresponding atom indices. When the states are filled up, the electron
+  excess or depletion results in a shift of the Fermi level in the bands.
+
+  \textbf{Warning:} This option is for experts only! Overriding values stored in
+  the SK-files may result in \textbf{inconsistent results}. Please look at the
+  transport section of the
+  \href{https://dftbplus-recipes.readthedocs.io/en/latest/}{dftb+ recipes} to
+  see an example of the correct use of this option.
 
 \item[\is{Dephasing}] Two models of elastic dephasing ("B\"uttiker probe" and "vibronic dephasing") can be used now to include the dephasing and dissipation beyond the coherent Green function method. Thus, we made a new step towards realistic material and device modeling. See Sec.\,\ref{sec_deph}. 
 

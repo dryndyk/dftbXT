@@ -22,6 +22,7 @@ module dftbp_inputdata_module
   use dftbp_commontypes
   use dftbp_repcont
   use dftbp_linkedlist
+  use dftbp_wrappedintr
   use dftbp_elecsolvers, only : TElectronicSolverInp
   use dftbp_xlbomd_module
 #:if WITH_SOCKETS
@@ -455,6 +456,10 @@ module dftbp_inputdata_module
 
     !> Maximal timing level to show in output
     integer :: timingLevel
+    
+    ! Custom occupations
+    type(WrappedInt1), allocatable :: customOccAtoms(:)
+    real(dp), allocatable :: customOccFillings(:,:)
     
     !> global verbosity level 
     integer :: verbose  !DAR
