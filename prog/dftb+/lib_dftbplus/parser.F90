@@ -67,7 +67,7 @@ module dftbp_parser
   character(len=*), parameter :: rootTag = "dftbplusinput"
 
   !> Version of the current parser
-  integer, parameter :: parserVersion = 6
+  integer, parameter :: parserVersion = 7
 
   !> Version of the oldest parser for which compatibility is still maintained
   integer, parameter :: minVersion = 1
@@ -1367,8 +1367,8 @@ contains
           do jj = 1, nShell
             tmpCh = strTmp(jj:jj)
             tFound = .false.
-            do kk = 1, size(orbitalNames)
-              if (tmpCh == trim(orbitalNames(kk))) then
+            do kk = 1, size(shellNames)
+              if (tmpCh == trim(shellNames(kk))) then
                 if (tShellIncl(kk)) then
                   call detailedError(value1, "Double selection of the same shell&
                       & '" // tmpCh // "' in shell selection block '" &
@@ -1391,8 +1391,8 @@ contains
       case(textNodeName)
         call getChildValue(child2, "", buffer)
         strTmp = unquote(char(buffer))
-        do jj = 1, size(orbitalNames)
-          if (trim(strTmp) == trim(orbitalNames(jj))) then
+        do jj = 1, size(shellNames)
+          if (trim(strTmp) == trim(shellNames(jj))) then
             call append(angShells(iSp1), angShellOrdered(:jj))
           end if
         end do
@@ -1544,7 +1544,7 @@ contains
       end if
     end select
 
-    call getChildValue(node, "OrbitalResolvedSCC", ctrl%tOrbResolved, .false.)
+    call getChildValue(node, "ShellResolvedSCC", ctrl%tShellResolved, .false.)
     call getChildValue(node, "OldSKInterpolation", ctrl%oldSKInter, .false.)
     if (ctrl%oldSKInter) then
       skInterMeth = skEqGridOld
@@ -1556,11 +1556,11 @@ contains
     if (associated(child)) then
       call warning("Artificially truncating the SK table, this is normally a bad idea!")
       call SKTruncations(child, rSKCutOff, skInterMeth)
-      call readSKFiles(skFiles, geo%nSpecies, slako, slako%orb, angShells, ctrl%tOrbResolved,&
+      call readSKFiles(skFiles, geo%nSpecies, slako, slako%orb, angShells, ctrl%tShellResolved,&
           & skInterMeth, repPoly, tp%verbose, rSKCutOff)
     else
       rSKCutOff = 0.0_dp
-      call readSKFiles(skFiles, geo%nSpecies, slako, slako%orb, angShells, ctrl%tOrbResolved,&
+      call readSKFiles(skFiles, geo%nSpecies, slako, slako%orb, angShells, ctrl%tShellResolved,&
           & skInterMeth, repPoly, tp%verbose)
     end if
 
@@ -2331,7 +2331,7 @@ contains
         call detailedError(node, "You must choose either ThirdOrder or&
             & ThirdOrderFull")
       end if
-      if (ctrl%t3rd .and. ctrl%tOrbResolved) then
+      if (ctrl%t3rd .and. ctrl%tShellResolved) then
         call error("Only full third-order DFTB is compatible with orbital&
             & resolved SCC")
       end if
@@ -2341,7 +2341,7 @@ contains
         ctrl%hubDerivs(:,:) = 0.0_dp
         do iSp1 = 1, geo%nSpecies
           nShell = slako%orb%nShell(iSp1)
-          if (ctrl%tOrbResolved) then
+          if (ctrl%tShellResolved) then
             call getChildValue(child, geo%speciesNames(iSp1),&
                 & ctrl%hubDerivs(1:nShell, iSp1))
           else
@@ -2377,7 +2377,7 @@ contains
       ctrl%forceType = forceTypes%orig
     end if
 
-    call readCustomisedHubbards(node, geo, slako%orb, ctrl%tOrbResolved, ctrl%hubbU)
+    call readCustomisedHubbards(node, geo, slako%orb, ctrl%tShellResolved, ctrl%hubbU)
 
   end subroutine readDFTBHam
 
@@ -3857,7 +3857,7 @@ contains
     type(control), intent(inout) :: ctrl
 
     type(fnode), pointer :: child
-    logical :: tLRNeedsSpinConstants, tOrbResolvedW
+    logical :: tLRNeedsSpinConstants, tShellResolvedW
     integer :: iSp1
 
     tLRNeedsSpinConstants = .false.
@@ -3877,13 +3877,13 @@ contains
       ctrl%spinW(:,:,:) = 0.0_dp
 
       call getChild(hamNode, "SpinConstants", child)
-      if (.not.ctrl%tOrbResolved) then
-        call getChildValue(child, "ShellResolvedSpin", tOrbResolvedW, .false.)
+      if (.not.ctrl%tShellResolved) then
+        call getChildValue(child, "ShellResolvedSpin", tShellResolvedW, .false.)
       else
-        tOrbResolvedW = .true.
+        tShellResolvedW = .true.
       end if
 
-      if (tOrbResolvedW) then
+      if (tShellResolvedW) then
         ! potentially unique values for each shell
         do iSp1 = 1, geo%nSpecies
           call getChildValue(child, geo%speciesNames(iSp1),&
@@ -6077,10 +6077,10 @@ contains
     type(fNodeList), pointer :: nodes
     type(string) :: buffer
     integer :: nCustomOcc, iCustomOcc, iShell, iSpecie, nAtom
-    character(sc), allocatable :: shellnames(:)
+    character(sc), allocatable :: shellNamesTmp(:)
     logical, allocatable :: atomOverriden(:)
 
-    call getChild(root, "CustomOccupations", container, requested=.false.)
+    call getChild(root, "CustomisedOccupations", container, requested=.false.)
     if (.not. associated(container)) then
       return
     end if
@@ -6109,12 +6109,12 @@ contains
         call detailedError(child, "All atoms in a ReferenceOccupation&
             & declaration must have the same type.")
       end if
-      call getOrbitalNames(iSpecie, orb, shellnames)
+      call getShellNames(iSpecie, orb, shellNamesTmp)
       do iShell = 1, orb%nShell(iSpecie)
-          call getChildValue(node, shellnames(iShell), customOcc(iShell, iCustomOcc), &
+          call getChildValue(node, shellNamesTmp(iShell), customOcc(iShell, iCustomOcc), &
             & default=referenceOcc(iShell, iSpecie))
       end do
-      deallocate(shellnames)
+      deallocate(shellNamesTmp)
     end do
     if (associated(nodes)) then
       call destroyNodeList(nodes)
