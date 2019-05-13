@@ -58,6 +58,11 @@ M. Ceriotti, J. More, and D.~E. Manolopoulos, ``i-PI: A Python interface for ab
   initio path integral molecular dynamics simulations,'' Computer Phys{.}
   Comm{.} {\bf 185},  1019  (2014).
 
+\bibitem{dominguez15}
+A. Dom\'inguez, T.~A. Niehaus, and T. Frauenheim, ``Accurate Hydrogen Bond
+  Energies within the Density Functional Tight Binding Method,'' The Journal of
+  Physical Chemistry A {\bf 119},  3535  (2015).
+
 \bibitem{johnson-PRB-38-12807}
 D.~D. Johnson, ``Modified {B}royden's method for accelerating convergence in
   self consistent calculations,'' Phys{.} Rev{.} B {\bf 38},  12807  (2003).
@@ -74,6 +79,11 @@ M.~J. Han, T. Ozaki, and J. Yu, ``\mbox{O($N$) LDA+$U$} electronic structure
 \bibitem{lapack3}
 E. Anderson {\it et~al.}, {\em {LAPACK} Users' Guide}, 3rd  ed. (Society for
   Industrial and Applied Mathematics, Philadelphia, PA, 1999).
+
+\bibitem{YU2018267}
+V.~W.-z. Yu {\it et~al.}, ``\mbox{ELSI}: {A} unified software interface for
+  {K}ohn-{S}ham electronic structure solvers,'' Computer Phys{.} Comm{.} {\bf
+  222},  267  (2018).
 
 \bibitem{methfessel-PRB-40-3616}
 M. Methfessel and A.~T. Paxton, ``High-precision sampling for {B}rillouin-zone
@@ -149,6 +159,10 @@ Y. Yang, H. Yu, D. York, Q. Cui, and M. Elstner, ``Extension of the
   Modified Effective Coulomb Interaction,'' J{.} Phys{.} Chem{.} A {\bf 111},
   10861  (2007).
 
+\bibitem{garcia14Thesis}
+A.~D. Garcia, Ph.D. thesis, Universit\"at Bremen, 2014,
+  http://elib.suub.uni-bremen.de/edocs/00103868-1.pdf.
+
 \bibitem{elstner-prb-58-7260}
 M. Elstner, D. Porezag, G. Jungnickel, J. Elsner, M. Haugk, T. Frauenheim, S.
   Suhai, and G. Seifert, ``Self-consistent-charge density-functional
@@ -177,10 +191,6 @@ https://github.com/opencollab/arpack-ng.
 D. Heringer, T.~A. Niehaus, M. Wanko, and T. Frauenheim, ``Analytical excited
   state forces for the time-dependent density-functional tight-binding
   method.,'' J{.} Comp{.} Chem{.} {\bf 28},  2589  (2007).
-
-\bibitem{garcia14Thesis}
-A.~D. Garcia, Ph.D. thesis, Universit\"at Bremen, 2014,
-  http://elib.suub.uni-bremen.de/edocs/00103868-1.pdf.
 
 \bibitem{Pecchia_spring}
 A. Di~Carlo, A. Pecchia, L. Latessa, T. Frauenheim, and G. Seifert,  in {\em
@@ -236,7 +246,7 @@ Q. Cui, M. Elstner, T. Frauenheim, E. Kaxiras, and M. Karplus, ``Combined
 \bibitem{han-ijqc-78-459}
 W. Han, M. Elstner, K.~J. Jalkanen, T. Frauenheim, and S. Suhai, ``Hybrid
   \mbox{SCC-DFTB}/Molecular Mechanical Studies of {H}-Bonded Systems and of
-  {N}-acetyl-({L}-{A}la)$_\mathrm{n}$-{N}'-Methylamide Helices in Water
+  {N}-acetyl-({L}-{A}la)$_\mathrm{n}$-{N}'-{M}ethylamide Helices in Water
   Solution,'' Int{.} J{.} Quant{.} Chem{.} {\bf 78},  459  (2000).
 
 \end{thebibliography}

@@ -168,6 +168,7 @@
 \indexentry{ThirdOrder@\textsf  {ThirdOrder}|hyperpage}{26}
 \indexentry{ThirdOrderFull@\textsf  {ThirdOrderFull}|hyperpage}{26}
 \indexentry{HubbardDerivs@\textsf  {HubbardDerivs}|hyperpage}{26}
+\indexentry{OnSiteCorrection@\textsf  {OnSiteCorrection}|hyperpage}{26}
 \indexentry{Differentiation@\textsf  {Differentiation}|hyperpage}{26}
 \indexentry{ForceEvaluation@\textsf  {ForceEvaluation}|hyperpage}{26}
 \indexentry{CustomisedHubbards@\textsf  {CustomisedHubbards}|hyperpage}{26}
@@ -207,321 +208,341 @@
 \indexentry{AtomSpin@\textsf  {AtomSpin}|hyperpage}{34}
 \indexentry{Atoms@\textsf  {Atoms}|hyperpage}{34}
 \indexentry{SpinPerAtom@\textsf  {SpinPerAtom}|hyperpage}{34}
-\indexentry{InitialSpins@\textsf  {InitialSpins}|hyperpage}{34}
+\indexentry{InitialSpins@\textsf  {InitialSpins}|hyperpage}{35}
 \indexentry{AllAtomSpins@\textsf  {AllAtomSpins}|hyperpage}{35}
 \indexentry{AtomSpin@\textsf  {AtomSpin}|hyperpage}{35}
 \indexentry{Atoms@\textsf  {Atoms}|hyperpage}{35}
 \indexentry{SpinPerAtom@\textsf  {SpinPerAtom}|hyperpage}{35}
 \indexentry{ShellResolvedSpin@\textsf  {ShellResolvedSpin}|hyperpage}{36}
-\indexentry{Temperature@\textsf  {Temperature}|hyperpage}{38}
-\indexentry{IndependentKFilling@\textsf  {IndependentKFilling}|hyperpage}{38}
-\indexentry{FixedFermiLevel@\textsf  {FixedFermiLevel}|hyperpage}{38}
-\indexentry{Order@\textsf  {Order}|hyperpage}{38}
-\indexentry{Prefix@\textsf  {Prefix}|hyperpage}{39}
-\indexentry{Separator@\textsf  {Separator}|hyperpage}{39}
-\indexentry{Suffix@\textsf  {Suffix}|hyperpage}{39}
-\indexentry{LowerCaseTypeName@\textsf  {LowerCaseTypeName}|hyperpage}{39}
-\indexentry{Brillouin-zone sampling|hyperpage}{40}
-\indexentry{Monkhorst-Pack scheme|hyperpage}{40}
-\indexentry{band   structure calculation|hyperpage}{41}
-\indexentry{MaxSccIterations@\textsf  {MaxSccIterations}|hyperpage}{42}
-\indexentry{DFTB+U|hyperpage}{42}
-\indexentry{PointCharges@\textsf  {PointCharges}|hyperpage}{42}
-\indexentry{External@\textsf  {External}|hyperpage}{42}
-\indexentry{PointCharges@\textsf  {PointCharges}|hyperpage}{42}
-\indexentry{CoordsAndCharges@\textsf  {CoordsAndCharges}|hyperpage}{42}
-\indexentry{GaussianBlurWidth@\textsf  {GaussianBlurWidth}|hyperpage}{42}
-\indexentry{DirectRead\{\}@\textsf  {DirectRead\{\}}|hyperpage}{42}
-\indexentry{External@\textsf  {External}|hyperpage}{43}
-\indexentry{Strength@\textsf  {Strength}|hyperpage}{43}
-\indexentry{Direction@\textsf  {Direction}|hyperpage}{43}
-\indexentry{Frequency@\textsf  {Frequency}|hyperpage}{43}
-\indexentry{Phase@\textsf  {Phase}|hyperpage}{43}
-\indexentry{Strength@\textsf  {Strength}|hyperpage}{44}
-\indexentry{Direction@\textsf  {Direction}|hyperpage}{44}
-\indexentry{Frequency@\textsf  {Frequency}|hyperpage}{44}
-\indexentry{TimeStep@\textsf  {TimeStep}|hyperpage}{44}
-\indexentry{HybridDependentPol\{\}@\textsf  {HybridDependentPol\{\}}|hyperpage}{46}
-\indexentry{CovalentRadius@\textsf  {CovalentRadius}|hyperpage}{46}
-\indexentry{HybridPolarisations@\textsf  {HybridPolarisations}|hyperpage}{46}
-\indexentry{Cutoff@\textsf  {Cutoff}|hyperpage}{48}
-\indexentry{CutoffCN@\textsf  {CutoffCN}|hyperpage}{48}
-\indexentry{Threebody@\textsf  {Threebody}|hyperpage}{48}
-\indexentry{HHRepulsion@\textsf  {HHRepulsion}|hyperpage}{48}
-\indexentry{DFTB3|hyperpage}{48}
-\indexentry{sec:Damp X-H|hyperpage}{49}
-\indexentry{sec:DFTB3-D3H5|hyperpage}{49}
-\indexentry{RScaling@\textsf  {RScaling}|hyperpage}{50}
-\indexentry{WScaling@\textsf  {WScaling}|hyperpage}{50}
-\indexentry{H5Scaling@\textsf  {H5Scaling}|hyperpage}{50}
-\indexentry{Delta@\textsf  {Delta}|hyperpage}{51}
-\indexentry{{\color  {black}Verbosity}@\textsf  {{\color  {black}Verbosity}}|hyperpage}{52}
-\indexentry{WriteAutotestTag@\textsf  {WriteAutotestTag}|hyperpage}{52}
-\indexentry{WriteDetailedXML@\textsf  {WriteDetailedXML}|hyperpage}{52}
-\indexentry{WriteResultsTag@\textsf  {WriteResultsTag}|hyperpage}{52}
-\indexentry{WriteDetailedOut@\textsf  {WriteDetailedOut}|hyperpage}{52}
-\indexentry{RestartFrequency@\textsf  {RestartFrequency}|hyperpage}{52}
-\indexentry{RandomSeed@\textsf  {RandomSeed}|hyperpage}{52}
-\indexentry{MinimiseMemoryUsage@\textsf  {MinimiseMemoryUsage}|hyperpage}{52}
-\indexentry{TimingVerbosity@\textsf  {TimingVerbosity}|hyperpage}{52}
-\indexentry{ShowFoldedCoords@\textsf  {ShowFoldedCoords}|hyperpage}{52}
-\indexentry{WriteHS@\textsf  {WriteHS}|hyperpage}{52}
-\indexentry{WriteRealHS@\textsf  {WriteRealHS}|hyperpage}{52}
-\indexentry{ReadChargesAsText@\textsf  {ReadChargesAsText}|hyperpage}{52}
-\indexentry{WriteChargesAsText@\textsf  {WriteChargesAsText}|hyperpage}{52}
-\indexentry{SkipChargeTest@\textsf  {SkipChargeTest}|hyperpage}{52}
-\indexentry{AtomResolvedEnergies@\textsf  {AtomResolvedEnergies}|hyperpage}{54}
-\indexentry{MullikenAnalysis@\textsf  {MullikenAnalysis}|hyperpage}{54}
-\indexentry{ProjectStates@\textsf  {ProjectStates}|hyperpage}{54}
-\indexentry{Localise@\textsf  {Localise}|hyperpage}{54}
-\indexentry{WriteEigenvectors@\textsf  {WriteEigenvectors}|hyperpage}{54}
-\indexentry{EigenvectorsAsTxt@\textsf  {EigenvectorsAsTxt}|hyperpage}{54}
-\indexentry{WriteBandOut@\textsf  {WriteBandOut}|hyperpage}{54}
-\indexentry{CalculateForces@\textsf  {CalculateForces}|hyperpage}{54}
-\indexentry{ElectrostaticPotential@\textsf  {ElectrostaticPotential}|hyperpage}{54}
-\indexentry{ProjectStates@\textsf  {ProjectStates}|hyperpage}{54}
-\indexentry{Atoms@\textsf  {Atoms}|hyperpage}{54}
-\indexentry{ShellResolved@\textsf  {ShellResolved}|hyperpage}{54}
-\indexentry{OrbitalResolved@\textsf  {OrbitalResolved}|hyperpage}{54}
-\indexentry{Label@\textsf  {Label}|hyperpage}{54}
-\indexentry{PipekMezey@\textsf  {PipekMezey}|hyperpage}{55}
-\indexentry{localOrbs.out|hyperpage}{55}
-\indexentry{localOrbs.bin|hyperpage}{55}
-\indexentry{Tolerance@\textsf  {Tolerance}|hyperpage}{55}
-\indexentry{MaxIterations@\textsf  {MaxIterations}|hyperpage}{55}
-\indexentry{Dense@\textsf  {Dense}|hyperpage}{56}
-\indexentry{SparseTolerances@\textsf  {SparseTolerances}|hyperpage}{56}
-\indexentry{OutputFile@\textsf  {OutputFile}|hyperpage}{56}
-\indexentry{AppendFile@\textsf  {AppendFile}|hyperpage}{56}
-\indexentry{Softening@\textsf  {Softening}|hyperpage}{56}
-\indexentry{Points@\textsf  {Points}|hyperpage}{56}
-\indexentry{Grid@\textsf  {Grid}|hyperpage}{56}
-\indexentry{GridPoints@\textsf  {GridPoints}|hyperpage}{57}
-\indexentry{Origin@\textsf  {Origin}|hyperpage}{57}
-\indexentry{Spacing@\textsf  {Spacing}|hyperpage}{57}
-\indexentry{Directions@\textsf  {Directions}|hyperpage}{57}
-\indexentry{Casida@\textsf  {Casida}|hyperpage}{57}
-\indexentry{NrOfExcitations@\textsf  {NrOfExcitations}|hyperpage}{58}
-\indexentry{StateOfInterest@\textsf  {StateOfInterest}|hyperpage}{58}
-\indexentry{Symmetry@\textsf  {Symmetry}|hyperpage}{58}
-\indexentry{EnergyWindow@\textsf  {EnergyWindow}|hyperpage}{58}
-\indexentry{OscillatorWindow@\textsf  {OscillatorWindow}|hyperpage}{58}
-\indexentry{WriteTransitions@\textsf  {WriteTransitions}|hyperpage}{58}
-\indexentry{WriteSPTransitions@\textsf  {WriteSPTransitions}|hyperpage}{58}
-\indexentry{WriteMulliken@\textsf  {WriteMulliken}|hyperpage}{58}
-\indexentry{WriteCoefficients@\textsf  {WriteCoefficients}|hyperpage}{58}
-\indexentry{WriteEigenvectors@\textsf  {WriteEigenvectors}|hyperpage}{58}
-\indexentry{TotalStateCoeffs@\textsf  {TotalStateCoeffs}|hyperpage}{58}
-\indexentry{WriteXplusY@\textsf  {WriteXplusY}|hyperpage}{58}
-\indexentry{WriteTransitionDipole@\textsf  {WriteTransitionDipole}|hyperpage}{58}
-\indexentry{WriteStatusArnoldi@\textsf  {WriteStatusArnoldi}|hyperpage}{58}
-\indexentry{TestArnoldi@\textsf  {TestArnoldi}|hyperpage}{58}
-\indexentry{ExcitedStateForces@\textsf  {ExcitedStateForces}|hyperpage}{58}
-\indexentry{SpinConstants@\textsf  {SpinConstants}|hyperpage}{58}
-\indexentry{ParserVersion@\textsf  {ParserVersion}|hyperpage}{59}
-\indexentry{WriteHSDInput@\textsf  {WriteHSDInput}|hyperpage}{59}
-\indexentry{WriteXMLInput@\textsf  {WriteXMLInput}|hyperpage}{59}
-\indexentry{IgnoreUnprocessedNodes@\textsf  {IgnoreUnprocessedNodes}|hyperpage}{59}
-\indexentry{StopAfterParsing@\textsf  {StopAfterParsing}|hyperpage}{59}
-\indexentry{Groups@\textsf  {Groups}|hyperpage}{60}
-\indexentry{UseOmpThreads@\textsf  {UseOmpThreads}|hyperpage}{60}
-\indexentry{Blacs@\textsf  {Blacs}|hyperpage}{60}
-\indexentry{results.tag|hyperpage}{61}
-\indexentry{hamsqr.dat|hyperpage}{61}
-\indexentry{oversqr.dat|hyperpage}{61}
-\indexentry{hamreal.dat|hyperpage}{62}
-\indexentry{overreal.dat|hyperpage}{62}
-\indexentry{eigenvec.out|hyperpage}{63}
-\indexentry{eigenvec.bin|hyperpage}{63}
-\indexentry{state   resolved Mulliken population|hyperpage}{63}
-\indexentry{charges.bin|hyperpage}{63}
-\indexentry{md.out|hyperpage}{63}
-\indexentry{MDRestartFrequency@\textsf  {MDRestartFrequency}|hyperpage}{63}
-\indexentry{ESP.dat|hyperpage}{64}
-\indexentry{ARPACK.DAT|hyperpage}{65}
-\indexentry{COEF.DAT|hyperpage}{65}
-\indexentry{EXC.DAT|hyperpage}{65}
-\indexentry{SPX.DAT|hyperpage}{66}
-\indexentry{TDP.DAT|hyperpage}{66}
-\indexentry{TRA.DAT|hyperpage}{66}
-\indexentry{TEST\_ARPACK.DAT|hyperpage}{66}
-\indexentry{XCH.DAT|hyperpage}{67}
-\indexentry{XplusY.DAT|hyperpage}{67}
-\indexentry{XREST.DAT|hyperpage}{67}
-\indexentry{Transport\{\}@\textsf  {Transport\{\}}|hyperpage}{69}
-\indexentry{Eigensolver@\textsf  {Eigensolver}|hyperpage}{69}
-\indexentry{GreensFunction\{\}@\textsf  {GreensFunction\{\}}|hyperpage}{69}
-\indexentry{TransportOnly@\textsf  {TransportOnly}|hyperpage}{69}
-\indexentry{Electrostatics@\textsf  {Electrostatics}|hyperpage}{69}
-\indexentry{Poisson\{\}@\textsf  {Poisson\{\}}|hyperpage}{69}
-\indexentry{Transport\{\}@\textsf  {Transport\{\}}|hyperpage}{71}
-\indexentry{Device@\textsf  {Device}|hyperpage}{71}
-\indexentry{Contact@\textsf  {Contact}|hyperpage}{71}
-\indexentry{Task@\textsf  {Task}|hyperpage}{71}
-\indexentry{Device\{\}@\textsf  {Device\{\}}|hyperpage}{71}
-\indexentry{AtomRange@\textsf  {AtomRange}|hyperpage}{71}
-\indexentry{FirstLayerAtoms@\textsf  {FirstLayerAtoms}|hyperpage}{71}
-\indexentry{\color  {black}ContactPLs@\textsf  {\color  {black}ContactPLs}|hyperpage}{71}
-\indexentry{Contact\{\}@\textsf  {Contact\{\}}|hyperpage}{72}
-\indexentry{Id@\textsf  {Id}|hyperpage}{72}
-\indexentry{AtomRange@\textsf  {AtomRange}|hyperpage}{72}
-\indexentry{PLShiftTolerance@\textsf  {PLShiftTolerance}|hyperpage}{72}
-\indexentry{Temperature@\textsf  {Temperature}|hyperpage}{72}
-\indexentry{FermiLevel@\textsf  {FermiLevel}|hyperpage}{72}
-\indexentry{Potential@\textsf  {Potential}|hyperpage}{72}
-\indexentry{WideBand@\textsf  {WideBand}|hyperpage}{72}
-\indexentry{LevelSpacing@\textsf  {LevelSpacing}|hyperpage}{72}
-\indexentry{WriteSelfEnergy@\textsf  {WriteSelfEnergy}|hyperpage}{72}
-\indexentry{ReadSelfEnergy@\textsf  {ReadSelfEnergy}|hyperpage}{72}
-\indexentry{ReadSurfaceGF@\textsf  {ReadSurfaceGF}|hyperpage}{72}
-\indexentry{WriteSurfaceGF@\textsf  {WriteSurfaceGF}|hyperpage}{72}
-\indexentry{Unformatted@\textsf  {Unformatted}|hyperpage}{72}
-\indexentry{WriteSeparatedSGF@\textsf  {WriteSeparatedSGF}|hyperpage}{72}
-\indexentry{ReadSeparatedSGF@\textsf  {ReadSeparatedSGF}|hyperpage}{72}
-\indexentry{Task = ContactHamiltonian\{\}@\textsf  {Task = ContactHamiltonian\{\}}|hyperpage}{73}
-\indexentry{Task@\textsf  {Task}|hyperpage}{73}
-\indexentry{Task@\textsf  {Task}|hyperpage}{73}
-\indexentry{ContactId@\textsf  {ContactId}|hyperpage}{73}
-\indexentry{ContactSeparation@\textsf  {ContactSeparation}|hyperpage}{73}
-\indexentry{ContactHamiltonian@\textsf  {ContactHamiltonian}|hyperpage}{74}
-\indexentry{Task = UploadContacts\{\}@\textsf  {Task = UploadContacts\{\}}|hyperpage}{75}
-\indexentry{Task = UploadContacts@\textsf  {Task = UploadContacts}|hyperpage}{75}
-\indexentry{GreensFunction@\textsf  {GreensFunction}|hyperpage}{76}
-\indexentry{Verbosity@\textsf  {Verbosity}|hyperpage}{76}
-\indexentry{Delta@\textsf  {Delta}|hyperpage}{76}
-\indexentry{ContourPoints@\textsf  {ContourPoints}|hyperpage}{76}
-\indexentry{LowestEnergy@\textsf  {LowestEnergy}|hyperpage}{76}
-\indexentry{FermiCutoff@\textsf  {FermiCutoff}|hyperpage}{76}
-\indexentry{EnclosedPoles@\textsf  {EnclosedPoles}|hyperpage}{76}
-\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{76}
-\indexentry{RealAxisPoints@\textsf  {RealAxisPoints}|hyperpage}{76}
-\indexentry{SaveSurfaceGFs@\textsf  {SaveSurfaceGFs}|hyperpage}{76}
-\indexentry{ReadSurfaceGFs@\textsf  {ReadSurfaceGFs}|hyperpage}{76}
-\indexentry{FirstLayerAtoms@\textsf  {FirstLayerAtoms}|hyperpage}{76}
+\indexentry{ELPA@\textsf  {ELPA}|hyperpage}{38}
+\indexentry{OMM@\textsf  {OMM}|hyperpage}{38}
+\indexentry{PEXSI@\textsf  {PEXSI}|hyperpage}{38}
+\indexentry{NTPoly@\textsf  {NTPoly}|hyperpage}{38}
+\indexentry{nInterationsELPA@\textsf  {nInterationsELPA}|hyperpage}{38}
+\indexentry{Tolerance@\textsf  {Tolerance}|hyperpage}{38}
+\indexentry{Choleskii@\textsf  {Choleskii}|hyperpage}{38}
+\indexentry{Sparse@\textsf  {Sparse}|hyperpage}{38}
+\indexentry{Poles@\textsf  {Poles}|hyperpage}{39}
+\indexentry{ProcsPerPole@\textsf  {ProcsPerPole}|hyperpage}{39}
+\indexentry{muPoints@\textsf  {muPoints}|hyperpage}{39}
+\indexentry{SymbolicFactorProcs@\textsf  {SymbolicFactorProcs}|hyperpage}{39}
+\indexentry{SpectralRadius@\textsf  {SpectralRadius}|hyperpage}{39}
+\indexentry{Sparse@\textsf  {Sparse}|hyperpage}{39}
+\indexentry{PurificationMethod@\textsf  {PurificationMethod}|hyperpage}{39}
+\indexentry{Tolerance@\textsf  {Tolerance}|hyperpage}{39}
+\indexentry{Truncation@\textsf  {Truncation}|hyperpage}{39}
+\indexentry{Sparse@\textsf  {Sparse}|hyperpage}{39}
+\indexentry{Temperature@\textsf  {Temperature}|hyperpage}{40}
+\indexentry{IndependentKFilling@\textsf  {IndependentKFilling}|hyperpage}{40}
+\indexentry{FixedFermiLevel@\textsf  {FixedFermiLevel}|hyperpage}{40}
+\indexentry{Order@\textsf  {Order}|hyperpage}{40}
+\indexentry{Prefix@\textsf  {Prefix}|hyperpage}{41}
+\indexentry{Separator@\textsf  {Separator}|hyperpage}{41}
+\indexentry{Suffix@\textsf  {Suffix}|hyperpage}{41}
+\indexentry{LowerCaseTypeName@\textsf  {LowerCaseTypeName}|hyperpage}{41}
+\indexentry{Brillouin-zone sampling|hyperpage}{42}
+\indexentry{Monkhorst-Pack scheme|hyperpage}{42}
+\indexentry{band   structure calculation|hyperpage}{43}
+\indexentry{MaxSccIterations@\textsf  {MaxSccIterations}|hyperpage}{44}
+\indexentry{DFTB+U|hyperpage}{44}
+\indexentry{PointCharges@\textsf  {PointCharges}|hyperpage}{44}
+\indexentry{External@\textsf  {External}|hyperpage}{44}
+\indexentry{PointCharges@\textsf  {PointCharges}|hyperpage}{44}
+\indexentry{CoordsAndCharges@\textsf  {CoordsAndCharges}|hyperpage}{44}
+\indexentry{GaussianBlurWidth@\textsf  {GaussianBlurWidth}|hyperpage}{44}
+\indexentry{DirectRead\{\}@\textsf  {DirectRead\{\}}|hyperpage}{44}
+\indexentry{External@\textsf  {External}|hyperpage}{45}
+\indexentry{Strength@\textsf  {Strength}|hyperpage}{45}
+\indexentry{Direction@\textsf  {Direction}|hyperpage}{45}
+\indexentry{Frequency@\textsf  {Frequency}|hyperpage}{45}
+\indexentry{Phase@\textsf  {Phase}|hyperpage}{45}
+\indexentry{Strength@\textsf  {Strength}|hyperpage}{46}
+\indexentry{Direction@\textsf  {Direction}|hyperpage}{46}
+\indexentry{Frequency@\textsf  {Frequency}|hyperpage}{46}
+\indexentry{TimeStep@\textsf  {TimeStep}|hyperpage}{46}
+\indexentry{HybridDependentPol\{\}@\textsf  {HybridDependentPol\{\}}|hyperpage}{48}
+\indexentry{CovalentRadius@\textsf  {CovalentRadius}|hyperpage}{48}
+\indexentry{HybridPolarisations@\textsf  {HybridPolarisations}|hyperpage}{48}
+\indexentry{Cutoff@\textsf  {Cutoff}|hyperpage}{50}
+\indexentry{CutoffCN@\textsf  {CutoffCN}|hyperpage}{50}
+\indexentry{Threebody@\textsf  {Threebody}|hyperpage}{50}
+\indexentry{HHRepulsion@\textsf  {HHRepulsion}|hyperpage}{50}
+\indexentry{DFTB3|hyperpage}{50}
+\indexentry{sec:Damp X-H|hyperpage}{51}
+\indexentry{sec:DFTB3-D3H5|hyperpage}{51}
+\indexentry{RScaling@\textsf  {RScaling}|hyperpage}{52}
+\indexentry{WScaling@\textsf  {WScaling}|hyperpage}{52}
+\indexentry{H5Scaling@\textsf  {H5Scaling}|hyperpage}{52}
+\indexentry{Delta@\textsf  {Delta}|hyperpage}{54}
+\indexentry{{\color  {black}Verbosity}@\textsf  {{\color  {black}Verbosity}}|hyperpage}{55}
+\indexentry{WriteAutotestTag@\textsf  {WriteAutotestTag}|hyperpage}{55}
+\indexentry{WriteDetailedXML@\textsf  {WriteDetailedXML}|hyperpage}{55}
+\indexentry{WriteResultsTag@\textsf  {WriteResultsTag}|hyperpage}{55}
+\indexentry{WriteDetailedOut@\textsf  {WriteDetailedOut}|hyperpage}{55}
+\indexentry{RestartFrequency@\textsf  {RestartFrequency}|hyperpage}{55}
+\indexentry{RandomSeed@\textsf  {RandomSeed}|hyperpage}{55}
+\indexentry{MinimiseMemoryUsage@\textsf  {MinimiseMemoryUsage}|hyperpage}{55}
+\indexentry{TimingVerbosity@\textsf  {TimingVerbosity}|hyperpage}{55}
+\indexentry{ShowFoldedCoords@\textsf  {ShowFoldedCoords}|hyperpage}{55}
+\indexentry{WriteHS@\textsf  {WriteHS}|hyperpage}{55}
+\indexentry{WriteRealHS@\textsf  {WriteRealHS}|hyperpage}{55}
+\indexentry{ReadChargesAsText@\textsf  {ReadChargesAsText}|hyperpage}{55}
+\indexentry{WriteChargesAsText@\textsf  {WriteChargesAsText}|hyperpage}{55}
+\indexentry{SkipChargeTest@\textsf  {SkipChargeTest}|hyperpage}{55}
+\indexentry{AtomResolvedEnergies@\textsf  {AtomResolvedEnergies}|hyperpage}{57}
+\indexentry{MullikenAnalysis@\textsf  {MullikenAnalysis}|hyperpage}{57}
+\indexentry{ProjectStates@\textsf  {ProjectStates}|hyperpage}{57}
+\indexentry{Localise@\textsf  {Localise}|hyperpage}{57}
+\indexentry{WriteEigenvectors@\textsf  {WriteEigenvectors}|hyperpage}{57}
+\indexentry{EigenvectorsAsTxt@\textsf  {EigenvectorsAsTxt}|hyperpage}{57}
+\indexentry{WriteBandOut@\textsf  {WriteBandOut}|hyperpage}{57}
+\indexentry{CalculateForces@\textsf  {CalculateForces}|hyperpage}{57}
+\indexentry{ElectrostaticPotential@\textsf  {ElectrostaticPotential}|hyperpage}{57}
+\indexentry{ProjectStates@\textsf  {ProjectStates}|hyperpage}{57}
+\indexentry{Atoms@\textsf  {Atoms}|hyperpage}{57}
+\indexentry{ShellResolved@\textsf  {ShellResolved}|hyperpage}{57}
+\indexentry{OrbitalResolved@\textsf  {OrbitalResolved}|hyperpage}{57}
+\indexentry{Label@\textsf  {Label}|hyperpage}{57}
+\indexentry{PipekMezey@\textsf  {PipekMezey}|hyperpage}{58}
+\indexentry{localOrbs.out|hyperpage}{58}
+\indexentry{localOrbs.bin|hyperpage}{58}
+\indexentry{Tolerance@\textsf  {Tolerance}|hyperpage}{58}
+\indexentry{MaxIterations@\textsf  {MaxIterations}|hyperpage}{58}
+\indexentry{Dense@\textsf  {Dense}|hyperpage}{58}
+\indexentry{SparseTolerances@\textsf  {SparseTolerances}|hyperpage}{58}
+\indexentry{OutputFile@\textsf  {OutputFile}|hyperpage}{59}
+\indexentry{AppendFile@\textsf  {AppendFile}|hyperpage}{59}
+\indexentry{Softening@\textsf  {Softening}|hyperpage}{59}
+\indexentry{Points@\textsf  {Points}|hyperpage}{59}
+\indexentry{Grid@\textsf  {Grid}|hyperpage}{59}
+\indexentry{GridPoints@\textsf  {GridPoints}|hyperpage}{59}
+\indexentry{Origin@\textsf  {Origin}|hyperpage}{59}
+\indexentry{Spacing@\textsf  {Spacing}|hyperpage}{59}
+\indexentry{Directions@\textsf  {Directions}|hyperpage}{59}
+\indexentry{Casida@\textsf  {Casida}|hyperpage}{60}
+\indexentry{NrOfExcitations@\textsf  {NrOfExcitations}|hyperpage}{60}
+\indexentry{StateOfInterest@\textsf  {StateOfInterest}|hyperpage}{60}
+\indexentry{Symmetry@\textsf  {Symmetry}|hyperpage}{60}
+\indexentry{EnergyWindow@\textsf  {EnergyWindow}|hyperpage}{60}
+\indexentry{OscillatorWindow@\textsf  {OscillatorWindow}|hyperpage}{60}
+\indexentry{WriteTransitions@\textsf  {WriteTransitions}|hyperpage}{60}
+\indexentry{WriteSPTransitions@\textsf  {WriteSPTransitions}|hyperpage}{60}
+\indexentry{WriteMulliken@\textsf  {WriteMulliken}|hyperpage}{60}
+\indexentry{WriteCoefficients@\textsf  {WriteCoefficients}|hyperpage}{60}
+\indexentry{WriteEigenvectors@\textsf  {WriteEigenvectors}|hyperpage}{60}
+\indexentry{TotalStateCoeffs@\textsf  {TotalStateCoeffs}|hyperpage}{60}
+\indexentry{WriteXplusY@\textsf  {WriteXplusY}|hyperpage}{60}
+\indexentry{WriteTransitionDipole@\textsf  {WriteTransitionDipole}|hyperpage}{60}
+\indexentry{WriteStatusArnoldi@\textsf  {WriteStatusArnoldi}|hyperpage}{60}
+\indexentry{TestArnoldi@\textsf  {TestArnoldi}|hyperpage}{60}
+\indexentry{ExcitedStateForces@\textsf  {ExcitedStateForces}|hyperpage}{60}
+\indexentry{CacheCharges@\textsf  {CacheCharges}|hyperpage}{60}
+\indexentry{SpinConstants@\textsf  {SpinConstants}|hyperpage}{61}
+\indexentry{ParserVersion@\textsf  {ParserVersion}|hyperpage}{62}
+\indexentry{WriteHSDInput@\textsf  {WriteHSDInput}|hyperpage}{62}
+\indexentry{WriteXMLInput@\textsf  {WriteXMLInput}|hyperpage}{62}
+\indexentry{IgnoreUnprocessedNodes@\textsf  {IgnoreUnprocessedNodes}|hyperpage}{62}
+\indexentry{StopAfterParsing@\textsf  {StopAfterParsing}|hyperpage}{62}
+\indexentry{Groups@\textsf  {Groups}|hyperpage}{62}
+\indexentry{UseOmpThreads@\textsf  {UseOmpThreads}|hyperpage}{62}
+\indexentry{Blacs@\textsf  {Blacs}|hyperpage}{62}
+\indexentry{results.tag|hyperpage}{65}
+\indexentry{hamsqr.dat|hyperpage}{65}
+\indexentry{oversqr.dat|hyperpage}{65}
+\indexentry{hamreal.dat|hyperpage}{66}
+\indexentry{overreal.dat|hyperpage}{66}
+\indexentry{eigenvec.out|hyperpage}{67}
+\indexentry{eigenvec.bin|hyperpage}{67}
+\indexentry{state   resolved Mulliken population|hyperpage}{67}
+\indexentry{charges.bin|hyperpage}{67}
+\indexentry{md.out|hyperpage}{67}
+\indexentry{MDRestartFrequency@\textsf  {MDRestartFrequency}|hyperpage}{67}
+\indexentry{ESP.dat|hyperpage}{68}
+\indexentry{ARPACK.DAT|hyperpage}{69}
+\indexentry{COEF.DAT|hyperpage}{69}
+\indexentry{EXC.DAT|hyperpage}{69}
+\indexentry{SPX.DAT|hyperpage}{70}
+\indexentry{TDP.DAT|hyperpage}{70}
+\indexentry{TRA.DAT|hyperpage}{70}
+\indexentry{TEST\_ARPACK.DAT|hyperpage}{70}
+\indexentry{XCH.DAT|hyperpage}{71}
+\indexentry{XplusY.DAT|hyperpage}{71}
+\indexentry{XREST.DAT|hyperpage}{71}
+\indexentry{Transport\{\}@\textsf  {Transport\{\}}|hyperpage}{73}
+\indexentry{Eigensolver@\textsf  {Eigensolver}|hyperpage}{73}
+\indexentry{GreensFunction\{\}@\textsf  {GreensFunction\{\}}|hyperpage}{73}
+\indexentry{TransportOnly@\textsf  {TransportOnly}|hyperpage}{73}
+\indexentry{Electrostatics@\textsf  {Electrostatics}|hyperpage}{73}
+\indexentry{Poisson\{\}@\textsf  {Poisson\{\}}|hyperpage}{73}
+\indexentry{Transport\{\}@\textsf  {Transport\{\}}|hyperpage}{75}
+\indexentry{Device@\textsf  {Device}|hyperpage}{75}
+\indexentry{Contact@\textsf  {Contact}|hyperpage}{75}
+\indexentry{Task@\textsf  {Task}|hyperpage}{75}
+\indexentry{Device\{\}@\textsf  {Device\{\}}|hyperpage}{75}
+\indexentry{AtomRange@\textsf  {AtomRange}|hyperpage}{75}
+\indexentry{FirstLayerAtoms@\textsf  {FirstLayerAtoms}|hyperpage}{75}
+\indexentry{\color  {black}ContactPLs@\textsf  {\color  {black}ContactPLs}|hyperpage}{75}
+\indexentry{Contact\{\}@\textsf  {Contact\{\}}|hyperpage}{76}
+\indexentry{Id@\textsf  {Id}|hyperpage}{76}
+\indexentry{AtomRange@\textsf  {AtomRange}|hyperpage}{76}
+\indexentry{PLShiftTolerance@\textsf  {PLShiftTolerance}|hyperpage}{76}
+\indexentry{Temperature@\textsf  {Temperature}|hyperpage}{76}
 \indexentry{FermiLevel@\textsf  {FermiLevel}|hyperpage}{76}
-\indexentry{LocalCurrents@\textsf  {LocalCurrents}|hyperpage}{76}
-\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{77}
-\indexentry{RealAxisPoints@\textsf  {RealAxisPoints}|hyperpage}{77}
-\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{77}
-\indexentry{RealAxisPoints@\textsf  {RealAxisPoints}|hyperpage}{77}
-\indexentry{ReadSurfaceGFs@\textsf  {ReadSurfaceGFs}|hyperpage}{77}
-\indexentry{SaveSurfaceGFs@\textsf  {SaveSurfaceGFs}|hyperpage}{77}
-\indexentry{Transport@\textsf  {Transport}|hyperpage}{77}
-\indexentry{Transport@\textsf  {Transport}|hyperpage}{77}
-\indexentry{FermiCutoff@\textsf  {FermiCutoff}|hyperpage}{78}
-\indexentry{RealAxisPoints@\textsf  {RealAxisPoints}|hyperpage}{78}
-\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{78}
-\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{79}
+\indexentry{Potential@\textsf  {Potential}|hyperpage}{76}
+\indexentry{WideBand@\textsf  {WideBand}|hyperpage}{76}
+\indexentry{LevelSpacing@\textsf  {LevelSpacing}|hyperpage}{76}
+\indexentry{WriteSelfEnergy@\textsf  {WriteSelfEnergy}|hyperpage}{76}
+\indexentry{ReadSelfEnergy@\textsf  {ReadSelfEnergy}|hyperpage}{76}
+\indexentry{ReadSurfaceGF@\textsf  {ReadSurfaceGF}|hyperpage}{76}
+\indexentry{WriteSurfaceGF@\textsf  {WriteSurfaceGF}|hyperpage}{76}
+\indexentry{Unformatted@\textsf  {Unformatted}|hyperpage}{76}
+\indexentry{WriteSeparatedSGF@\textsf  {WriteSeparatedSGF}|hyperpage}{76}
+\indexentry{ReadSeparatedSGF@\textsf  {ReadSeparatedSGF}|hyperpage}{76}
+\indexentry{Task = ContactHamiltonian\{\}@\textsf  {Task = ContactHamiltonian\{\}}|hyperpage}{77}
+\indexentry{Task@\textsf  {Task}|hyperpage}{77}
+\indexentry{Task@\textsf  {Task}|hyperpage}{77}
+\indexentry{ContactId@\textsf  {ContactId}|hyperpage}{77}
+\indexentry{ContactSeparation@\textsf  {ContactSeparation}|hyperpage}{77}
+\indexentry{ContactHamiltonian@\textsf  {ContactHamiltonian}|hyperpage}{78}
+\indexentry{Task = UploadContacts\{\}@\textsf  {Task = UploadContacts\{\}}|hyperpage}{79}
+\indexentry{Task = UploadContacts@\textsf  {Task = UploadContacts}|hyperpage}{79}
+\indexentry{GreensFunction@\textsf  {GreensFunction}|hyperpage}{80}
 \indexentry{Verbosity@\textsf  {Verbosity}|hyperpage}{80}
-\indexentry{PoissonBox@\textsf  {PoissonBox}|hyperpage}{80}
-\indexentry{BoxExtension@\textsf  {BoxExtension}|hyperpage}{80}
-\indexentry{MinimalGrid@\textsf  {MinimalGrid}|hyperpage}{80}
-\indexentry{PoissonAccuracy@\textsf  {PoissonAccuracy}|hyperpage}{80}
-\indexentry{AtomDensityTolerance@\textsf  {AtomDensityTolerance}|hyperpage}{80}
-\indexentry{AtomDensityCutoff@\textsf  {AtomDensityCutoff}|hyperpage}{80}
-\indexentry{CutoffCheck@\textsf  {CutoffCheck}|hyperpage}{80}
-\indexentry{NumericalNorm@\textsf  {NumericalNorm}|hyperpage}{80}
-\indexentry{SavePotential@\textsf  {SavePotential}|hyperpage}{80}
-\indexentry{PoissonAccuracy@\textsf  {PoissonAccuracy}|hyperpage}{80}
-\indexentry{MaxPoissonIterations@\textsf  {MaxPoissonIterations}|hyperpage}{80}
-\indexentry{BuildBulkPotential@\textsf  {BuildBulkPotential}|hyperpage}{80}
-\indexentry{ReadOldBulkPotential@\textsf  {ReadOldBulkPotential}|hyperpage}{80}
-\indexentry{OverrideDefaultBC@\textsf  {OverrideDefaultBC}|hyperpage}{80}
-\indexentry{OverrideBulkBC@\textsf  {OverrideBulkBC}|hyperpage}{80}
-\indexentry{BoundaryRegion@\textsf  {BoundaryRegion}|hyperpage}{80}
-\indexentry{Gate@\textsf  {Gate}|hyperpage}{80}
-\indexentry{MaxParallelNodes@\textsf  {MaxParallelNodes}|hyperpage}{80}
-\indexentry{RecomputeAfterDensity@\textsf  {RecomputeAfterDensity}|hyperpage}{80}
-\indexentry{Boundary Conditions@\textsf  {Boundary Conditions}|hyperpage}{81}
-\indexentry{Potential@\textsf  {Potential}|hyperpage}{82}
-\indexentry{BuildBulkPotential@\textsf  {BuildBulkPotential}|hyperpage}{82}
-\indexentry{Global@\textsf  {Global}|hyperpage}{82}
-\indexentry{Square@\textsf  {Square}|hyperpage}{82}
-\indexentry{Circle@\textsf  {Circle}|hyperpage}{82}
-\indexentry{Global@\textsf  {Global}|hyperpage}{82}
-\indexentry{BufferLength@\textsf  {BufferLength}|hyperpage}{82}
-\indexentry{Electrostatic Gates@\textsf  {Electrostatic Gates}|hyperpage}{83}
-\indexentry{Gate@\textsf  {Gate}|hyperpage}{83}
-\indexentry{Planar@\textsf  {Planar}|hyperpage}{83}
-\indexentry{Cylindrical@\textsf  {Cylindrical}|hyperpage}{83}
-\indexentry{GateLenth\_l@\textsf  {GateLenth\_l}|hyperpage}{84}
-\indexentry{GateLenth\_t@\textsf  {GateLenth\_t}|hyperpage}{84}
-\indexentry{GateDistance@\textsf  {GateDistance}|hyperpage}{84}
-\indexentry{GatePotential@\textsf  {GatePotential}|hyperpage}{84}
-\indexentry{GateRadius@\textsf  {GateRadius}|hyperpage}{84}
-\indexentry{NumStates@\textsf  {NumStates}|hyperpage}{85}
-\indexentry{HamiltonianMatrix@\textsf  {HamiltonianMatrix}|hyperpage}{85}
-\indexentry{OverlapMatrix@\textsf  {OverlapMatrix}|hyperpage}{85}
-\indexentry{Dephasing@\textsf  {Dephasing}|hyperpage}{85}
-\indexentry{SpinDegeneracy@\textsf  {SpinDegeneracy}|hyperpage}{85}
-\indexentry{Orthonormal@\textsf  {Orthonormal}|hyperpage}{85}
-\indexentry{OrthonormalDevice@\textsf  {OrthonormalDevice}|hyperpage}{85}
-\indexentry{BuettikerProbes@\textsf  {BuettikerProbes}|hyperpage}{86}
-\indexentry{VibronicElastic@\textsf  {VibronicElastic}|hyperpage}{86}
-\indexentry{BuettikerProbes\{\}@\textsf  {BuettikerProbes\{\}}|hyperpage}{86}
-\indexentry{VibronicElastic\{\}@\textsf  {VibronicElastic\{\}}|hyperpage}{87}
-\indexentry{Parallelisations@\textsf  {Parallelisations}|hyperpage}{87}
-\indexentry{MaxParallelNodes@\textsf  {MaxParallelNodes}|hyperpage}{88}
-\indexentry{MaxParallelNodes@\textsf  {MaxParallelNodes}|hyperpage}{88}
-\indexentry{MaxParallelNodes@\textsf  {MaxParallelNodes}|hyperpage}{88}
-\indexentry{Analysis\{\}@\textsf  {Analysis\{\}}|hyperpage}{88}
-\indexentry{Analysis@\textsf  {Analysis}|hyperpage}{88}
-\indexentry{TransmissionAndDos\{\}@\textsf  {TransmissionAndDos\{\}}|hyperpage}{88}
-\indexentry{Verbosity@\textsf  {Verbosity}|hyperpage}{88}
-\indexentry{EnergyRange@\textsf  {EnergyRange}|hyperpage}{88}
-\indexentry{EnergyStep@\textsf  {EnergyStep}|hyperpage}{88}
-\indexentry{TerminalCurrents@\textsf  {TerminalCurrents}|hyperpage}{88}
-\indexentry{WriteTunn@\textsf  {WriteTunn}|hyperpage}{88}
-\indexentry{WriteLDOS@\textsf  {WriteLDOS}|hyperpage}{88}
-\indexentry{Region@\textsf  {Region}|hyperpage}{88}
-\indexentry{Geometry@\textsf  {Geometry}|hyperpage}{91}
-\indexentry{Hessian@\textsf  {Hessian}|hyperpage}{91}
-\indexentry{SlaterKosterFiles@\textsf  {SlaterKosterFiles}|hyperpage}{91}
-\indexentry{DisplayModes@\textsf  {DisplayModes}|hyperpage}{91}
-\indexentry{Atoms@\textsf  {Atoms}|hyperpage}{91}
-\indexentry{WriteHSDInput@\textsf  {WriteHSDInput}|hyperpage}{91}
-\indexentry{WriteXMLInput@\textsf  {WriteXMLInput}|hyperpage}{91}
-\indexentry{RemoveTranslation@\textsf  {RemoveTranslation}|hyperpage}{91}
-\indexentry{RemoveRotation@\textsf  {RemoveRotation}|hyperpage}{91}
-\indexentry{Hessian|hyperpage}{92}
-\indexentry{PlotModes@\textsf  {PlotModes}|hyperpage}{92}
-\indexentry{Animate@\textsf  {Animate}|hyperpage}{92}
-\indexentry{XMakeMol@\textsf  {XMakeMol}|hyperpage}{92}
-\indexentry{Options@\textsf  {Options}|hyperpage}{94}
-\indexentry{DetailedXML@\textsf  {DetailedXML}|hyperpage}{94}
-\indexentry{EigenvecBin@\textsf  {EigenvecBin}|hyperpage}{94}
-\indexentry{GroundState@\textsf  {GroundState}|hyperpage}{94}
-\indexentry{Basis@\textsf  {Basis}|hyperpage}{94}
-\indexentry{ParserOptions@\textsf  {ParserOptions}|hyperpage}{94}
-\indexentry{PlottedRegion@\textsf  {PlottedRegion}|hyperpage}{94}
-\indexentry{NrOfPoints@\textsf  {NrOfPoints}|hyperpage}{94}
-\indexentry{PlottedKPoints@\textsf  {PlottedKPoints}|hyperpage}{94}
-\indexentry{PlottedLevels@\textsf  {PlottedLevels}|hyperpage}{94}
-\indexentry{PlottedSpins@\textsf  {PlottedSpins}|hyperpage}{94}
-\indexentry{TotalChargeDensity@\textsf  {TotalChargeDensity}|hyperpage}{94}
-\indexentry{TotalSpinPolarisation@\textsf  {TotalSpinPolarisation}|hyperpage}{94}
-\indexentry{TotalChargeDifference@\textsf  {TotalChargeDifference}|hyperpage}{94}
-\indexentry{TotalAtomicDensity@\textsf  {TotalAtomicDensity}|hyperpage}{94}
-\indexentry{ChargeDensity@\textsf  {ChargeDensity}|hyperpage}{94}
-\indexentry{RealComponent@\textsf  {RealComponent}|hyperpage}{94}
-\indexentry{ImagComponent@\textsf  {ImagComponent}|hyperpage}{94}
-\indexentry{FoldAtomsToUnitCell@\textsf  {FoldAtomsToUnitCell}|hyperpage}{94}
-\indexentry{FillBoxWithAtoms@\textsf  {FillBoxWithAtoms}|hyperpage}{94}
-\indexentry{NrOfCachedGrids@\textsf  {NrOfCachedGrids}|hyperpage}{94}
-\indexentry{Verbose@\textsf  {Verbose}|hyperpage}{94}
-\indexentry{RepeatBox@\textsf  {RepeatBox}|hyperpage}{94}
-\indexentry{ShiftGrid@\textsf  {ShiftGrid}|hyperpage}{94}
-\indexentry{Origin@\textsf  {Origin}|hyperpage}{97}
-\indexentry{Box@\textsf  {Box}|hyperpage}{97}
-\indexentry{MinEdgeLength@\textsf  {MinEdgeLength}|hyperpage}{97}
-\indexentry{Resolution@\textsf  {Resolution}|hyperpage}{98}
-\indexentry{AtomicNumber@\textsf  {AtomicNumber}|hyperpage}{99}
-\indexentry{Orbital@\textsf  {Orbital}|hyperpage}{99}
-\indexentry{AngularMomentum@\textsf  {AngularMomentum}|hyperpage}{99}
-\indexentry{Occupation@\textsf  {Occupation}|hyperpage}{99}
-\indexentry{Cutoff@\textsf  {Cutoff}|hyperpage}{99}
-\indexentry{Exponents@\textsf  {Exponents}|hyperpage}{99}
-\indexentry{Coefficients@\textsf  {Coefficients}|hyperpage}{99}
-\indexentry{Cutoff@\textsf  {Cutoff}|hyperpage}{99}
-\indexentry{IgnoreUnprocessedNodes@\textsf  {IgnoreUnprocessedNodes}|hyperpage}{100}
-\indexentry{StopAfterParsing@\textsf  {StopAfterParsing}|hyperpage}{100}
+\indexentry{Delta@\textsf  {Delta}|hyperpage}{80}
+\indexentry{ContourPoints@\textsf  {ContourPoints}|hyperpage}{80}
+\indexentry{LowestEnergy@\textsf  {LowestEnergy}|hyperpage}{80}
+\indexentry{FermiCutoff@\textsf  {FermiCutoff}|hyperpage}{80}
+\indexentry{EnclosedPoles@\textsf  {EnclosedPoles}|hyperpage}{80}
+\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{80}
+\indexentry{RealAxisPoints@\textsf  {RealAxisPoints}|hyperpage}{80}
+\indexentry{SaveSurfaceGFs@\textsf  {SaveSurfaceGFs}|hyperpage}{80}
+\indexentry{ReadSurfaceGFs@\textsf  {ReadSurfaceGFs}|hyperpage}{80}
+\indexentry{FirstLayerAtoms@\textsf  {FirstLayerAtoms}|hyperpage}{80}
+\indexentry{FermiLevel@\textsf  {FermiLevel}|hyperpage}{80}
+\indexentry{LocalCurrents@\textsf  {LocalCurrents}|hyperpage}{80}
+\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{81}
+\indexentry{RealAxisPoints@\textsf  {RealAxisPoints}|hyperpage}{81}
+\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{81}
+\indexentry{RealAxisPoints@\textsf  {RealAxisPoints}|hyperpage}{81}
+\indexentry{ReadSurfaceGFs@\textsf  {ReadSurfaceGFs}|hyperpage}{81}
+\indexentry{SaveSurfaceGFs@\textsf  {SaveSurfaceGFs}|hyperpage}{81}
+\indexentry{Transport@\textsf  {Transport}|hyperpage}{81}
+\indexentry{Transport@\textsf  {Transport}|hyperpage}{81}
+\indexentry{FermiCutoff@\textsf  {FermiCutoff}|hyperpage}{82}
+\indexentry{RealAxisPoints@\textsf  {RealAxisPoints}|hyperpage}{82}
+\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{82}
+\indexentry{RealAxisStep@\textsf  {RealAxisStep}|hyperpage}{83}
+\indexentry{Verbosity@\textsf  {Verbosity}|hyperpage}{84}
+\indexentry{PoissonBox@\textsf  {PoissonBox}|hyperpage}{84}
+\indexentry{BoxExtension@\textsf  {BoxExtension}|hyperpage}{84}
+\indexentry{MinimalGrid@\textsf  {MinimalGrid}|hyperpage}{84}
+\indexentry{PoissonAccuracy@\textsf  {PoissonAccuracy}|hyperpage}{84}
+\indexentry{AtomDensityTolerance@\textsf  {AtomDensityTolerance}|hyperpage}{84}
+\indexentry{AtomDensityCutoff@\textsf  {AtomDensityCutoff}|hyperpage}{84}
+\indexentry{CutoffCheck@\textsf  {CutoffCheck}|hyperpage}{84}
+\indexentry{NumericalNorm@\textsf  {NumericalNorm}|hyperpage}{84}
+\indexentry{SavePotential@\textsf  {SavePotential}|hyperpage}{84}
+\indexentry{PoissonAccuracy@\textsf  {PoissonAccuracy}|hyperpage}{84}
+\indexentry{MaxPoissonIterations@\textsf  {MaxPoissonIterations}|hyperpage}{84}
+\indexentry{BuildBulkPotential@\textsf  {BuildBulkPotential}|hyperpage}{84}
+\indexentry{ReadOldBulkPotential@\textsf  {ReadOldBulkPotential}|hyperpage}{84}
+\indexentry{OverrideDefaultBC@\textsf  {OverrideDefaultBC}|hyperpage}{84}
+\indexentry{OverrideBulkBC@\textsf  {OverrideBulkBC}|hyperpage}{84}
+\indexentry{BoundaryRegion@\textsf  {BoundaryRegion}|hyperpage}{84}
+\indexentry{Gate@\textsf  {Gate}|hyperpage}{84}
+\indexentry{MaxParallelNodes@\textsf  {MaxParallelNodes}|hyperpage}{84}
+\indexentry{RecomputeAfterDensity@\textsf  {RecomputeAfterDensity}|hyperpage}{84}
+\indexentry{Boundary Conditions@\textsf  {Boundary Conditions}|hyperpage}{85}
+\indexentry{Potential@\textsf  {Potential}|hyperpage}{86}
+\indexentry{BuildBulkPotential@\textsf  {BuildBulkPotential}|hyperpage}{86}
+\indexentry{Global@\textsf  {Global}|hyperpage}{86}
+\indexentry{Square@\textsf  {Square}|hyperpage}{86}
+\indexentry{Circle@\textsf  {Circle}|hyperpage}{86}
+\indexentry{Global@\textsf  {Global}|hyperpage}{86}
+\indexentry{BufferLength@\textsf  {BufferLength}|hyperpage}{86}
+\indexentry{Electrostatic Gates@\textsf  {Electrostatic Gates}|hyperpage}{87}
+\indexentry{Gate@\textsf  {Gate}|hyperpage}{87}
+\indexentry{Planar@\textsf  {Planar}|hyperpage}{87}
+\indexentry{Cylindrical@\textsf  {Cylindrical}|hyperpage}{87}
+\indexentry{GateLenth\_l@\textsf  {GateLenth\_l}|hyperpage}{88}
+\indexentry{GateLenth\_t@\textsf  {GateLenth\_t}|hyperpage}{88}
+\indexentry{GateDistance@\textsf  {GateDistance}|hyperpage}{88}
+\indexentry{GatePotential@\textsf  {GatePotential}|hyperpage}{88}
+\indexentry{GateRadius@\textsf  {GateRadius}|hyperpage}{88}
+\indexentry{NumStates@\textsf  {NumStates}|hyperpage}{89}
+\indexentry{HamiltonianMatrix@\textsf  {HamiltonianMatrix}|hyperpage}{89}
+\indexentry{OverlapMatrix@\textsf  {OverlapMatrix}|hyperpage}{89}
+\indexentry{Dephasing@\textsf  {Dephasing}|hyperpage}{89}
+\indexentry{SpinDegeneracy@\textsf  {SpinDegeneracy}|hyperpage}{89}
+\indexentry{Orthonormal@\textsf  {Orthonormal}|hyperpage}{89}
+\indexentry{OrthonormalDevice@\textsf  {OrthonormalDevice}|hyperpage}{89}
+\indexentry{BuettikerProbes@\textsf  {BuettikerProbes}|hyperpage}{90}
+\indexentry{VibronicElastic@\textsf  {VibronicElastic}|hyperpage}{90}
+\indexentry{BuettikerProbes\{\}@\textsf  {BuettikerProbes\{\}}|hyperpage}{90}
+\indexentry{VibronicElastic\{\}@\textsf  {VibronicElastic\{\}}|hyperpage}{91}
+\indexentry{Parallelisations@\textsf  {Parallelisations}|hyperpage}{91}
+\indexentry{MaxParallelNodes@\textsf  {MaxParallelNodes}|hyperpage}{92}
+\indexentry{MaxParallelNodes@\textsf  {MaxParallelNodes}|hyperpage}{92}
+\indexentry{MaxParallelNodes@\textsf  {MaxParallelNodes}|hyperpage}{92}
+\indexentry{Analysis\{\}@\textsf  {Analysis\{\}}|hyperpage}{92}
+\indexentry{Analysis@\textsf  {Analysis}|hyperpage}{92}
+\indexentry{TransmissionAndDos\{\}@\textsf  {TransmissionAndDos\{\}}|hyperpage}{92}
+\indexentry{Verbosity@\textsf  {Verbosity}|hyperpage}{92}
+\indexentry{EnergyRange@\textsf  {EnergyRange}|hyperpage}{92}
+\indexentry{EnergyStep@\textsf  {EnergyStep}|hyperpage}{92}
+\indexentry{TerminalCurrents@\textsf  {TerminalCurrents}|hyperpage}{92}
+\indexentry{WriteTunn@\textsf  {WriteTunn}|hyperpage}{92}
+\indexentry{WriteLDOS@\textsf  {WriteLDOS}|hyperpage}{92}
+\indexentry{Region@\textsf  {Region}|hyperpage}{92}
+\indexentry{Geometry@\textsf  {Geometry}|hyperpage}{95}
+\indexentry{Hessian@\textsf  {Hessian}|hyperpage}{95}
+\indexentry{SlaterKosterFiles@\textsf  {SlaterKosterFiles}|hyperpage}{95}
+\indexentry{DisplayModes@\textsf  {DisplayModes}|hyperpage}{95}
+\indexentry{Atoms@\textsf  {Atoms}|hyperpage}{95}
+\indexentry{WriteHSDInput@\textsf  {WriteHSDInput}|hyperpage}{95}
+\indexentry{WriteXMLInput@\textsf  {WriteXMLInput}|hyperpage}{95}
+\indexentry{RemoveTranslation@\textsf  {RemoveTranslation}|hyperpage}{95}
+\indexentry{RemoveRotation@\textsf  {RemoveRotation}|hyperpage}{95}
+\indexentry{Hessian|hyperpage}{96}
+\indexentry{PlotModes@\textsf  {PlotModes}|hyperpage}{96}
+\indexentry{Animate@\textsf  {Animate}|hyperpage}{96}
+\indexentry{XMakeMol@\textsf  {XMakeMol}|hyperpage}{96}
+\indexentry{Options@\textsf  {Options}|hyperpage}{98}
+\indexentry{DetailedXML@\textsf  {DetailedXML}|hyperpage}{98}
+\indexentry{EigenvecBin@\textsf  {EigenvecBin}|hyperpage}{98}
+\indexentry{GroundState@\textsf  {GroundState}|hyperpage}{98}
+\indexentry{Basis@\textsf  {Basis}|hyperpage}{98}
+\indexentry{ParserOptions@\textsf  {ParserOptions}|hyperpage}{98}
+\indexentry{PlottedRegion@\textsf  {PlottedRegion}|hyperpage}{98}
+\indexentry{NrOfPoints@\textsf  {NrOfPoints}|hyperpage}{98}
+\indexentry{PlottedKPoints@\textsf  {PlottedKPoints}|hyperpage}{98}
+\indexentry{PlottedLevels@\textsf  {PlottedLevels}|hyperpage}{98}
+\indexentry{PlottedSpins@\textsf  {PlottedSpins}|hyperpage}{98}
+\indexentry{TotalChargeDensity@\textsf  {TotalChargeDensity}|hyperpage}{98}
+\indexentry{TotalSpinPolarisation@\textsf  {TotalSpinPolarisation}|hyperpage}{98}
+\indexentry{TotalChargeDifference@\textsf  {TotalChargeDifference}|hyperpage}{98}
+\indexentry{TotalAtomicDensity@\textsf  {TotalAtomicDensity}|hyperpage}{98}
+\indexentry{ChargeDensity@\textsf  {ChargeDensity}|hyperpage}{98}
+\indexentry{RealComponent@\textsf  {RealComponent}|hyperpage}{98}
+\indexentry{ImagComponent@\textsf  {ImagComponent}|hyperpage}{98}
+\indexentry{FoldAtomsToUnitCell@\textsf  {FoldAtomsToUnitCell}|hyperpage}{98}
+\indexentry{FillBoxWithAtoms@\textsf  {FillBoxWithAtoms}|hyperpage}{98}
+\indexentry{NrOfCachedGrids@\textsf  {NrOfCachedGrids}|hyperpage}{98}
+\indexentry{Verbose@\textsf  {Verbose}|hyperpage}{98}
+\indexentry{RepeatBox@\textsf  {RepeatBox}|hyperpage}{98}
+\indexentry{ShiftGrid@\textsf  {ShiftGrid}|hyperpage}{98}
+\indexentry{Origin@\textsf  {Origin}|hyperpage}{101}
+\indexentry{Box@\textsf  {Box}|hyperpage}{101}
+\indexentry{MinEdgeLength@\textsf  {MinEdgeLength}|hyperpage}{101}
+\indexentry{Resolution@\textsf  {Resolution}|hyperpage}{102}
+\indexentry{AtomicNumber@\textsf  {AtomicNumber}|hyperpage}{103}
+\indexentry{Orbital@\textsf  {Orbital}|hyperpage}{103}
+\indexentry{AngularMomentum@\textsf  {AngularMomentum}|hyperpage}{103}
+\indexentry{Occupation@\textsf  {Occupation}|hyperpage}{103}
+\indexentry{Cutoff@\textsf  {Cutoff}|hyperpage}{103}
+\indexentry{Exponents@\textsf  {Exponents}|hyperpage}{103}
+\indexentry{Coefficients@\textsf  {Coefficients}|hyperpage}{103}
+\indexentry{Cutoff@\textsf  {Cutoff}|hyperpage}{103}
+\indexentry{IgnoreUnprocessedNodes@\textsf  {IgnoreUnprocessedNodes}|hyperpage}{104}
+\indexentry{StopAfterParsing@\textsf  {StopAfterParsing}|hyperpage}{104}
+\indexentry{ParserVersion@\textsf  {ParserVersion}|hyperpage}{105}
