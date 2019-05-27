@@ -2735,10 +2735,7 @@ contains
         ! set in the input and for multiple contact Ef values not meaningful anyway
         write(fd, format2U) 'Fermi level', Ef(iSpin), "H", Hartree__eV * Ef(iSpin), 'eV'
       end if
-      if (all(electronicSolver%iSolver /= [electronicSolverTypes%pexsi,&
-          & electronicSolverTypes%GF, electronicSolverTypes%OnlyTransport])) then
-        write(fd, format2U) 'Band energy', Eband(iSpin), "H", Hartree__eV * Eband(iSpin), 'eV'
-      end if
+      write(fd, format2U) 'Band energy', Eband(iSpin), "H", Hartree__eV * Eband(iSpin), 'eV'
       if (any(electronicSolver%iSolver == [electronicSolverTypes%qr,&
           & electronicSolverTypes%divideandconquer, electronicSolverTypes%relativelyrobust,&
           & electronicSolverTypes%elpa])) then
@@ -4204,7 +4201,7 @@ contains
         end if
         do iOrb = 1, 2 * ang + 1
           ind = ind + 1
-          write(fd, "(A,T22,1X'(',F10.6,',',F10.6,1X,')',1X,F10.6)")&
+          write(fd, "(A,T22,1X,'(',F10.6,',',F10.6,1X,')',1X,F10.6)")&
               & trim(tmpStr)//trim(orbitalNames(iOrb-ang-1,ang)),&
               & real(eigvec(ind)), aimag(eigvec(ind)), fracs(ind)
         end do

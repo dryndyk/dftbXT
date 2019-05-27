@@ -1726,9 +1726,20 @@ contains
     if (electronicSolver%isElsiSolver) then
       @:ASSERT(parallelKS%nLocalKS == 1)
 
+      if (input%ctrl%parallelOpts%nGroup /= nIndepHam * nKPoint) then
+        call error("ELSI solvers require as many groups as spin and k-point combinations")
+      end if
+
       if (omp_get_max_threads() > 1) then
         call error("The ELSI-solvers should not be run with multiple threads. Set the&
             & environment variable OMP_NUM_THREADS to 1 in order to disable multi-threading.")
+      end if
+
+      if (tSpinOrbit .and. .not.&
+          & any(electronicSolver%iSolver==[electronicSolverTypes%omm,electronicSolverTypes%elpa]))&
+          & then
+        call error("Only the ELSI libOMM and ELPA solvers are suitable for spin orbit at the&
+            & moment")
       end if
 
       ! Would be using the ELSI matrix writing mechanism, so set this as always false
