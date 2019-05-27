@@ -329,7 +329,7 @@ contains
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hbar,hbar,'                              TraNaS OpenSuite                              ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,'       (integrated open software suite for quantum nanoscale modeling)      ',hbar,hbar 
+    write(outunit, '(5A)') hbar,hbar,'          (integrated open software suite for multiscale modeling)          ',hbar,hbar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
@@ -345,7 +345,7 @@ contains
     write(outunit, '(5A)') hBar,hBar,' Please cite as:                                                            ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' TraNaS OpenSuite [1], partially based on the DFTB+ [2,3] source code       ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' [1] Dmitry A. Ryndyk, TraNaS OpenSuite, tranas.org/opensuite               ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,' [1] TraNaS OpenSuite, tranas.org/opensuite                                 ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar,' [2] B. Aradi, B. Hourahine and T. Frauenheim,                              ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,'     J. Phys. Chem. A 111, 5678 (2007); dftbplus.org                        ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' [3] A. Pecchia, G. Penazzi, L. Salvucci and A. Di Carlo,                   ',hBar,hBar
