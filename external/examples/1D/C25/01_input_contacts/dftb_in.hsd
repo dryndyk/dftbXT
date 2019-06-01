@@ -1,0 +1,51 @@
+Geometry = GenFormat {
+<<< 'C25.gen'
+}
+
+Transport {
+  Device {
+    AtomRange = 1 5
+  }
+  Contact {
+    Id = "source"
+    AtomRange = 6 15
+  }
+  Contact {
+    Id = "drain"
+    AtomRange = 16 25
+  }    
+  Task = ContactHamiltonian {
+    ContactId = "source"
+    #ContactId = "drain"
+  }
+}
+
+Hamiltonian = DFTB {
+  SCC = Yes
+  #SCCTolerance = 1e-6
+  #EwaldParameter = 0.1
+  #ReadInitialCharges = Yes
+  MaxAngularMomentum = {
+    C = "p"
+  }  
+  SlaterKosterFiles = Type2FileNames {
+    Prefix = "../../../../slakos/origin/mio-1-1/"
+    Separator = "-"
+    Suffix = ".skf"
+  }
+  KpointsAndWeights = SupercellFolding{
+    25  0 0
+    0   1 0
+    0   0 1
+    0.0 0.0 0.0
+  } 
+}
+
+
+
+
+
+
+
+
+

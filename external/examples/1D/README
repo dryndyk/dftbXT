@@ -1,0 +1,9 @@
+
+The examples of calculations for 1D system.
+
+C25/01_input/output_contacts    - Pre-calculation of electrode parameters.
+C25/02_input/output_LDOS_T      - Local DOS and Transmission at zero volatge.
+C25/03_input/output_IV          - Current-voltage curves with fixed geometry.
+
+The input files include many possible alteranive/additional options.
+One can use it to check different possibilities.
