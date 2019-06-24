@@ -88,8 +88,8 @@ Hamiltonian = Model {
   #  MinimalGrid [Angstrom] = 0.5 0.5 0.5
   #  SavePotential = Yes
   #}
-  Eigensolver = TransportOnly {}
-  #Eigensolver = GreensFunction {}
+  Solver = TransportOnly {}
+  #Solver = GreensFunction {}
   #Mixer = Broyden {
   #  MixingParameter = 0.02
   #}

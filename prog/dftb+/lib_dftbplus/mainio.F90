@@ -1880,7 +1880,8 @@ contains
   !> regression testing
   subroutine writeAutotestTag(fileName, tPeriodic, cellVol, tMulliken, qOutput, derivs,&
       & chrgForces, excitedDerivs, tStress, totalStress, pDynMatrix, energy, pressure,&
-      & endCoords, tLocalise, localisation, esp, taggedWriter, transmission, ldos, tDefinedFreeE)
+      & endCoords, tLocalise, localisation, esp, taggedWriter, transmission, ldos, tDefinedFreeE,&
+      & lCurrArray)
 
     !> Name of output file
     character(*), intent(in) :: fileName
@@ -1942,6 +1943,10 @@ contains
 
     !> Is the free energy correctly defined
     logical, intent(in) :: tDefinedFreeE
+
+    !> Array containing bond currents as (Jvalues, atom)
+    !> This array is for testing only since it misses info
+    real(dp), allocatable, intent(in) :: lCurrArray(:,:)
 
     !> Tagged writer object
     type(TTaggedWriter), intent(inout) :: taggedWriter
@@ -2010,6 +2015,10 @@ contains
       if (size(ldos,1) > 0) then
         call taggedWriter%write(fd, tagLabels%ldos, ldos)
       end if
+    end if
+
+    if (allocated(lCurrArray)) then
+      call taggedWriter%write(fd, tagLabels%localCurrents, lCurrArray)
     end if
 
     close(fd)
@@ -3282,7 +3291,7 @@ contains
 
 
   !> Write out charges.
-  subroutine writeCharges(fCharges, tWriteAscii, orb, qInput, qBlockIn, qiBlockIn, verbose)
+  subroutine writeCharges(fCharges, tWriteAscii, orb, qInput, qBlockIn, qiBlockIn, deltaRhoIn, verbose)
 
     !> File name for charges to be written to
     character(*), intent(in) :: fCharges
@@ -3302,17 +3311,12 @@ contains
     !> Imaginary part of block populations if present
     real(dp), intent(in), allocatable :: qiBlockIn(:,:,:,:)
 
-    integer :: verbose
+    !> Full density matrix with on-diagonal adjustment
+    real(dp), intent(in), allocatable :: deltaRhoIn(:)
+ 
+    integer :: verbose 
 
-    if (allocated(qBlockIn)) then
-      if (allocated(qiBlockIn)) then
-        call writeQToFile(qInput, fCharges, tWriteAscii, orb, qBlockIn, qiBlockIn)
-      else
-        call writeQToFile(qInput, fCharges, tWriteAscii, orb, qBlockIn)
-      end if
-    else
-      call writeQToFile(qInput, fCharges, tWriteAscii, orb)
-    end if
+    call writeQToFile(qInput, fCharges, tWriteAscii, orb, qBlockIn, qiBlockIn, deltaRhoIn)
     if (verbose.gt.0) then
     if (tWriteAscii) then
       write(stdOut, "(A,A)") '>> Charges saved for restart in ', trim(fCharges)//'.dat'
@@ -3564,6 +3568,8 @@ contains
     end if
 
     close(fdHS)
+      
+    write(stdOut,*) 'shiftcont_'//trim(filename)//".dat written to file"     
 
   end subroutine writeContShifts
 

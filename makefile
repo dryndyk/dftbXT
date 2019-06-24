@@ -16,14 +16,28 @@ _default: default
 
 include make.config
 
-.PHONY: default misc api all
-default: dftb+ modes waveplot
+.PHONY: default misc all
+ifeq ($(strip $(WITH_TRANSPORT)),1)
+else
+.PHONY: api
+endif
+
+default: dftb+ modes waveplot setupgeom
 ifeq ($(strip $(BUILD_API)),1)
+ifeq ($(strip $(WITH_TRANSPORT)),1)
+else
    default: api
+endif
 endif
 misc: misc_skderivs misc_slakovalue
 api: api_mm
-all: default misc api
+all: default misc
+ifeq ($(strip $(BUILD_API)),1)
+ifeq ($(strip $(WITH_TRANSPORT)),1)
+else
+all: api
+endif
+endif
 
 .PHONY: install install_misc install_all
 install: install_dftb+ install_modes install_waveplot install_dptools
@@ -50,12 +64,6 @@ ifeq ($(filter 0 1 2,$(strip $(DEBUG))),)
   $(error 'Invalid value $(DEBUG) for DEBUG (must be 0, 1 or 2)')
 endif
 
-ifeq ($(strip $(WITH_TRANSPORT)),1)
-  ifneq ($(strip $(WITH_MPI)),1)
-    $(error 'Transport can only be included when code is built with MPI')
-  endif
-endif
-
 ################################################################################
 # Build targets
 ################################################################################
@@ -69,8 +77,8 @@ update_release:
         || $(ROOT)/utils/build/update_release $(BUILDDIR)/RELEASE \
         || echo "(UNKNOWN RELEASE)" > $(BUILDDIR)/RELEASE
 
-.PHONY: dftb+ modes waveplot
-dftb+ modes waveplot:
+.PHONY: dftb+ modes waveplot setupgeom
+dftb+ modes waveplot setupgeom:
 	mkdir -p $(BUILDDIR)/prog/$@
 	$(MAKE) -C $(BUILDDIR)/prog/$@ -f $(ROOT)/prog/$@/make.build \
 	    ROOT=$(ROOT) BUILDROOT=$(BUILDDIR)
@@ -78,6 +86,9 @@ dftb+ modes waveplot:
 DFTBPLUS_DEPS := update_release external_xmlf90
 ifeq ($(strip $(WITH_SOCKETS)),1)
   DFTBPLUS_DEPS += external_fsockets
+endif
+ifeq ($(strip $(WITH_GPU)),1)
+dftb+: external_magmahelper
 endif
 ifeq ($(strip $(WITH_DFTD3))$(strip $(COMPILE_DFTD3)),11)
   DFTBPLUS_DEPS += external_dftd3
@@ -88,14 +99,17 @@ endif
 
 ifeq ($(strip $(WITH_TRANSPORT)),1)
   DFTBPLUS_DEPS += external_tranas external_poisson external_sparskit
-  external_tranas: external_mpifx
-  external_poisson: external_mpifx external_tranas
+  external_poisson: external_tranas
+  ifeq ($(strip $(WITH_MPI)),1)
+    external_tranas: external_mpifx
+    external_poisson: external_mpifx
+  endif
 endif
 dftb+: $(DFTBPLUS_DEPS)
 
 modes: external_xmlf90
 waveplot: external_xmlf90
-
+setupgeom: external_xmlf90
 
 .PHONY: misc_skderivs misc_slakovalue
 misc_skderivs misc_slakovalue:
@@ -110,7 +124,8 @@ misc_skderivs: external_xmlf90
 EXTERNAL_NAME = $(subst external_,,$@)
 
 EXTERNALS = external_xmlf90 external_fsockets external_dftd3 external_mpifx \
-            external_scalapackfx external_poisson external_tranas external_sparskit
+            external_scalapackfx external_poisson external_tranas external_sparskit \
+            external_magmahelper
 
 .PHONY: $(EXTERNALS)
 $(EXTERNALS):

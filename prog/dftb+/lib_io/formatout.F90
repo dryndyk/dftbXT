@@ -78,7 +78,7 @@ contains
 
 
   !> A wrapper around writeGenFormat_fid to open a file first.
-  subroutine writeGenFormat_fname(fileName, coord, species, speciesName, latVec, tFracCoord)
+  subroutine writeGenFormat_fname(fileName, coord, species, speciesName, latVec, tFracCoord, append)
 
     !> File name of the file which should be created
     character(len=*), intent(in) :: fileName
@@ -98,11 +98,27 @@ contains
     !> Print out fractional coordinates?
     logical, intent(in), optional :: tFracCoord
 
+    !> Whether geometry should be appended (default: it is overwritten)
+    logical, intent(in), optional :: append
+
     integer :: fd
+
+    logical :: append0
+
+    if (present(append)) then
+      append0 = append
+    else
+      append0 = .false.
+    end if
 
     @:ASSERT((.not.(present(tFracCoord).neqv.present(latVec))) .or.(present(latVec)))
 
-    open(newunit=fd, file=fileName, form="formatted", action="write", status="replace")
+    if (append0) then
+      open(newunit=fd, file=fileName, form="formatted", action="write", status="old",&
+          & position="append")
+    else
+      open(newunit=fd, file=fileName, form="formatted", action="write", status="replace")
+    end if
     call writeGenFormat(fd, coord, species, speciesName, latVec, tFracCoord)
     close(fd)
 
@@ -329,7 +345,7 @@ contains
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hbar,hbar,'                              TraNaS OpenSuite                              ',hbar,hbar
-    write(outunit, '(5A)') hbar,hbar,'          (integrated open software suite for multiscale modeling)          ',hbar,hbar 
+    write(outunit, '(5A)') hbar,hbar,'          (integrated open software suite for nanoscale modeling)           ',hbar,hbar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar

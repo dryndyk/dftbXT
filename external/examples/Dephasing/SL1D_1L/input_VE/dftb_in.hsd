@@ -60,7 +60,7 @@ Hamiltonian = Model {
   #SpinDegeneracy = Yes      #Relevant for NoGeometry
   #Orthonormal = Yes      
   #OrthonormalDevice = Yes
-  Eigensolver = TransportOnly{}
+  Solver = TransportOnly{}
   Dephasing {
     VibronicElastic = local { 
     #  AtomBlock = Yes

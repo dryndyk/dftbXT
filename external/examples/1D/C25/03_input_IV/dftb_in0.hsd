@@ -59,8 +59,8 @@ Hamiltonian = DFTB {
     BuildBulkPotential = Yes
     #ReadOldBulkPotential = Yes
   }
-  #Eigensolver = TransportOnly {}
-  Eigensolver = GreensFunction {
+  #Solver = TransportOnly {}
+  Solver = GreensFunction {
     #ReadSurfaceGFs = Yes
     #SaveSurfaceGFs = No
   }

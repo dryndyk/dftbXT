@@ -1495,7 +1495,7 @@ module tranas_interface
   !> Calculates E-density matrix with Green functions (public)
   !------------------------------------------------------------------------------------------------!
   subroutine calcEdensity_green(iSCCIter, mpicomm, groupKS, ham, over, &
-      & desc, iNeighbor, nNeighbor, iAtomStart, iPair, img2CentCell, iCellVec, &
+      & iNeighbor, nNeighbor, iAtomStart, iPair, img2CentCell, iCellVec, &
       & cellVec, orb, kPoints, kWeights, rhoE, mu, tundos)
       !DAR - tundos is added,
       !      it is necessary for 'call negf_init_elph(tundos%elph)' in 'call negf_current'
@@ -1505,7 +1505,7 @@ module tranas_interface
     type(mpifx_comm), intent(in) :: mpicomm
     integer, intent(in) :: groupKS(:,:)
     real(dp), intent(in) :: ham(:,:), over(:)
-    integer, intent(in) :: desc(1) !Descriptor is not needed for now
+    !integer, intent(in) :: desc(1) !Descriptor is not needed for now
     integer, intent(in) :: iNeighbor(0:,:), nNeighbor(:)
     integer, intent(in) :: iAtomStart(:), iPair(0:,:)
     integer, intent(in) :: img2CentCell(:), iCellVec(:)

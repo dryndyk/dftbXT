@@ -41,7 +41,7 @@ Hamiltonian = DFTB {
   #SCCTolerance = 1e-6
   #MaxSCCIterations = 200
   #EwaldParameter = 0.1
-  ReadInitialCharges = Yes
+  #ReadInitialCharges = Yes
   #Orthonormal = Yes      
   #OrthonormalDevice = Yes
   MaxAngularMomentum = {
@@ -57,8 +57,8 @@ Hamiltonian = DFTB {
     #MinimalGrid [Angstrom] = 0.5 0.5 0.5
     #SavePotential = Yes
   }
-  #Eigensolver = TransportOnly {}
-  Eigensolver = GreensFunction {
+  #Solver = TransportOnly {}
+  Solver = GreensFunction {
     #ReadSurfaceGFs = Yes
     #SaveSurfaceGFs = No
   }

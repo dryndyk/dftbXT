@@ -85,6 +85,9 @@ program dftbplus
     !      it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface_nogeom)
     deallocate(input)
   call destructProgramVariables()
+#:if WITH_GPU  
+  call magmaf_finalize()
+#:endif
     call env%destruct()
     call destructGlobalEnv()
     

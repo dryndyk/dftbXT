@@ -63,8 +63,8 @@ Hamiltonian = DFTB {
   # MinimalGrid [Angstrom] = 0.5 0.5 0.5
   # SavePotential = Yes
   #}
-  Eigensolver = TransportOnly{}
-  #Eigensolver = GreensFunction {
+  Solver = TransportOnly{}
+  #Solver = GreensFunction {
     #Verbosity = 51
   #  ReadSurfaceGFs = Yes
   #  SaveSurfaceGFs = No
