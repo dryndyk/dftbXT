@@ -50,8 +50,8 @@ G.~J. Martyna, M.~E. Tuckerman, D.~J. Tobias, and M.~L. Klein, ``Explicit
 
 \bibitem{aradi-jctc-11-3357}
 B. Aradi, A.~M.~N. Niklasson, and T. Frauenheim, ``Extended Lagrangian Density
-  Functional Tight-Binding Molecular Dynamics for Molecules and Solids,'' J.
-  Chem. Theory Comput. {\bf 11},  3357  (2015).
+  Functional Tight-Binding Molecular Dynamics for Molecules and Solids,'' J{.}
+  of Chem{.} Theory Comput{.} {\bf 11},  3357  (2015).
 
 \bibitem{Ceriotti20141019}
 M. Ceriotti, J. More, and D.~E. Manolopoulos, ``i-PI: A Python interface for ab
@@ -79,6 +79,22 @@ M.~J. Han, T. Ozaki, and J. Yu, ``\mbox{O($N$) LDA+$U$} electronic structure
 \bibitem{lapack3}
 E. Anderson {\it et~al.}, {\em {LAPACK} Users' Guide}, 3rd  ed. (Society for
   Industrial and Applied Mathematics, Philadelphia, PA, 1999).
+
+\bibitem{tdb10}
+S. Tomov, J. Dongarra, and M. Baboulin, ``{Towards dense linear algebra for
+  hybrid GPU accelerated manycore systems},'' Parallel Computing {\bf 36},  232
+   (2010).
+
+\bibitem{tnld10}
+S. Tomov, R. Nath, H. Ltaief, and J. Dongarra, ``Dense Linear Algebra Solvers
+  for Multicore with {GPU} Accelerators,'' In {\em Proc. of the IEEE IPDPS'10},
+  \ pp.\ 1--8  (IEEE Computer Society, Atlanta, GA, 2010),
+  {DOI:~10.1109/IPDPSW.2010.5470941}.
+
+\bibitem{dghklty14}
+J. Dongarra, M. Gates, A. Haidar, J. Kurzak, P. Luszczek, S. Tomov, and I.
+  Yamazaki, ``Accelerating Numerical Dense Linear Algebra Calculations with
+  GPUs,'' Numerical Computations with GPUs  1  (2014).
 
 \bibitem{YU2018267}
 V.~W.-z. Yu {\it et~al.}, ``\mbox{ELSI}: {A} unified software interface for
@@ -138,13 +154,13 @@ L. Zhechkov, T. Heine, S. Patchkovskii, G. Seifert, and H.~A. Duarte, ``An
 
 \bibitem{rezac-jctc-13-2017}
 J. {\v R}ez{\'a}{\v c}, ``Empirical {Self}-{Consistent} {Correction} for the
-  {Description} of {Hydrogen} {Bonds} in {DFTB}3,'' J. Chem{.} Theory Comput{.}
-  {\bf 13},  4804  (2017).
+  {Description} of {Hydrogen} {Bonds} in {DFTB}3,'' J{.} of Chem{.} Theory
+  Comput{.} {\bf 13},  4804  (2017).
 
 \bibitem{rezac-jctc-8-2012}
 J. {\v R}ez{\'a}{\v c} and P. Hobza, ``Advanced Corrections of Hydrogen Bonding
-  and Dispersion for Semiempirical Quantum Mechanical Methods,'' J. Chem{.}
-  Theory Comput{.} {\bf 8},  141  (2012).
+  and Dispersion for Semiempirical Quantum Mechanical Methods,'' J{.} of
+  Chem{.} Theory Comput{.} {\bf 8},  141  (2012).
 
 \bibitem{gauss-jctc-7-931}
 M. Gaus, Q. Cui, and M. Elstner, ``\mbox{DFTB}3: {E}xtension of the
@@ -158,6 +174,16 @@ Y. Yang, H. Yu, D. York, Q. Cui, and M. Elstner, ``Extension of the
   Expansion of the Density Functional Theory Total Energy and Introduction of a
   Modified Effective Coulomb Interaction,'' J{.} Phys{.} Chem{.} A {\bf 111},
   10861  (2007).
+
+\bibitem{niehaus-PSSB-249-237}
+T.~A. Niehaus and F. Della~Sala, ``Range separated functionalsin the density
+  functional based tight-binding method: Formalism,'' Phys{.} Status Solidi B
+  {\bf 249},  237  (2012).
+
+\bibitem{lutsker-JCP-143-184107}
+V. Lutsker, B. Aradi, and T.~A. Niehaus, ``Implementation and benchmark of a
+  long-range corrected functional in the densityfunctional based tight-binding
+  method,'' J{.} Chem{.} Phys{.} {\bf 143},  184107  (2015).
 
 \bibitem{garcia14Thesis}
 A.~D. Garcia, Ph.D. thesis, Universit\"at Bremen, 2014,
@@ -192,6 +218,11 @@ D. Heringer, T.~A. Niehaus, M. Wanko, and T. Frauenheim, ``Analytical excited
   state forces for the time-dependent density-functional tight-binding
   method.,'' J{.} Comp{.} Chem{.} {\bf 28},  2589  (2007).
 
+\bibitem{Lany_2009}
+S. Lany and A. Zunger, ``Accurate prediction of defect properties in density
+  functional supercell calculations,'' Modelling and Simulation in Materials
+  Science and Engineering {\bf 17},  084002  (2009).
+
 \bibitem{Pecchia_spring}
 A. Di~Carlo, A. Pecchia, L. Latessa, T. Frauenheim, and G. Seifert,  in {\em
   Introducing Molecular Electronics}, G. Cuniberti, K. Richter, and G. Fagas,
@@ -199,9 +230,8 @@ A. Di~Carlo, A. Pecchia, L. Latessa, T. Frauenheim, and G. Seifert,  in {\em
   153--184.
 
 \bibitem{Pecchia_RPP}
-A. Pecchia and A.~D. Carlo, ``Atomistic theory of transport in organic and
-  inorganic nanostructures,'' Reports on Progress in Physics {\bf 67},  1497
-  (2004).
+A. Pecchia and A. Di~Carlo, ``Atomistic theory of transport in organic and
+  inorganic nanostructures,'' Rep{.} Prog{.} Phys{.} {\bf 67},  1497  (2004).
 
 \bibitem{KoehlerThesis}
 C. K\"ohler, Ph.D. thesis, Department Physik der Fakult\"at fur
