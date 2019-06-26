@@ -57,6 +57,7 @@ Analysis{
     EnergyRange [eV] = -10.0  0.0
     EnergyStep [eV] = 0.02
     Delta [eV] = 1e-4
+    WriteLDOS = Yes
   }
 }
 

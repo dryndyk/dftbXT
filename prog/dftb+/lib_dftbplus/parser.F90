@@ -274,7 +274,7 @@ contains
       input%transpar%idxdevice(1) = 1
       input%transpar%idxdevice(2) = input%geom%nAtom
     end if
-    
+
     ! electronic Hamiltonian
     call getChildValue(root, "Hamiltonian", hamNode)
 
@@ -512,8 +512,8 @@ contains
       end if
       call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
-      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
-          &child, ctrl%indMovedAtom)
+      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, child,&
+          & ctrl%indMovedAtom)
 
       ctrl%nrMoved = size(ctrl%indMovedAtom)
       ctrl%tCoordOpt = (ctrl%nrMoved /= 0)
@@ -568,8 +568,8 @@ contains
       end if
       call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
-      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
-          &child, ctrl%indMovedAtom)
+      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, child,&
+          & ctrl%indMovedAtom)
 
       ctrl%nrMoved = size(ctrl%indMovedAtom)
       ctrl%tCoordOpt = (ctrl%nrMoved /= 0)
@@ -623,8 +623,8 @@ contains
       end if
       call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
-      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
-          &child, ctrl%indMovedAtom)
+      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, child,&
+          & ctrl%indMovedAtom)
 
       ctrl%nrMoved = size(ctrl%indMovedAtom)
       ctrl%tCoordOpt = (ctrl%nrMoved /= 0)
@@ -673,8 +673,8 @@ contains
       end if
       call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
-      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
-          &child, ctrl%indMovedAtom)
+      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, child,&
+          & ctrl%indMovedAtom)
 
       ctrl%nrMoved = size(ctrl%indMovedAtom)
       ctrl%tCoordOpt = (ctrl%nrMoved /= 0)
@@ -713,8 +713,8 @@ contains
       ctrl%tForces = .true.
       call getChildValue(node, "Atoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
-      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, &
-          &child, ctrl%indMovedAtom)
+      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, child,&
+          & ctrl%indMovedAtom)
       ctrl%nrMoved = size(ctrl%indMovedAtom)
       if (ctrl%nrMoved == 0) then
         call error("No atoms specified for derivatives calculation.")
@@ -733,8 +733,8 @@ contains
       call getChildValue(node, "MDRestartFrequency", ctrl%restartFreq, 1)
       call getChildValue(node, "MovedAtoms", buffer2, trim(atomsRange), child=child, &
           &multiple=.true.)
-      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species,&
-          &child, ctrl%indMovedAtom)
+      call convAtomRangeToInt(char(buffer2), geom%speciesNames, geom%species, child,&
+          & ctrl%indMovedAtom)
       ctrl%nrMoved = size(ctrl%indMovedAtom)
       if (ctrl%nrMoved == 0) then
         call error("No atoms specified for molecular dynamics.")
@@ -2481,10 +2481,8 @@ contains
       end if
       do ii = 1, getLength(children)
         call getItem1(children, ii, child2)
-        call getChildValue(child2, "Atoms", buffer, child=child3, &
-            &multiple=.true.)
-        call convAtomRangeToInt(char(buffer), geo%speciesNames, &
-            &geo%species, child3, pTmpI1)
+        call getChildValue(child2, "Atoms", buffer, child=child3, multiple=.true.)
+        call convAtomRangeToInt(char(buffer), geo%speciesNames, geo%species, child3, pTmpI1)
         call getChildValue(child2, "ChargePerAtom", rTmp)
         do jj = 1, size(pTmpI1)
           iAt = pTmpI1(jj)
@@ -2543,10 +2541,8 @@ contains
       allocate(rTmp(nSpin))
       do ii = 1, getLength(children)
         call getItem1(children, ii, child2)
-        call getChildValue(child2, "Atoms", buffer, child=child3, &
-            &multiple=.true.)
-        call convAtomRangeToInt(char(buffer), geo%speciesNames, &
-            &geo%species, child3, pTmpI1)
+        call getChildValue(child2, "Atoms", buffer, child=child3, multiple=.true.)
+        call convAtomRangeToInt(char(buffer), geo%speciesNames, geo%species, child3, pTmpI1)
         call getChildValue(child2, "SpinPerAtom", rTmp)
         do jj = 1, size(pTmpI1)
           iAt = pTmpI1(jj)
@@ -3754,10 +3750,8 @@ contains
         call init(ctrl%iAtInRegion)
         do iReg = 1, nReg
           call getItem1(children, iReg, child2)
-          call getChildValue(child2, "Atoms", buffer, child=child3, &
-              &multiple=.true.)
-          call convAtomRangeToInt(char(buffer), geo%speciesNames, &
-              &geo%species, child3, pTmpI1)
+          call getChildValue(child2, "Atoms", buffer, child=child3, multiple=.true.)
+          call convAtomRangeToInt(char(buffer), geo%speciesNames, geo%species, child3, pTmpI1)
           call append(ctrl%iAtInRegion, pTmpI1)
           call getChildValue(child2, "ShellResolved", &
               & ctrl%tShellResInRegion(iReg), .false., child=child3)
@@ -4031,7 +4025,7 @@ contains
       call asArray(li,transpar%cblk)
       call destruct(li)
     end if
-    
+
     call getChildren(root, "Contact", pNodeList)
     transpar%ncont = getLength(pNodeList)
     allocate(transpar%contacts(transpar%ncont))
@@ -4922,10 +4916,8 @@ contains
         call getChildren(child2, "AtomList", children)
         do ii = 1, getLength(children)
           call getItem1(children, ii, child3)
-          call getChildValue(child3, "Atoms", buffer, child=child4, &
-              &multiple=.true.)
-          call convAtomRangeToInt(char(buffer), geom%speciesNames, &
-              &geom%species, child4, tmpI1)
+          call getChildValue(child3, "Atoms", buffer, child=child4, multiple=.true.)
+          call convAtomRangeToInt(char(buffer), geom%speciesNames, geom%species, child4, tmpI1)
           call getChildValue(child3, "Value", rTmp, child=field)
           call convertByMul(char(modif), energyUnits, field, rTmp)
           do jj=1, size(tmpI1)
@@ -5361,9 +5353,10 @@ contains
     nReg = getLength(children)
 
     if (nReg == 0) then
-      write(strTmp,"(I0':'I0)") idxdevice(1), idxdevice(2)
+      write(strTmp,"(I0, ':', I0)") idxdevice(1), idxdevice(2)
       call setChild(node, "Region", child)
       call setChildValue(child, "Atoms", strTmp)
+      call setChildValue(child, "Atoms", trim(strTmp))
       call setChildValue(child, "Label", "localDOS")
       call getChildren(node, "Region", children)
       nReg = getLength(children)
@@ -6447,8 +6440,6 @@ contains
 
     read(string,*,iostat=err) x
     is = (err == 0)
-    print*, x, err, is
-
   end function is_numeric
 
 
@@ -6467,7 +6458,7 @@ contains
 
     case ("none")
       continue
-      
+
     case ("lc")
       allocate(input)
       call getChildValue(value1, "Screening", value2, "Thresholded", child=child2)

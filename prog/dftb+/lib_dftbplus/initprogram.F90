@@ -944,7 +944,10 @@ module dftbp_initprogram
   logical :: tLocalCurrents
 
   !> True if LDOS is stored on separate files for k-points
-  logical :: writeLDOS
+  logical :: tWriteLDOS
+
+  !> Labels for LDOS regions, if needed
+  character(lc), allocatable :: regionLabelLDOS(:)
 
   !> True if Transmission is stored on separate files
   logical :: writeTunn
@@ -3229,6 +3232,7 @@ contains
     @:SAFE_DEALLOC(RhoSqrReal, qDepExtPot, derivs, chrgForces, excitedDerivs, dipoleMoment)
     @:SAFE_DEALLOC(coord0Fold, newCoords, orbitalL, occNatural, mu)
     @:SAFE_DEALLOC(poissonDerivs, shiftPerLUp, chargeUp)
+    @:SAFE_DEALLOC(regionLabelLDOS)
     @:SAFE_DEALLOC(iAtInCentralRegion, energiesCasida)
 
   end subroutine destructProgramVariables
@@ -3448,7 +3452,11 @@ contains
 
     !Write Dos and transmission on separate files?
     writeTunn = ginfo%tundos%writeTunn
-    writeLDOS = ginfo%tundos%writeLDOS
+    tWriteLDOS = ginfo%tundos%writeLDOS
+
+    if (tWriteLDOS) then
+      call move_alloc(ginfo%tundos%dosLabels, regionLabelLDOS)
+    end if
 
     if(input%ctrl%verbose.gt.30) write(stdOut,"('> initTransport is finished')")
 

@@ -275,6 +275,7 @@ Analysis {
     Delta = 1.000000000000000E-005
     #DumpHS = No
     #WriteTransmission = Yes 
+    WriteLDOS = Yes
   }
   CalculateForces = Yes
 }

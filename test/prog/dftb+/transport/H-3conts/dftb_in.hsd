@@ -78,6 +78,7 @@ Analysis{
     EnergyRange [eV] = -7.0  -6.0
     EnergyStep [eV] = 0.02 
     #WriteTransmission = Yes
+    WriteLDOS = Yes
   }
 }
 

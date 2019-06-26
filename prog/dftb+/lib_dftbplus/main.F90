@@ -261,13 +261,13 @@ contains
       call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over, &
           & descHS, neighbourList%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
           & img2CentCell, iCellVec, cellVec, orb, nEl, tempElec,&
-          & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, writeLDOS,&
+          & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, tWriteLDOS,&
           & mu, input%ginfo%tundos)
   #:else        
       call calc_current(parallelKS%localKS, ham, over,&
           & descHS, neighbourList%iNeighbour, nNeighbourSK, densedesc%iAtomStart, iSparseStart,&
           & img2CentCell, iCellVec, cellVec, orb, nEl, tempElec,&
-          & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, writeLDOS,&
+          & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, tWriteLDOS,&
           & mu, input%ginfo%tundos)
   #:endif
     end if
@@ -1008,7 +1008,7 @@ contains
       call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over, &
           & descHS, neighbourList%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
           & img2CentCell, iCellVec, cellVec, orb, nEl, tempElec,&
-          & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, writeLDOS,&
+          & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, tWriteLDOS,&
           & mu, input%ginfo%tundos)
       !!DAR!! - input%ginfo%tundos is added,
       !         it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface   
