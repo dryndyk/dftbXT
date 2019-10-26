@@ -85,6 +85,20 @@ Unreleased
 Added
 -----
 
+Changed
+-------
+
+Fixed
+-----
+
+19.1 (2019-07-01)
+=================
+
+Added
+-----
+
+- Non-equilibrium Green's function transport.
+
 - Use of the ELSI library.
  
 - Ability to perform ground state MD with excitation energies.
@@ -109,6 +123,7 @@ Changed
 
 - Updated parser version to 7.
 
+
 Fixed
 -----
 
@@ -116,8 +131,9 @@ Fixed
 
 - Corrected Orbital to Shell naming conventions
 
-18.2
-====
+
+18.2 (2018-08-19)
+=================
 
 Added
 -----

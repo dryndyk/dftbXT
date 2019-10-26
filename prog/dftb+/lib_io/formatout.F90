@@ -2,7 +2,7 @@
 ! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
 ! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2017-2019 DFTB+ developers group                                                   !
+! Copyright (C) 2006-2019 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -353,7 +353,7 @@ contains
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for model and atomistic quantum transport,          ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' many-body nonequilibrium phenomena, material & device modeling             ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2017-2019 DFTB+ developers group                             ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2006-2019 DFTB+ developers group                             ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2018-2019 Dmitry A. Ryndyk                                   ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)

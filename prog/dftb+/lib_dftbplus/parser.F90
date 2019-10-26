@@ -2,7 +2,7 @@
 ! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
 ! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2017-2019 DFTB+ developers group                                                   !
+! Copyright (C) 2006-2019 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -2019,7 +2019,13 @@ contains
 
     if (any(ctrl%solver%isolver == [electronicSolverTypes%omm, electronicSolverTypes%pexsi,&
         & electronicSolverTypes%ntpoly])) then
-      call getChildValue(value1, "Sparse", ctrl%solver%elsi%elsiCsr, .false.)
+      call getChildValue(value1, "Sparse", ctrl%solver%elsi%elsiCsr, .true.)
+      if (.not.ctrl%solver%elsi%elsiCsr) then
+        if (any(ctrl%solver%isolver == [electronicSolverTypes%pexsi,electronicSolverTypes%ntpoly]))&
+            & then
+          call getChildValue(value1, "Threshold", ctrl%solver%elsi%elsi_zero_def, 1.0E-15_dp)
+        end if
+      end if
       if (ctrl%t2Component .and. ctrl%solver%elsi%elsiCsr) then
         call detailedError(value1,"Two-component hamiltonians currently cannot be used with sparse&
             & ELSI solvers")
@@ -4089,7 +4095,7 @@ contains
     real(dp) :: contUnitVec(3), dots(3), newLatVecs(3, 3), newOrigin(3)
     real(dp) :: minProj, maxProj
     logical :: mask(3)
-    integer :: ind, ii
+    integer :: ind, indPrev, indNext, ii
     
     if (geom%tPeriodic) then
       contUnitVec = contactVec / sqrt(sum(contactVec**2, dim=1))
@@ -4114,19 +4120,22 @@ contains
       do while (.not. mask(ind))
         ind = ind + 1
       end do
-      newLatVecs(modulo(ind+1,3)+1, 2) = -newLatVecs(ind,1)
-      newLatVecs(ind,2) = 0.0_dp !newLatVecs(modulo(ind+1,3)+1, 1)
-      newLatVecs(modulo(ind-1,3)+1, 2) = 0.0_dp
+      ! Note: ind is one-based, substract 1 before modulo and add 1 after.
+      indNext = modulo(ind + 1 - 1, 3) + 1
+      indPrev = modulo(ind - 1 - 1, 3) + 1
+      newLatVecs(indNext, 2) = -newLatVecs(ind, 1)
+      newLatVecs(ind, 2) = newLatVecs(indNext, 1)
+      newLatVecs(indPrev, 2) = 0.0_dp
       newLatVecs(:,3) = cross3(newLatVecs(:,1), newLatVecs(:,2))
       newLatVecs(:,2) = newLatVecs(:,2) / sqrt(sum(newLatVecs(:,2)**2))
       newLatVecs(:,3) = newLatVecs(:,3) / sqrt(sum(newLatVecs(:,3)**2))
-      newOrigin = 0.0_dp
+      newOrigin(:) = 0.0_dp
     end if
     call reduce(geom, contactRange(1), contactRange(2))
     if (.not. geom%tPeriodic) then
       do ii = 2, 3
-        minProj = 0_dp !minval(matmul(newLatVecs(:,ii), geom%coords))
-        maxProj = 0_dp !maxval(matmul(newLatVecs(:,ii), geom%coords))
+        minProj = minval(matmul(newLatVecs(:,ii), geom%coords))
+        maxProj = maxval(matmul(newLatVecs(:,ii), geom%coords))
         newLatVecs(:,ii) = ((maxProj - minProj) + lateralContactSeparation) * newLatVecs(:,ii)
       end do
     end if

@@ -2,7 +2,7 @@
 ! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
 ! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2017-2019 DFTB+ developers group                                                   !
+! Copyright (C) 2006-2019 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -31,7 +31,7 @@ program dftbplus
   implicit none
 
   character(len=*), parameter :: releaseName = '${RELEASE}$'
-  integer, parameter :: releaseYear = 2018
+  integer, parameter :: releaseYear = 2019
 
   type(TEnvironment) :: env
   type(inputData), allocatable :: input
