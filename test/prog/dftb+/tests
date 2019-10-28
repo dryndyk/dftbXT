@@ -5,31 +5,28 @@
 #:include 'common.fypp'
 
 transport/model_H40                    #? WITH_TRANSPORT
-transport/GaAs                         #? WITH_TRANSPORT and MPI_PROCS <= 8
-transport/CH4                          #? WITH_TRANSPORT and MPI_PROCS <= 4  
-transport/CNT                          #? WITH_TRANSPORT
+transport/CH4                          #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/GaAs                         #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/CH4-poisson                  #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/CNT                          #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/CNT_GF                       #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/deph_C25_ve                  #? WITH_TRANSPORT
 transport/deph_vacancy1                #? WITH_TRANSPORT
-transport/CH4-poisson                  #? WITH_TRANSPORT and MPI_PROCS <= 4 
 transport/deph_CH4-poisson             #? WITH_TRANSPORT and MPI_PROCS <= 4 
 transport/deph_C25_ve_scc              #? WITH_TRANSPORT
 transport/deph_H57_bp                  #? WITH_TRANSPORT
-transport/graphene3T                   #? WITH_TRANSPORT
 transport/C-chain_allSteps             #? WITH_TRANSPORT and MPI_PROCS <= 2
+transport/SiH-chain_allSteps           #? WITH_TRANSPORT and MPI_PROCS <= 2
 transport/H-chain                      #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/H-sheet                      #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/H-3conts                     #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/SiH-chain                    #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/SiH-chain-cont               #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/SiH-cont-poiss               #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/SiH-chain-parallel           #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/SiH-chain_allSteps           #? WITH_TRANSPORT and MPI_PROCS <= 2
+transport/graphene_x                   #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/graphene3T                   #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/Au-chain                     #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/graphene_x                   #? WITH_TRANSPORT
 transport/SiH-chain_semiInf            #? WITH_TRANSPORT and MPI_PROCS <= 2
-#transport/local-curr                   #? WITH_TRANSPORT and MPI_PROCS <= 4
-#transport/polyacetylene_semiInf        #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/H-sheet_end                  #? WITH_TRANSPORT and MPI_PROCS <= 4
 
 non-scc/Si_384_GPU                     #? WITH_GPU and not WITH_MPI
@@ -48,6 +45,10 @@ solvers/GaAs_2_ELPA2                   #? WITH_ELSI and MPI_PROCS == 8 and OMP_T
 solvers/Si32C32_ELPA1                  #? WITH_ELSI and MPI_PROCS <= 4 and OMP_THREADS == 1
 solvers/Si32C32_ELPA2                  #? WITH_ELSI and MPI_PROCS <= 4 and OMP_THREADS == 1
 solvers/Fe4_ELPA_2group                #? WITH_ELSI and MPI_PROCS <= 4 and MPI_PROCS % 2 == 0 and OMP_THREADS == 1
+solvers/Si384_ELPA1                    #? WITH_ELSI and MPI_PROCS <= 4 and OMP_THREADS == 1
+solvers/Si384_ELPA2                    #? WITH_ELSI and MPI_PROCS <= 4 and OMP_THREADS == 1
+solvers/SiC64+V_ELPA2                  #? WITH_ELSI and MPI_PROCS <= 16 and MPI_PROCS % 4 == 0 and OMP_THREADS == 1
+
 solvers/ice_OMM                        #? WITH_ELSI and MPI_PROCS <= 4 and OMP_THREADS == 1
 solvers/ice_NTPoly                     #? WITH_ELSI and MPI_PROCS <= 4 and OMP_THREADS == 1
 solvers/Si32C32_OMM                    #? WITH_ELSI and MPI_PROCS <= 4 and OMP_THREADS == 1
@@ -58,6 +59,7 @@ solvers/Si32C32_OMM_ks                 #? WITH_ELSI and MPI_PROCS % 8 == 0 and M
 solvers/Si32C32_OMM_k_sparse           #? WITH_ELSI and MPI_PROCS % 4 == 0 and MPI_PROCS <= 20 and OMP_THREADS == 1
 solvers/Si32C32_OMM_ks_sparse          #? WITH_ELSI and MPI_PROCS % 8 == 0 and MPI_PROCS <= 40 and OMP_THREADS == 1
 solvers/Si8_LSdual                     #? WITH_ELSI and MPI_PROCS % 8 == 0 and MPI_PROCS <= 16 and OMP_THREADS == 1
+
 solvers/SiC64+V_PEXSI                  #? WITH_PEXSI and MPI_PROCS % 2 == 0 and MPI_PROCS <= 40 and OMP_THREADS == 1
 solvers/SiC64+V_spin_PEXSI             #? WITH_PEXSI and MPI_PROCS % 4 == 0 and MPI_PROCS <= 80 and OMP_THREADS == 1
 solvers/10-10Ctube_PEXSI_sparse        #? WITH_PEXSI and MPI_PROCS % 2 == 0 and MPI_PROCS <= 20 and OMP_THREADS == 1
@@ -171,6 +173,13 @@ dangerous/C_SkCutoff_hard_default      #? MPI_PROCS <= 4
 dangerous/C_SkCutoff_soft_old          #? MPI_PROCS <= 4
 dangerous/C_SkCutoff_hard_old          #? MPI_PROCS <= 4
 
+halogen/3492                           #? WITH_DFTD3 and MPI_PROCS <= 1
+halogen/3499                           #? WITH_DFTD3 and MPI_PROCS <= 1
+halogen/3500                           #? WITH_DFTD3 and MPI_PROCS <= 1
+halogen/3501                           #? WITH_DFTD3 and MPI_PROCS <= 1
+halogen/3502                           #? WITH_DFTD3 and MPI_PROCS <= 1
+halogen/3518                           #? WITH_DFTD3 and MPI_PROCS <= 1
+
 timedep/cyclopentadienyl               #? WITH_ARPACK and MPI_PROCS <= 1
 timedep/C6H6-Sym                       #? WITH_ARPACK and MPI_PROCS <= 1
 timedep/C6H6-Sym_Arnoldi               #? WITH_ARPACK and MPI_PROCS <= 1
@@ -253,3 +262,6 @@ geoopt/Vsi+O_lbfgs                     #? MPI_PROCS <= 4
 geoopt/Vsi+O                           #? MPI_PROCS <= 4
 scc/SiC64+V_dynforce_groups            #? (MPI_PROCS <= 8 and MPI_PROCS % 4 == 0) or not WITH_MPI
 scc/SiC64+V_dynforce                   #? (MPI_PROCS <= 4 and MPI_PROCS % 2 == 0) or not WITH_MPI
+
+#! transport/local-curr                   #? WITH_TRANSPORT and MPI_PROCS <= 4
+#! transport/polyacetylene_semiInf        #? WITH_TRANSPORT and MPI_PROCS <= 4

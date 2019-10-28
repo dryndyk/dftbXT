@@ -37,7 +37,7 @@ c----------------------------------------------------------------------c
       implicit none 
       integer n, ml, mu, iband
       integer ja(*), ia(n+1)
-      real*8 bndav
+      double precision bndav
 c-----------------------------------------------------------------------
 c this routine computes the lower, upper, maximum, and average 
 c bandwidths.     revised -- July 12, 2001  -- bug fix -- YS. 
@@ -155,8 +155,8 @@ c-----------------------------------------------------------------------
       subroutine zdiag_domi(n,sym,valued,a, ja,ia,ao,jao, iao, 
      *     ddomc, ddomr)
       implicit none 
-      complex*16 a(*), ao(*) 
-      real*8 ddomc, ddomr
+      complex(kind(1.0d0)) a(*), ao(*) 
+      double precision ddomc, ddomr
       integer n, ja(*), ia(n+1), jao(*), iao(n+1)
       logical sym, valued
 c-----------------------------------------------------------------
@@ -193,7 +193,7 @@ c     ddomr = percentage of weakly diagonally dominant rows
 c-------------------------------------------------------------------
 c     locals
       integer i, j0, j1, k, j 
-      real*8 aii, dsumr, dsumc 
+      double precision aii, dsumr, dsumc 
 c     number of diagonally dominant columns
 c     real arithmetic used to avoid problems.. YS. 03/27/01 
       ddomc = 0.0  
@@ -235,8 +235,8 @@ c-----------------------------------------------------------------------
       subroutine zfrobnorm(n,sym,a,ja,ia,Fnorm)
       implicit none 
       integer n 
-      complex*16 a(*)
-      real*8 Fnorm
+      complex(kind(1.0d0)) a(*)
+      double precision Fnorm
       integer ja(*),ia(n+1)
       logical sym
 c--------------------------------------------------------------------------
@@ -260,16 +260,16 @@ c on return
 c-----------
 c Fnorm  = Frobenius norm of A.
 c--------------------------------------------------------------------------
-      real*8 Fdiag
+      double precision Fdiag
       integer i, k 
       Fdiag = 0.d0
       Fnorm = 0.d0
       do i =1,n
          do k = ia(i), ia(i+1)-1
             if (ja(k) .eq. i) then
-               Fdiag = Fdiag + conjg(a(k))*a(k)
+               Fdiag = Fdiag + abs(a(k))**2
             else
-               Fnorm = Fnorm + conjg(a(k))*a(k)
+               Fnorm = Fnorm + abs(a(k))**2
             endif
          enddo 
       enddo 
@@ -312,8 +312,8 @@ c ao,jao,iao = transpose of A just as a, ja, ia contains
 c              information of A.
 c-----------------------------------------------------------------------
       implicit none
-      complex*16 a(*),ao(*) 
-      real*8 fas,fan,av, Fnorm, st
+      complex(kind(1.0d0)) a(*),ao(*) 
+      double precision fas,fan,av, Fnorm, st
       integer n, ja(*), ia(n+1), jao(*), iao(n+1),imatch
       logical sym
       integer k1,k2,k1max,k2max,j1,j2,nnz,i
@@ -371,7 +371,8 @@ c-----------------------------------------------------------------------
       subroutine zdistaij(n,nnz,sym,ja,ia,dist, std)
 
       implicit none
-      real*8  dist, std
+      double precision  dist, std
+      integer n, nnz
       integer ja(*), ia(n+1)
 c-----------------------------------------------------------------------
 c     this routine computes the average distance of a(i,j) from diag and
@@ -395,7 +396,7 @@ c-----------------------------------------------------------------------
 c
 c distance of an element from diagonal.
 c
-      integer j0,j1,i,j,k,n,nnz
+      integer j0,j1,i,j,k
       logical sym
 
       dist   = 0.0
@@ -547,7 +548,7 @@ c----------------------------------------------------------------------
 c-----------------------------------------------------------------------      
       subroutine  zn_imp_diag(n,nnz,dist, ipar1,ndiag,ioff,dcount)
       implicit none
-      real*8  dcount(*)
+      double precision  dcount(*)
       integer n,nnz, dist(*), ndiag, ioff(*), ipar1
 c-----------------------------------------------------------------------
 c     this routine computes the most important diagonals.
@@ -646,7 +647,7 @@ c     indiag = nonzero diagonal element indicator
 c-----------------------------------------------------------------------
       subroutine zavnz_col(n,ja,ia,iao, ndiag, av, st)
       implicit none
-      real*8 av, st
+      double precision av, st
       integer n,  ndiag, ja(*), ia(n+1), iao(n+1)
 c---------------------------------------------------------------------
 c     this routine computes average number of nonzero elements/column and
@@ -726,7 +727,7 @@ c
 c-----------------------------------------------------------------------
 c-----local variables
       integer n, nb, nnz, nnzb, i, j, neq, max, num
-      character*101 tmpst
+      character(101) tmpst
       integer bsiz(10), freq(10)
 c-----------------------------------------------------------------------
       n = kvstr(nr+1)-1
@@ -777,8 +778,7 @@ c-----print information about blocksizes
       write (iout,111) tmpst
       write (iout, 96)
 c-----------------------------------------------------------------------
- 99    format (2x,38(2h *))
- 96    format (6x,' *',65(1h-),'*')
+ 96    format (6x,' *',65('-'),'*')
  100   format(
      * 6x,' *  Number of rows                                   = ',
      * i10,'  *'/

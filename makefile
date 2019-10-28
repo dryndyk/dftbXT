@@ -89,11 +89,9 @@ ifeq ($(strip $(WITH_MPI)),1)
 endif
 
 ifeq ($(strip $(WITH_TRANSPORT)),1)
-  DFTBPLUS_DEPS += external_tranas external_poisson external_sparskit
-  external_poisson: external_tranas
+  DFTBPLUS_DEPS += external_tranas external_mudpack external_sparskit
   ifeq ($(strip $(WITH_MPI)),1)
     external_tranas: external_mpifx
-    external_poisson: external_mpifx
   endif
 endif
 dftb+: $(DFTBPLUS_DEPS)
@@ -115,8 +113,8 @@ misc_skderivs misc_slakovalue: external_xmlf90
 EXTERNAL_NAME = $(subst external_,,$@)
 
 EXTERNALS = external_xmlf90 external_fsockets external_dftd3 external_mpifx \
-            external_scalapackfx external_poisson external_tranas external_sparskit \
-            external_magmahelper
+            external_scalapackfx external_tranas external_sparskit \
+            external_mudpack
 
 .PHONY: $(EXTERNALS)
 $(EXTERNALS):
@@ -137,7 +135,7 @@ endif
 .PHONY: api_lib_mm
 api_lib_mm:
 	mkdir -p $(BUILDDIR)/api/mm
-	$(MAKE) -C $(BUILDDIR)/api/mm -f $(ROOT)/api/mm/make.build \
+	$(MAKE) -C $(BUILDDIR)/api/mm -f $(ROOT)/prog/dftb+/api/mm/make.build \
 	    ROOT=$(ROOT) BUILDROOT=$(BUILDDIR)
 
 api_lib_mm: $(DFTBPLUS_DEPS)
@@ -203,7 +201,7 @@ install_misc_skderivs install_misc_slakovalue:
 	    ROOT=$(ROOT) BUILDROOT=$(BUILDDIR) install
 
 
-PYTHON := python
+PYTHON := python3
 .PHONY: install_dptools
 install_dptools:
 	cd $(ROOT)/tools/dptools \

@@ -33,6 +33,6 @@ scalapackfx.o += _extlib_scalapackfx _extlib_lapack
 #:if WITH_TRANSPORT
 tranas_interface.o: _extlib_tranas 
 tranas_interface.o += _extlib_tranas
-poisson_int.o: _extlib_tranas 
-poisson_int.o += _extlib_tranas
+poisson_int.o: _extlib_mudpack _extlib_tranas 
+poisson_int.o += _extlib_mudpack _extlib_tranas
 #:endif

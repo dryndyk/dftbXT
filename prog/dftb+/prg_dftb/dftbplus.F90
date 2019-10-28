@@ -14,7 +14,7 @@ program dftbplus
   use dftbp_globalenv
   use dftbp_environment
   use dftbp_main, only : runDftbPlus
-  use dftbp_inputdata_module, only : inputData
+  use dftbp_inputdata, only : inputData
   use dftbp_formatout, only : printDftbHeader
   use dftbp_hsdhelpers, only : parseHsdInput
   use dftbp_initprogram, only : initProgramVariables, destructProgramVariables

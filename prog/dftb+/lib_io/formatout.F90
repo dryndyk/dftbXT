@@ -351,8 +351,7 @@ contains
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.03                                ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for model and atomistic quantum transport,          ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' many-body nonequilibrium phenomena, material & device modeling             ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for quantum nanoscale modeling                      ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2006-2019 DFTB+ developers group                             ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2018-2019 Dmitry A. Ryndyk                                   ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
