@@ -658,7 +658,8 @@ contains
           call getNextInputDensity(SSqrReal, over, neighbourList, nNeighbourSK,&
               & denseDesc%iAtomStart, iSparseStart, img2CentCell, pChrgMixer, qOutput, orb,&
               & iGeoStep, iSccIter, minSccIter, maxSccIter, sccTol, tStopScc, tReadChrg, q0,&
-              & qInput, sccErrorQ, tConverged, deltaRhoOut, deltaRhoIn, deltaRhoDiff)
+              & qInput, sccErrorQ, tConverged, deltaRhoOut, deltaRhoIn, deltaRhoDiff,&
+              & qBlockIn, qBlockOut)
         end if
 
         call getSccInfo(iSccIter, energy%Eelec, Eold, diffElec)
@@ -3727,7 +3728,7 @@ contains
   subroutine getNextInputDensity(SSqrReal, over, neighbourList, nNeighbourSK, iAtomStart,&
       & iSparseStart, img2CentCell, pChrgMixer, qOutput, orb, iGeoStep, iSccIter, minSccIter,&
       & maxSccIter, sccTol, tStopScc, tReadChrg, q0, qInput, sccErrorQ, tConverged, deltaRhoOut,&
-      & deltaRhoIn, deltaRhoDiff)
+      & deltaRhoIn, deltaRhoDiff, qBlockIn, qBlockOut)
 
     !> Square dense overlap storage
     real(dp), allocatable, intent(inout) :: SSqrReal(:,:)
@@ -3801,8 +3802,14 @@ contains
     !> difference of delta density matrix in and out
     real(dp), intent(inout) :: deltaRhoDiff(:)
 
+    !> block charge input (if needed for orbital potentials)
+    real(dp), intent(inout), allocatable :: qBlockIn(:,:,:,:)
 
-    integer :: nSpin
+    !> Dual output charges
+    real(dp), intent(inout), allocatable :: qBlockOut(:,:,:,:)
+
+
+    integer :: nSpin, iSpin, iAt, iOrb
     real(dp), pointer :: deltaRhoInSqr(:,:,:)
 
     nSpin = size(qOutput, dim=3)
@@ -3816,6 +3823,9 @@ contains
       if ((iSCCIter + iGeoStep) == 1 .and. (nSpin > 1 .and. .not. tReadChrg)) then
         deltaRhoIn(:) = deltaRhoOut
         qInput(:,:,:) = qOutput
+        if (allocated(qBlockIn)) then
+          qBlockIn(:,:,:,:) = qBlockOut
+        end if
       else
         call mix(pChrgMixer, deltaRhoIn, deltaRhoDiff)
         call unpackHS(SSqrReal, over, neighbourList%iNeighbour, nNeighbourSK, iAtomStart,&
@@ -3831,7 +3841,22 @@ contains
         else
           qInput(:,:,:) = qInput + q0
         end if
+
+        if (allocated(qBlockIn)) then
+          call denseBlockMulliken(deltaRhoInSqr, SSqrReal, iAtomStart, qBlockIn)
+          do iSpin = 1, nSpin
+            do iAt = 1, size(qInput, dim=2)
+              do iOrb = 1, size(qInput, dim=1)
+                qBlockIn(iOrb, iOrb, iAt, iSpin) = qInput(iOrb, iAt, iSpin)
+              end do
+            end do
+          end do
+        end if
+
         call ud2qm(qInput)
+        if (allocated(qBlockIn)) then
+          call ud2qm(qBlockIn)
+        end if
       end if
     end if
 

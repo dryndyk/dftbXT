@@ -14,6 +14,7 @@ now an open source project.
 DFTB+XT is an extended version of the DFTB+ code for model and atomistic quantum 
 transport at nanoscale, many-body nonequilibrium phenomena, material & device modeling. 
 Since 2018, it is developed as the core package of TraNaS OpenSuite.
+tranas.org/opensuite/
 
 
 People
@@ -21,7 +22,7 @@ People
 
 The DFTB+XT is developed by
 
-* Dmitry Ryndyk (University of Bremen and TU Dresden, Germany)   
+* Dmitry Ryndyk (TU Dresden, Germany)   
 
 
 The DFTB+ development is being lead and coordinated by:
@@ -40,6 +41,8 @@ contributed to DFTB+ :
 
 * Adriel Garcia Dominguez (Max Planck Institute for the Structure and Dynamics
   of Matter, Germany)
+
+* In Seong Lee (Ulsan National Institute of Science and Technology, Repubic of Korea)
 
 * Thomas Niehaus (University of Lyon, France)
 
