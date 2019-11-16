@@ -94,7 +94,7 @@ module dftbp_main
   use tranas_interface
   use poisson_init
 #:endif
-
+  use dftbp_transportio
 
   implicit none
   private
@@ -253,7 +253,7 @@ contains
   #:if WITH_TRANSPORT
     if (tContCalc) then
       ! Note: shift and charges are saved in QM representation (not UD)
-      call writeContShifts(transpar%contacts(transpar%taskContInd)%output, orb, &
+      call writeContactShifts(transpar%contacts(transpar%taskContInd)%output, orb, &
           & potential%intShell, qOutput, Ef)
     end if
 
@@ -467,7 +467,7 @@ contains
     call resetExternalPotentials(refExtPot, potential)
 
     if (tReadShifts) then
-      call uploadShiftPerL(fShifts, orb, nAtom, nSpin, potential%extShell)
+      call readShifts(fShifts, orb, nAtom, nSpin, potential%extShell)
     end if
 
     call setUpExternalElectricField(tEField, tTDEField, tPeriodic, EFieldStrength,&
@@ -688,7 +688,8 @@ contains
             & tImHam.or.tSpinOrbit, tPrintMulliken, orbitalL, qBlockOut, Ef, Eband, TS, E0,&
             & extPressure, cellVol, tAtomicEnergy, tDispersion, tEField, tPeriodic, nSpin, tSpin,&
             & tSpinOrbit, tSccCalc, allocated(onSiteElements), tNegf, invLatVec, kPoint,&
-            & iAtInCentralRegion, electronicSolver, tDefinedFreeE, allocated(halogenXCorrection))
+            & iAtInCentralRegion, electronicSolver, tDefinedFreeE, allocated(halogenXCorrection),&
+            & tRangeSep, allocated(thirdOrd))
       end if
 
       if (tConverged .or. tStopScc) then
@@ -1007,7 +1008,7 @@ contains
     if (tContCalc) then
       ! Note: shift and charges are saved in QM representation (not UD)
       associate(tp => transpar)
-      call writeContShifts(tp%contacts(tp%taskContInd)%output, orb, potential%intShell,&
+      call writeContactShifts(tp%contacts(tp%taskContInd)%output, orb, potential%intShell,&
           & qOutput, Ef)
       end associate
     end if
@@ -3536,7 +3537,9 @@ contains
 
     !> Add exchange conribution for range separated calculations
     if (allocated(rangeSep)) then
-       call rangeSep%addLREnergy(energy%Eelec)
+      energy%Efock = 0.0_dp
+      call rangeSep%addLREnergy(energy%Efock)
+      energy%Eelec = energy%Eelec + energy%Efock
     end if
 
     energy%atomElec(:) = energy%atomNonSCC + energy%atomSCC + energy%atomSpin + energy%atomDftbu&

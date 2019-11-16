@@ -13,7 +13,95 @@
 
 !> Global variables and initialization for the main program.
 module dftbp_initprogram
-  
+ 
+  use omp_lib
+  use dftbp_mainio, only : initOutputFile
+  use dftbp_assert
+  use dftbp_globalenv
+  use dftbp_environment
+  use dftbp_scalapackfx
+  use dftbp_inputdata
+  use dftbp_densedescr
+  use dftbp_constants
+  use dftbp_elecsolvers
+  use dftbp_elsisolver, only : TElsiSolver_init, TElsiSolver_final
+  use dftbp_elsiiface
+  use dftbp_periodic
+  use dftbp_accuracy
+  use dftbp_intrinsicpr
+  use dftbp_shortgamma
+  use dftbp_coulomb
+  use dftbp_message
+  use dftbp_mixer
+  use dftbp_simplemixer
+  use dftbp_andersonmixer
+  use dftbp_broydenmixer
+  use dftbp_diismixer
+
+  use dftbp_geoopt
+  use dftbp_conjgrad
+  use dftbp_steepdesc
+  use dftbp_gdiis
+  use dftbp_lbfgs
+
+  use dftbp_randomgenpool
+  use dftbp_ranlux
+  use dftbp_mdcommon
+  use dftbp_mdintegrator
+  use dftbp_velocityverlet
+  use dftbp_thermostat
+  use dftbp_dummytherm
+  use dftbp_andersentherm
+  use dftbp_berendsentherm
+  use dftbp_nhctherm
+  use dftbp_tempprofile
+  use dftbp_numderivs2
+  use dftbp_lapackroutines
+  use dftbp_simplealgebra
+  use dftbp_nonscc
+  use dftbp_scc
+  use dftbp_sccinit
+  use dftbp_onsitecorrection
+  use dftbp_h5correction
+  use dftbp_halogenx
+  use dftbp_slakocont
+  use dftbp_repcont
+  use dftbp_fileid
+  use dftbp_spin, only: Spin_getOrbitalEquiv, ud2qm, qm2ud
+  use dftbp_dftbplusu
+  use dftbp_dispersions
+  use dftbp_thirdorder
+  use dftbp_linresp
+  use dftbp_RangeSeparated
+  use dftbp_stress
+  use dftbp_orbitalequiv
+  use dftbp_orbitals
+  use dftbp_commontypes
+  use dftbp_sorting, only : heap_sort
+  use dftbp_linkedlist
+  use dftbp_wrappedintr
+  use dftbp_xlbomd
+  use dftbp_etemp, only : Fermi
+#:if WITH_SOCKETS
+  use dftbp_mainio, only : receiveGeometryFromSocket
+  use dftbp_ipisocket
+#:endif
+  use dftbp_elstatpot
+  use dftbp_pmlocalisation
+  use dftbp_energies
+  use dftbp_potentials
+  use dftbp_taggedoutput
+  use dftbp_formatout
+  use dftbp_qdepextpotproxy, only : TQDepExtPotProxy
+  use dftbp_forcetypes, only : forceTypes
+  use dftbp_elstattypes, only : elstatTypes
+
+  use dftbp_magmahelper
+#:if WITH_GPU
+  use iso_c_binding, only :  c_int
+  use device_info
+#:endif
+
 #:if WITH_OMP
   use omp_lib
 #:endif
@@ -110,7 +198,7 @@ module dftbp_initprogram
   use poisson_init
   use blacsfx_module !DAR
 #:endif
-
+  use dftbp_transportio
   implicit none
 
 #:if WITH_GPU
@@ -985,6 +1073,9 @@ module dftbp_initprogram
   !> All of the excited energies actuall solved by Casida routines (if used)
   real(dp), allocatable :: energiesCasida(:)
 
+  !> Is this DFTB/SSR formalism
+  logical :: tREKS
+
 contains
 
 
@@ -1138,6 +1229,7 @@ contains
     tSccCalc = input%ctrl%tScc
     tDFTBU = input%ctrl%tDFTBU
     tSpin = input%ctrl%tSpin
+    tREKS = .false.
     if (tSpin) then
       nSpin = 2
     else
@@ -1500,7 +1592,7 @@ contains
     if (tSccCalc) then
       allocate(chargePerShell(orb%mShell,nAtom,nSpin))
     else
-       allocate(chargePerShell(0,0,0))
+      allocate(chargePerShell(0,0,0))
     end if
     allocate(ham(0, nSpin))
     if (tImHam) then
@@ -2296,11 +2388,11 @@ contains
 
     if (tRangeSep) then
       call ensureRangeSeparatedReqs(tPeriodic, tReadChrg, input%ctrl%tShellResolved,&
-          & input%ctrl%rangeSepInp)
+          & tAtomicEnergy, input%ctrl%rangeSepInp)
       call getRangeSeparatedCutoff(input%ctrl%rangeSepInp%cutoffRed, cutOff)
-      call initRangeSeparated(nAtom, species0, speciesName, hubbU, input%ctrl%rangeSepInp, tSpin,&
-          & rangeSep, deltaRhoIn, deltaRhoOut, deltaRhoDiff, deltaRhoInSqr, deltaRhoOutSqr,&
-          & nMixElements)
+      call initRangeSeparated(nAtom, species0, speciesName, hubbU, input%ctrl%rangeSepInp,&
+          & tSpin, tREKS, rangeSep, deltaRhoIn, deltaRhoOut, deltaRhoDiff, deltaRhoInSqr,&
+          & deltaRhoOutSqr, nMixElements)
     end if
 
     tReadShifts = input%ctrl%tReadShifts
@@ -3061,11 +3153,15 @@ contains
 
       select case(input%ctrl%rangeSepInp%rangeSepAlg)
       case (rangeSepTypes%neighbour)
+        write(stdOut, "(2X,A,':',T30,2X,A)") "Range separated algorithm", "NeighbourBased"
         write(stdOut, "(2X,A,':',T30,E14.6,A)") "Spatially cutoff at",&
             & input%ctrl%rangeSepInp%cutoffRed * Bohr__AA," A"
       case (rangeSepTypes%threshold)
+        write(stdOut, "(2X,A,':',T30,2X,A)") "Range separated algorithm", "Thresholded"
         write(stdOut, "(2X,A,':',T30,E14.6)") "Thresholded to",&
             & input%ctrl%rangeSepInp%screeningThreshold
+      case (rangeSepTypes%matrixBased)
+        write(stdOut, "(2X,A,':',T30,2X,A)") "Range separated algorithm", "MatrixBased"
       case default
         call error("Unknown range separated hybrid method")
       end select
@@ -3979,7 +4075,6 @@ contains
 
   end subroutine initArrays
 
-
 #:if WITH_TRANSPORT
 
   !> initialize arrays for tranpsport
@@ -4019,103 +4114,13 @@ contains
     if (tUpload) then
       allocate(shiftPerLUp(orb%mShell, nAtom))
       allocate(chargeUp(orb%mOrb, nAtom, nSpin))
-      call uploadContShiftPerL(shiftPerLUp, chargeUp, transpar, orb, species0)
+      call readContactShifts(shiftPerLUp, chargeUp, transpar, orb)
     end if
     if (tPoisson) then
       allocate(poissonDerivs(3,nAtom))
     end if
 
   end subroutine initTransportArrays
-
-
-  !> Read contact potential shifts from file
-  subroutine uploadContShiftPerL(shiftPerL, charges, tp, orb, species)
-
-    !> shifts for atoms in contacts
-    real(dp), intent(out) :: shiftPerL(:,:)
-
-    !> charges for atoms in contacts
-    real(dp), intent(out) :: charges(:,:,:)
-
-    !> transport parameters
-    type(TTransPar), intent(in) :: tp
-
-    !> atomic orbital parameters
-    type(TOrbitals), intent(in) :: orb
-
-    !> species of atoms in the system
-    integer, intent(in) :: species(:)
-
-    real(dp), allocatable :: shiftPerLSt(:,:,:), chargesSt(:,:,:)
-    integer, allocatable :: nOrbAtom(:)
-    integer :: nAtomSt, mShellSt, nContAtom, mOrbSt, nSpinSt, nSpin
-    integer :: iCont, iStart, iEnd, ii
-    integer :: fdH
-    character(lc) :: strTmp
-    logical :: iexist
-
-    nSpin = size(charges, dim=3)
-
-    if (size(shiftPerL,dim=2) /= size(charges, dim=2)) then
-      call error("Mismatch between array charges and shifts")
-    endif
-
-    shiftPerL = 0.0_dp
-    charges = 0.0_dp
-
-    do iCont = 1, tp%ncont
-      inquire(file="shiftcont_"// trim(tp%contacts(iCont)%name) // ".dat", exist = iexist)
-      if (.not.iexist) then
-        call error("Contact shift file shiftcont_"// trim(tp%contacts(iCont)%name) &
-            &  // ".dat is missing"//new_line('a')//"Run ContactHamiltonian calculations first.")
-      end if
-
-      open(newunit=fdH, file="shiftcont_" // trim(tp%contacts(iCont)%name) // ".dat",&
-          & form="formatted", status="OLD", action="READ")
-      read(fdH, *) nAtomSt, mShellSt, mOrbSt, nSpinSt
-      iStart = tp%contacts(iCont)%idxrange(1)
-      iEnd = tp%contacts(iCont)%idxrange(2)
-      nContAtom = iEnd - iStart + 1
-
-      if (nAtomSt /= nContAtom) then
-        call error("Upload Contacts: Mismatch in number of atoms.")
-      end if
-      if (mShellSt /= orb%mShell) then
-        call error("Upload Contacts: Mismatch in max shell per atom.")
-      end if
-      if (mOrbSt /= orb%mOrb) then
-        call error("Upload Contacts: Mismatch in orbitals per atom.")
-      end if
-      if (nSpin /= nSpinSt) then
-        write(strTmp,"(A,I0,A,I0)")'Contact spin ',nSpinSt,'. Spin channels ',nSpin
-        call error(trim(strTmp))
-      end if
-
-      allocate(nOrbAtom(nAtomSt))
-      read(fdH, *) nOrbAtom
-      allocate(shiftPerLSt(orb%mShell, nAtomSt, nSpin))
-      read(fdH, *) shiftPerLSt(:,:,:)
-      allocate(chargesSt(orb%mOrb, nAtomSt, nSpin))
-      read(fdH, *) chargesSt
-      close(fdH)
-
-      if (any(nOrbAtom /= orb%nOrbAtom(iStart:iEnd))) then
-        call error("Incompatible orbitals in the upload file!")
-      end if
-
-      !if (nSpin == 1) then
-      shiftPerL(:,iStart:iEnd) = ShiftPerLSt(:,:,1)
-      !else
-      !  shiftPerL(:,iStart:iEnd) = sum(ShiftPerLSt, dim=3)
-      !endif
-
-      charges(:,iStart:iEnd,:) = chargesSt(:,:,:)
-      deallocate(nOrbAtom)
-      deallocate(shiftPerLSt)
-      deallocate(chargesSt)
-    end do
-
-  end subroutine uploadContShiftPerL
 
 #:endif
 
@@ -4467,7 +4472,7 @@ contains
 
 
   !> Stop if any range separated incompatible setting is found
-  subroutine ensureRangeSeparatedReqs(tPeriodic, tReadChrg, tShellResolved, rangeSepInp)
+  subroutine ensureRangeSeparatedReqs(tPeriodic, tReadChrg, tShellResolved, tAtomicEnergy, rangeSepInp)
 
     !> Is the system periodic
     logical, intent(in) :: tPeriodic
@@ -4477,6 +4482,9 @@ contains
 
     !> Is this a shell resolved calculation
     logical, intent(in) :: tShellResolved
+
+    !> Do we need atom resolved E?
+    logical, intent(inout) :: tAtomicEnergy
 
     !> Parameters for the range separated calculation
     type(TRangeSepInp), intent(in) :: rangeSepInp
@@ -4490,6 +4498,11 @@ contains
     end if
     if (tShellResolved) then
       call error("Range separated functionality currently does not yet support shell-resolved scc")
+    end if
+    if (tAtomicEnergy) then
+      call warning("Atomic resolved energies cannot be calculated with range-separation&
+          & hybrid functional.")
+      tAtomicEnergy = .false.
     end if
 
   end subroutine ensureRangeSeparatedReqs
@@ -4518,8 +4531,9 @@ contains
 
 
   !> Initialise range separated extension.
-  subroutine initRangeSeparated(nAtom, species0, speciesName, hubbU, rangeSepInp, tSpin, rangeSep,&
-      & deltaRhoIn, deltarhoOut, deltaRhoDiff, deltaRhoInSqr, deltaRhoOutSqr, nMixElements)
+  subroutine initRangeSeparated(nAtom, species0, speciesName, hubbU, rangeSepInp, tSpin,&
+      & tREKS, rangeSep, deltaRhoIn, deltaRhoOut, deltaRhoDiff, deltaRhoInSqr,&
+      & deltaRhoOutSqr, nMixElements)
 
     !> Number of atoms in the system
     integer, intent(in) :: nAtom
@@ -4536,8 +4550,11 @@ contains
     !> input for range separated calculation
     type(TRangeSepInp), intent(in) :: rangeSepInp
 
-    !> Is this spin unrestricted
+    !> Is this spin restricted (F) or unrestricted (T)
     logical, intent(in) :: tSpin
+
+    !> Is this DFTB/SSR formalism
+    logical, intent(in) :: tREKS
 
     !> Resulting settings for range separation
     type(RangeSepFunc), allocatable, intent(out) :: rangeSep
@@ -4562,7 +4579,8 @@ contains
 
     allocate(rangeSep)
     call RangeSepFunc_init(rangeSep, nAtom, species0, speciesName, hubbU(1,:),&
-        & rangeSepInp%screeningThreshold, rangeSepInp%omega, tSpin, rangeSepInp%rangeSepAlg)
+        & rangeSepInp%screeningThreshold, rangeSepInp%omega, tSpin, tREKS,&
+        & rangeSepInp%rangeSepAlg)
     allocate(deltaRhoIn(nOrb * nOrb * nSpin))
     allocate(deltaRhoOut(nOrb * nOrb * nSpin))
     allocate(deltaRhoDiff(nOrb * nOrb * nSpin))
