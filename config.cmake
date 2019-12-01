@@ -6,9 +6,9 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Release|Debug)")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/_install" CACHE STRING
   "Directory to install the compiled code into")
 
-option(WITH_OMP "Whether OpenMP thread parallisation should be enabled" TRUE)
+option(WITH_OMP "Whether OpenMP thread parallisation should be enabled" FALSE)
 
-option(WITH_MPI "Whether DFTB+ should support MPI-parallelism" FALSE)
+option(WITH_MPI "Whether DFTB+ should support MPI-parallelism" TRUE)
 # If you build an MPI-parallised binary, consider to set WITH_OMP (OpenMP thread parallelisaton) to
 # FALSE unless you want hybrid parallelisation (for experts only).
 
@@ -17,7 +17,7 @@ option(WITH_ELSI "Whether DFTB+ with MPI-parallelism should use the ELSI librari
 
 option(WITH_GPU "Whether DFTB+ should support GPU-acceleration via the MAGMA-library" FALSE)
 
-option(WITH_TRANSPORT "Whether transport via TraNaS should be included." FALSE)
+option(WITH_TRANSPORT "Whether transport via TraNaS should be included." TRUE)
 # Works only when building static libraries (see option BUILD_SHARED_LIBS)
 
 option(WITH_SOCKETS "Whether socket communication should be allowed for" FALSE)
@@ -94,7 +94,7 @@ set(PKGCONFIG_LANGUAGE "Fortran" CACHE STRING
 ####################################################################################################
 #
 # NOTE FOR DEVELOPERS: Do not customise any settings here or in any of the sys/*.cmake files as they
-# contain the official defaults DFTB+ is shipped with. If you need to customise any of the settings
+# contain the official defaults DFTB+XT is shipped with. If you need to customise any of the settings
 # for your system, create a custom cmake file (e.g. custom.cmake) containing (only) the settings you
 # would like to override. For an example, see
 #
