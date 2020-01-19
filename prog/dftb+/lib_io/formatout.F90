@@ -1,8 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
 ! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
-! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
+! Copyright (C) 2018-2020 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2006-2019 DFTB+ developers group                                                   !
+! Copyright (C) 2006-2020 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -349,11 +349,11 @@ contains
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.03 (16.11.2019)                   ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.03 (19.01.2020)                   ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for quantum nanoscale modeling                      ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2006-2019 DFTB+ developers group                             ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2018-2019 Dmitry A. Ryndyk                                   ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2006-2020 DFTB+ developers group                             ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2018-2020 Dmitry A. Ryndyk                                   ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar

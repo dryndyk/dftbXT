@@ -52,8 +52,13 @@ _mod_dftbp_magmahelper: magmahelper.o
 _mod_dftbp_magmahelper = $(magmahelper.o)
 #:endif
 
+<<<<<<< HEAD
 matconv.o: common.fypp _mod_dftbp_assert _mod_dftbp_accuracy _mod_dftbp_constants _mod_dftbp_commontypes _mod_mat_def 
 matconv.o = matconv.o $(common.fypp) $(_mod_dftbp_assert) $(_mod_dftbp_accuracy) $(_mod_dftbp_constants) $(_mod_dftbp_commontypes) $(_mod_mat_def) 
+=======
+matconv.o: common.fypp _mod_dftbp_assert _mod_dftbp_accuracy _mod_dftbp_constants _mod_dftbp_commontypes _mod_libnegf 
+matconv.o = matconv.o $(common.fypp) $(_mod_dftbp_assert) $(_mod_dftbp_accuracy) $(_mod_dftbp_constants) $(_mod_dftbp_commontypes) $(_mod_libnegf) 
+>>>>>>> dftbplus_git
 _mod_dftbp_matconv: matconv.o
 _mod_dftbp_matconv = $(matconv.o)
 
@@ -81,7 +86,13 @@ _mod_negf_int: negf_int.o
 _mod_negf_int = $(negf_int.o)
 #:endif
 
+plumed.o: common.fypp _mod_dftbp_accuracy _mod_dftbp_message 
+plumed.o = plumed.o $(common.fypp) $(_mod_dftbp_accuracy) $(_mod_dftbp_message) 
+_mod_dftbp_plumed: plumed.o
+_mod_dftbp_plumed = $(plumed.o)
+
 #:if WITH_MPI
+<<<<<<< HEAD
 poisson_int.o: common.fypp _mod_dftbp_accuracy _mod_dftbp_constants _mod_dftbp_commontypes _mod_dftbp_globalenv _mod_dftbp_message _mod_tranas_vars _mod_poisson _mod_libmpifx_module 
 poisson_int.o = poisson_int.o $(common.fypp) $(_mod_dftbp_accuracy) $(_mod_dftbp_constants) $(_mod_dftbp_commontypes) $(_mod_dftbp_globalenv) $(_mod_dftbp_message) $(_mod_tranas_vars) $(_mod_poisson) $(_mod_libmpifx_module) 
 _mod_poisson_init: poisson_int.o
@@ -89,6 +100,15 @@ _mod_poisson_init = $(poisson_int.o)
 #:else
 poisson_int.o: common.fypp _mod_dftbp_accuracy _mod_dftbp_constants _mod_dftbp_commontypes _mod_dftbp_globalenv _mod_dftbp_message _mod_tranas_vars _mod_poisson 
 poisson_int.o = poisson_int.o $(common.fypp) $(_mod_dftbp_accuracy) $(_mod_dftbp_constants) $(_mod_dftbp_commontypes) $(_mod_dftbp_globalenv) $(_mod_dftbp_message) $(_mod_tranas_vars) $(_mod_poisson) 
+=======
+poisson_int.o: common.fypp _mod_dftbp_accuracy _mod_dftbp_constants _mod_dftbp_commontypes _mod_dftbp_globalenv _mod_dftbp_message _mod_poisson _mod_libnegf_vars _mod_system_calls _mod_libmpifx_module 
+poisson_int.o = poisson_int.o $(common.fypp) $(_mod_dftbp_accuracy) $(_mod_dftbp_constants) $(_mod_dftbp_commontypes) $(_mod_dftbp_globalenv) $(_mod_dftbp_message) $(_mod_poisson) $(_mod_libnegf_vars) $(_mod_system_calls) $(_mod_libmpifx_module) 
+_mod_poisson_init: poisson_int.o
+_mod_poisson_init = $(poisson_int.o)
+#:else
+poisson_int.o: common.fypp _mod_dftbp_accuracy _mod_dftbp_constants _mod_dftbp_commontypes _mod_dftbp_globalenv _mod_dftbp_message _mod_poisson _mod_libnegf_vars _mod_system_calls 
+poisson_int.o = poisson_int.o $(common.fypp) $(_mod_dftbp_accuracy) $(_mod_dftbp_constants) $(_mod_dftbp_commontypes) $(_mod_dftbp_globalenv) $(_mod_dftbp_message) $(_mod_poisson) $(_mod_libnegf_vars) $(_mod_system_calls) 
+>>>>>>> dftbplus_git
 _mod_poisson_init: poisson_int.o
 _mod_poisson_init = $(poisson_int.o)
 #:endif
@@ -105,6 +125,7 @@ _mod_dftbp_scalapackfx: scalapackfx.o
 _mod_dftbp_scalapackfx = $(scalapackfx.o)
 #:endif
 
+<<<<<<< HEAD
 tranas_interface.o: _mod_dftbp_accuracy _mod_dftbp_matconv _mod_dftbp_sparse2dense _mod_dftbp_densedescr _mod_dftbp_commontypes _mod_dftbp_mpifx _mod_dftbp_formatout _mod_dftbp_globalenv _mod_dftbp_message _mod_dftbp_elecsolvertypes _mod_ln_precision _mod_ln_constants _mod_ln_allocation _mod_tranas_vars _mod_ln_structure _mod_mpi_globals _mod_mat_def _mod_lib_param _mod_tranas_types_main _mod_tranas _mod_ln_extract _mod_libmpifx_module _mod_dftbp_taggedoutput _mod_tranas_types_mbngf _mod_dftbp_unitconversion _mod_dftbp_charmanip _mod_globals 
 tranas_interface.o = tranas_interface.o $(_mod_dftbp_accuracy) $(_mod_dftbp_matconv) $(_mod_dftbp_sparse2dense) $(_mod_dftbp_densedescr) $(_mod_dftbp_commontypes) $(_mod_dftbp_mpifx) $(_mod_dftbp_formatout) $(_mod_dftbp_globalenv) $(_mod_dftbp_message) $(_mod_dftbp_elecsolvertypes) $(_mod_ln_precision) $(_mod_ln_constants) $(_mod_ln_allocation) $(_mod_tranas_vars) $(_mod_ln_structure) $(_mod_mpi_globals) $(_mod_mat_def) $(_mod_lib_param) $(_mod_tranas_types_main) $(_mod_tranas) $(_mod_ln_extract) $(_mod_libmpifx_module) $(_mod_dftbp_taggedoutput) $(_mod_tranas_types_mbngf) $(_mod_dftbp_unitconversion) $(_mod_dftbp_charmanip) $(_mod_globals) 
 _mod_tranas_interface: tranas_interface.o
@@ -115,6 +136,8 @@ tranas_vars.o = tranas_vars.o $(_mod_tranas_types_main) $(_mod_dftbp_accuracy) $
 _mod_tranas_vars: tranas_vars.o
 _mod_tranas_vars = $(tranas_vars.o)
 
+=======
+>>>>>>> dftbplus_git
 xmlf90.o: _mod_xmlf90_strings _mod_xmlf90_flib_wxml _mod_xmlf90_flib_dom 
 xmlf90.o = xmlf90.o $(_mod_xmlf90_strings) $(_mod_xmlf90_flib_wxml) $(_mod_xmlf90_flib_dom) 
 _mod_dftbp_xmlf90: xmlf90.o

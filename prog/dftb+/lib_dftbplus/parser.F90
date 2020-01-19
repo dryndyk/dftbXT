@@ -1,8 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
 ! DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
-! Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
+! Copyright (C) 2018-2020 Dmitry A. Ryndyk                                                         !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2006-2019 DFTB+ developers group                                                   !
+! Copyright (C) 2006-2020 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -53,6 +53,7 @@ module dftbp_parser
   use dftbp_elsiiface
   use dftbp_elecsolvers, only : electronicSolverTypes
   use dftbp_wrappedintr
+  use dftbp_plumed, only : withPlumed
 #:if WITH_TRANSPORT
   use poisson_init
   use tranas_vars
@@ -899,6 +900,12 @@ contains
 
       call getChildValue(node, "OutputPrefix", buffer2, "geo_end")
       ctrl%outFile = unquote(char(buffer2))
+
+      call getChildValue(node, "Plumed", ctrl%tPlumed, default=.false., child=child)
+      if (ctrl%tPlumed .and. .not. withPlumed) then
+        call detailedError(child, "Metadynamics can not be used since code has been compiled&
+            & without PLUMED support")
+      end if
 
       if (geom%tPeriodic) then
 

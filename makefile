@@ -1,8 +1,8 @@
 #--------------------------------------------------------------------------------------------------!
 # DFTB+XT open software package for quantum nanoscale modeling (TraNaS OpenSuite)                  !
-# Copyright (C) 2018-2019 Dmitry A. Ryndyk                                                         !
+# Copyright (C) 2018-2020 Dmitry A. Ryndyk                                                         !
 # DFTB+: general package for performing fast atomistic simulations                                 !
-# Copyright (C) 2006-2019 DFTB+ developers group                                                   !
+# Copyright (C) 2006-2020 DFTB+ developers group                                                   !
 #--------------------------------------------------------------------------------------------------!
 # GNU Lesser General Public License version 3 or (at your option) any later version.               !
 # See the LICENSE file for terms of usage and distribution.                                        !
