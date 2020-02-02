@@ -32,6 +32,10 @@ transport/H-sheet_end                  #? WITH_TRANSPORT and MPI_PROCS <= 4
 non-scc/Si_384_GPU                     #? WITH_GPU and not WITH_MPI
 scc/SiC_512_GPU                        #? WITH_GPU and not WITH_MPI
 
+input/caffeine_xyz                     #? MPI_PROCS <= 1
+input/ammonia_poscar                   #? MPI_PROCS <= 1
+input/unsorted_contcar                 #? MPI_PROCS <= 1
+
 rangesep/C18H12-force                  #? not WITH_MPI
 rangesep/C18H12-nbscreening            #? not WITH_MPI
 rangesep/C18H12-matrix                 #? not WITH_MPI
@@ -272,3 +276,6 @@ scc/SiC64+V_dynforce                   #? (MPI_PROCS <= 4 and MPI_PROCS % 2 == 0
 
 #! transport/local-curr                   #? WITH_TRANSPORT and MPI_PROCS <= 4
 #! transport/polyacetylene_semiInf        #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/H-sheet_grp2                 #? WITH_TRANSPORT and MPI_PROCS <= 8 and MPI_PROCS % 2 == 0
+transport/H-sheet_grp4                 #? WITH_TRANSPORT and MPI_PROCS <= 16 and MPI_PROCS % 4 == 0
+transport/H-sheet_grp8                 #? WITH_TRANSPORT and MPI_PROCS <= 32 and MPI_PROCS % 8 == 0
