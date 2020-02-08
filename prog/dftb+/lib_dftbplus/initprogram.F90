@@ -13,96 +13,7 @@
 
 !> Global variables and initialization for the main program.
 module dftbp_initprogram
- 
-  use omp_lib
-  use dftbp_mainio, only : initOutputFile
-  use dftbp_assert
-  use dftbp_globalenv
-  use dftbp_environment
-  use dftbp_scalapackfx
-  use dftbp_inputdata
-  use dftbp_densedescr
-  use dftbp_constants
-  use dftbp_elecsolvers
-  use dftbp_elsisolver, only : TElsiSolver_init, TElsiSolver_final
-  use dftbp_elsiiface
-  use dftbp_periodic
-  use dftbp_accuracy
-  use dftbp_intrinsicpr
-  use dftbp_shortgamma
-  use dftbp_coulomb
-  use dftbp_message
-  use dftbp_mixer
-  use dftbp_simplemixer
-  use dftbp_andersonmixer
-  use dftbp_broydenmixer
-  use dftbp_diismixer
-
-  use dftbp_geoopt
-  use dftbp_conjgrad
-  use dftbp_steepdesc
-  use dftbp_gdiis
-  use dftbp_lbfgs
-
-  use dftbp_randomgenpool
-  use dftbp_ranlux
-  use dftbp_mdcommon
-  use dftbp_mdintegrator
-  use dftbp_velocityverlet
-  use dftbp_thermostat
-  use dftbp_dummytherm
-  use dftbp_andersentherm
-  use dftbp_berendsentherm
-  use dftbp_nhctherm
-  use dftbp_tempprofile
-  use dftbp_numderivs2
-  use dftbp_lapackroutines
-  use dftbp_simplealgebra
-  use dftbp_nonscc
-  use dftbp_scc
-  use dftbp_sccinit
-  use dftbp_onsitecorrection
-  use dftbp_h5correction
-  use dftbp_halogenx
-  use dftbp_slakocont
-  use dftbp_repcont
-  use dftbp_fileid
-  use dftbp_spin, only: Spin_getOrbitalEquiv, ud2qm, qm2ud
-  use dftbp_dftbplusu
-  use dftbp_dispersions
-  use dftbp_thirdorder
-  use dftbp_linresp
-  use dftbp_RangeSeparated
-  use dftbp_stress
-  use dftbp_orbitalequiv
-  use dftbp_orbitals
-  use dftbp_commontypes
-  use dftbp_sorting, only : heap_sort
-  use dftbp_linkedlist
-  use dftbp_wrappedintr
-  use dftbp_xlbomd
-  use dftbp_etemp, only : Fermi
-#:if WITH_SOCKETS
-  use dftbp_mainio, only : receiveGeometryFromSocket
-  use dftbp_ipisocket
-#:endif
-  use dftbp_elstatpot
-  use dftbp_pmlocalisation
-  use dftbp_energies
-  use dftbp_potentials
-  use dftbp_taggedoutput
-  use dftbp_formatout
-  use dftbp_qdepextpotproxy, only : TQDepExtPotProxy
-  use dftbp_forcetypes, only : forceTypes
-  use dftbp_elstattypes, only : elstatTypes
-
-  use dftbp_magmahelper
-#:if WITH_GPU
-  use iso_c_binding, only :  c_int
-  use device_info
-#:endif
-
-#:if WITH_OMP
+#:if WITH_OMP 
   use omp_lib
 #:endif
   use dftbp_mainio, only : initOutputFile
@@ -171,7 +82,7 @@ module dftbp_initprogram
   use dftbp_linkedlist
   use dftbp_wrappedintr
   use dftbp_xlbomd
-  use dftbp_etemp, only : Fermi
+  use dftbp_etemp, only : fillingTypes
 #:if WITH_SOCKETS
   use dftbp_mainio, only : receiveGeometryFromSocket
   use dftbp_ipisocket
@@ -474,7 +385,7 @@ module dftbp_initprogram
   logical :: tSetFillingTemp
 
   !> Choice of electron distribution function, defaults to Fermi
-  integer :: iDistribFn = 0
+  integer :: iDistribFn = fillingTypes%Fermi
 
   !> atomic kinetic temperature
   real(dp) :: tempAtom
@@ -701,27 +612,26 @@ module dftbp_initprogram
   !> Nr. of external charges
   integer :: nExtChrg
 
-
   !> external electric field
-  logical :: tEField = .false.
+  logical :: tEField
 
   !> Arbitrary external field (including electric)
-  logical :: tExtField = .false.
+  logical :: tExtField
 
   !> field strength
-  real(dp) :: EFieldStrength = 0.0_dp
+  real(dp) :: EFieldStrength
 
   !> field direction
-  real(dp) :: EfieldVector(3) = 0.0_dp
+  real(dp) :: EfieldVector(3)
 
   !> time dependent
-  logical :: tTDEfield = .false.
+  logical :: tTDEfield
 
   !> angular frequency
-  real(dp) :: EfieldOmega = 0.0_dp
+  real(dp) :: EfieldOmega
 
   !> phase of field at step 0
-  integer :: EfieldPhase = 0
+  integer :: EfieldPhase
 
 
   !> Partial density of states (PDOS) projection regions
@@ -746,7 +656,7 @@ module dftbp_initprogram
   real(dp), allocatable :: onSiteDipole(:,:)
 
   !> Should block charges be mixed as well as charges
-  logical :: tMixBlockCharges = .false.
+  logical :: tMixBlockCharges
 
   !> Calculate Casida linear response excitations
   logical :: tLinResp
@@ -755,7 +665,7 @@ module dftbp_initprogram
   logical :: tLinRespZVect
 
   !> Print eigenvectors
-  logical :: tPrintExcitedEigVecs = .false.
+  logical :: tPrintExcitedEigVecs
 
   !> data type for linear response
   type(linresp), save :: lresp
@@ -826,8 +736,8 @@ module dftbp_initprogram
   !> dispersion data and calculations
   class(DispersionIface), allocatable :: dispersion
 
-  !> Can stress be calculated? - start by assuming it can
-  logical :: tStress = .true.
+  !> Can stress be calculated?
+  logical :: tStress
 
   !> should XLBOMD be used in MD
   logical :: tXlbomd
@@ -1218,7 +1128,6 @@ contains
     !> Format for two using exponential notation values with units
     character(len=*), parameter :: format2Ue = "(A, ':', T30, E14.6, 1X, A, T50, E14.6, 1X, A)"
 
-
     @:ASSERT(input%tInitialized)
 
     if(input%ctrl%verbose.gt.0) write(stdOut, "(/,A80)") repeat("-", 80)
@@ -1261,6 +1170,9 @@ contains
     orb = input%slako%orb
     nOrb = orb%nOrb
     tPeriodic = input%geom%tPeriodic
+
+    ! start by assuming stress can be calculated if periodic
+    tStress = tPeriodic
 
     ! Brillouin zone sampling
     if (tPeriodic) then
@@ -1487,7 +1399,6 @@ contains
             & input%ctrl%h5ElementPara)
         sccInp%h5Correction = pH5Correction
       end if
-
 
       nExtChrg = input%ctrl%nExtChrg
       tExtChrg = (nExtChrg > 0)
@@ -2320,7 +2231,7 @@ contains
         call error("XLBOMD does not work for spin, DFTB+U or onsites yet")
       elseif (forceType /= forceTypes%dynamicT0 .and. forceType /= forceTypes%dynamicTFinite) then
         call error("Force evaluation method incompatible with XLBOMD")
-      elseif (iDistribFn /= Fermi) then
+      elseif (iDistribFn /= fillingTypes%Fermi) then
         call error("Filling function incompatible with XLBOMD")
       end if
       allocate(xlbomdIntegrator)
