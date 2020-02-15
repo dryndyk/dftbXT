@@ -29,6 +29,7 @@ Added
 Changed
 -------
 
+- Input in GEN format now strictly follows the format described in the manual
 
 Fixed
 -----
