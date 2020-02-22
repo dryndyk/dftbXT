@@ -13,6 +13,11 @@ dftd3.o = dftd3.o $(_mod_dftd3_api)
 _mod_dftbp_dftd3: dftd3.o
 _mod_dftbp_dftd3 = $(dftd3.o)
 
+dftd4refs.o: _mod_dftbp_accuracy 
+dftd4refs.o = dftd4refs.o $(_mod_dftbp_accuracy) 
+_mod_dftbp_dftd4refs: dftd4refs.o
+_mod_dftbp_dftd4refs = $(dftd4refs.o)
+
 #:if WITH_ELSI
 elsiiface.o: common.fypp _mod_dftbp_accuracy _mod_elsi 
 elsiiface.o = elsiiface.o $(common.fypp) $(_mod_dftbp_accuracy) $(_mod_elsi) 
