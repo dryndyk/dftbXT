@@ -9,16 +9,16 @@
 
 !> implementation of the D4 dispersion model
 module dftbp_dispdftd4
-  use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+  use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
   use dftbp_assert
-  use dftbp_accuracy
-  use dftbp_dispiface, only: DispersionIface
-  use dftbp_periodic, only: TNeighbourList, getNrOfNeighboursForAll, getLatticePoints
-  use dftbp_simplealgebra, only: determinant33, invert33
-  use dftbp_coulomb, only: getMaxGEwald, getOptimalAlphaEwald
-  use dftbp_constants, only: pi
-  use dftbp_dftd4param, only: DftD4Calculator, DispDftD4Inp, initializeCalculator
-  use dftbp_encharges, only: getEEQcharges
+  use dftbp_accuracy, only : dp
+  use dftbp_dispiface, only : DispersionIface
+  use dftbp_periodic, only : TNeighbourList, getNrOfNeighboursForAll, getLatticePoints
+  use dftbp_simplealgebra, only : determinant33, invert33
+  use dftbp_coulomb, only : getMaxGEwald, getOptimalAlphaEwald
+  use dftbp_constants, only : pi, symbolToNumber
+  use dftbp_dftd4param, only : DftD4Calculator, DispDftD4Inp, initializeCalculator
+  use dftbp_encharges, only : getEEQcharges
   use dftbp_blasroutines, only : gemv
   implicit none
   private
@@ -57,9 +57,6 @@ module dftbp_dispdftd4
 
     !> Parameter for Ewald summation.
     real(dp) :: parEwald
-
-    !> atomic number
-    integer, allocatable :: izp(:)
 
     !> is this periodic
     logical :: tPeriodic
@@ -158,16 +155,11 @@ contains
 
     this%nAtom = nAtom
 
-    allocate(this%izp(nAtom))
-    do iAt1 = 1, nAtom
-      call symbolToNumber(this%izp(iAt1), speciesNames(species0(iAt1)))
-    end do
-
     allocate(this%energies(nAtom))
     allocate(this%gradients(3, nAtom))
 
     allocate(this%calculator)
-    call initializeCalculator(this%calculator, inp, this%nAtom, this%izp)
+    call initializeCalculator(this%calculator, inp, this%nAtom, speciesNames)
 
   end subroutine DispDftD4_init
 
@@ -193,11 +185,11 @@ contains
     @:ASSERT(allocated(this%calculator))
 
     if (this%tPeriodic) then
-      call dispersionEnergy(this%calculator, this%nAtom, coords, this%izp, neigh, img2CentCell,&
+      call dispersionEnergy(this%calculator, this%nAtom, coords, species0, neigh, img2CentCell,&
           & this%recPoint, this%energies, this%gradients, stress=this%stress, volume=this%vol,&
           & parEwald=this%parEwald)
     else
-      call dispersionEnergy(this%calculator, this%nAtom, coords, this%izp, neigh, img2CentCell,&
+      call dispersionEnergy(this%calculator, this%nAtom, coords, species0, neigh, img2CentCell,&
           & this%recPoint, this%energies, this%gradients)
     end if
 
@@ -1275,65 +1267,6 @@ contains
     end if
 
   end function tripleScale
-
-
-  !> get atomic number from element symbol.
-  elemental subroutine symbolToNumber(number, symbol)
-
-    !> Element symbol
-    character(len=*), intent(in) :: symbol
-
-    !> Atomic number
-    integer, intent(out) :: number
-
-    character(len=2), parameter :: pse(118) = [&
-      & 'h ','he',&
-      & 'li','be','b ','c ','n ','o ','f ','ne',&
-      & 'na','mg','al','si','p ','s ','cl','ar',&
-      & 'k ','ca',&
-      & 'sc','ti','v ','cr','mn','fe','co','ni','cu','zn',&
-      &           'ga','ge','as','se','br','kr',&
-      & 'rb','sr',&
-      & 'y ','zr','nb','mo','tc','ru','rh','pd','ag','cd',&
-      &           'in','sn','sb','te','i ','xe',&
-      & 'cs','ba','la',&
-      & 'ce','pr','nd','pm','sm','eu','gd','tb','dy','ho','er','tm','yb',&
-      & 'lu','hf','ta','w ','re','os','ir','pt','au','hg',&
-      &           'tl','pb','bi','po','at','rn',&
-      & 'fr','ra','ac',&
-      & 'th','pa','u ','np','pu','am','cm','bk','cf','es','fm','md','no',&
-      & 'lr','rf','db','sg','bh','hs','mt','ds','rg','cn',&
-      &           'nh','fl','mc','lv','ts','og' ]
-
-    integer, parameter :: offset = iachar('a') - iachar('A')
-
-    character(len=2) :: lc_symbol
-    integer :: i, j, k, l
-
-    number = 0
-    lc_symbol = '  '
-
-    k = 0
-    do j = 1, len_trim(symbol)
-      if (k > 2) exit
-      l = iachar(symbol(j:j))
-      if (k >= 1 .and. l == iachar(' ')) exit
-      if (k >= 1 .and. l == 9) exit
-      if (l >= iachar('A') .and. l <= iachar('Z')) l = l + offset
-      if (l >= iachar('a') .and. l <= iachar('z')) then
-        k = k+1
-        lc_symbol(k:k) = achar(l)
-      end if
-    end do
-
-    do i = 1, size(pse)
-      if (lc_symbol == pse(i)) then
-        number = i
-        exit
-      end if
-    end do
-
-  end subroutine symbolToNumber
 
 
 end module dftbp_dispdftd4
