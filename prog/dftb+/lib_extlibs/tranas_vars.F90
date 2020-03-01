@@ -1,8 +1,8 @@
 !--------------------------------------------------------------------------------------------------!
 ! DFTB+XT open software package for quantum nanoscale modeling                                     !
-! Copyright (C) 2018 Dmitry A. Ryndyk                                                              !
+! Copyright (C) 2020 Dmitry A. Ryndyk                                                              !
 ! DFTB+: general package for performing fast atomistic simulations                                 !
-! Copyright (C) 2017-2018 DFTB+ developers group                                                   !
+! Copyright (C) 2017-2020 DFTB+ developers group                                                   !
 !--------------------------------------------------------------------------------------------------!
 ! GNU Lesser General Public License version 3 or (at your option) any later version.               !
 ! See the LICENSE file for terms of usage and distribution.                                        !
@@ -92,7 +92,7 @@ module tranas_vars
     real(dp)           :: broadeningDelta      ! An additional broadening delta for DOS and transmission
     integer, allocatable, dimension(:)  :: ni  !emitter contact(s)
     integer, allocatable, dimension(:)  :: nf  !collector contact(s)
-    type(WrappedInt1), allocatable :: dosOrbitals(:)
+    type(TWrappedInt1), allocatable :: dosOrbitals(:)
     character(lc), allocatable :: dosLabels(:)
     logical :: writeLDOS = .false.  ! write DOS on separate files
     logical :: writeTunn = .false.  ! write transmission on separate files
