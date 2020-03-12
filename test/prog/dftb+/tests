@@ -3,6 +3,7 @@
 #! $(TEST_MPI_PROCS) and OMP_THREADS to $(TEST_OMP_THREADS).
 
 #:include 'common.fypp'
+#:set LONG_TEST = not defined('TRAVIS')
 
 transport/model_H40                    #? WITH_TRANSPORT
 transport/CH4                          #? WITH_TRANSPORT and MPI_PROCS <= 4
@@ -28,6 +29,16 @@ transport/graphene3T                   #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/Au-chain                     #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/SiH-chain_semiInf            #? WITH_TRANSPORT and MPI_PROCS <= 2
 transport/H-sheet_end                  #? WITH_TRANSPORT and MPI_PROCS <= 4
+#! transport/local-curr                   #? WITH_TRANSPORT and MPI_PROCS <= 4
+#! transport/polyacetylene_semiInf        #? WITH_TRANSPORT and MPI_PROCS <= 4
+#! transport/CNT_GF                       #? WITH_TRANSPORT and MPI_PROCS <= 4 and LONG_TEST
+#! transport/SiH-chain_allSteps           #? WITH_TRANSPORT and MPI_PROCS <= 2 and LONG_TEST
+transport/H-sheet_grp2                 #? WITH_TRANSPORT and MPI_PROCS <= 8 and MPI_PROCS % 2 == 0
+transport/H-sheet_grp4                 #? WITH_TRANSPORT and MPI_PROCS <= 16 and MPI_PROCS % 4 == 0
+transport/H-sheet_grp8                 #? WITH_TRANSPORT and MPI_PROCS <= 32 and MPI_PROCS % 8 == 0
+#! transport/graphene_x                   #? WITH_TRANSPORT and MPI_PROCS <= 4 and LONG_TEST
+#! transport/graphene3T                   #? WITH_TRANSPORT and MPI_PROCS <= 4 and LONG_TEST
+#! transport/local-curr                   #? WITH_TRANSPORT and MPI_PROCS <= 4 and LONG_TEST
 
 non-scc/Si_384_GPU                     #? WITH_GPU and not WITH_MPI
 scc/SiC_512_GPU                        #? WITH_GPU and not WITH_MPI
@@ -274,15 +285,9 @@ timedep/C66O10N4H44_OscWindow          #? WITH_ARPACK and MPI_PROCS <= 1
 timedep/C60_OscWindow                  #? WITH_ARPACK and MPI_PROCS <= 1
 timedep/C60_EandOsc                    #? WITH_ARPACK and MPI_PROCS <= 1
 
-non-scc/Si_216                         #? MPI_PROCS <= 4
-md/ptcda-xlbomd-ldep                   #? MPI_PROCS <= 4
-geoopt/Vsi+O_lbfgs                     #? MPI_PROCS <= 4
-geoopt/Vsi+O                           #? MPI_PROCS <= 4
+non-scc/Si_216                         #? MPI_PROCS <= 4 and LONG_TEST
+md/ptcda-xlbomd-ldep                   #? MPI_PROCS <= 4 and LONG_TEST
+geoopt/Vsi+O_lbfgs                     #? MPI_PROCS <= 4 and LONG_TEST
+geoopt/Vsi+O                           #? MPI_PROCS <= 4 and LONG_TEST
 scc/SiC64+V_dynforce_groups            #? (MPI_PROCS <= 8 and MPI_PROCS % 4 == 0) or not WITH_MPI
 scc/SiC64+V_dynforce                   #? (MPI_PROCS <= 4 and MPI_PROCS % 2 == 0) or not WITH_MPI
-
-#! transport/local-curr                   #? WITH_TRANSPORT and MPI_PROCS <= 4
-#! transport/polyacetylene_semiInf        #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/H-sheet_grp2                 #? WITH_TRANSPORT and MPI_PROCS <= 8 and MPI_PROCS % 2 == 0
-transport/H-sheet_grp4                 #? WITH_TRANSPORT and MPI_PROCS <= 16 and MPI_PROCS % 4 == 0
-transport/H-sheet_grp8                 #? WITH_TRANSPORT and MPI_PROCS <= 32 and MPI_PROCS % 8 == 0
