@@ -119,15 +119,15 @@ module tranas_interface
       open(199,file='GS/test',IOSTAT=error)
       if (error.ne.0) then 
         call mpifx_get_processor_name(hostname)
-        write(*,*) "ERROR: please create a directory called GS on "//trim(hostname)
-        initinfo = .false.; return  
+        write(*,*) 'ERROR: please create a directory called "GS"'
+        initinfo = .false.; stop  
       end if   
       close(199)
       open(199,file='contacts/test',IOSTAT=error)
       if (error.ne.0) then 
         call mpifx_get_processor_name(hostname)
-        write(*,*) "ERROR: please create a directory called contacts "//trim(hostname)
-        initinfo = .false.; return  
+        write(*,*) 'ERROR: please create a directory called "contacts"'
+        initinfo = .false.; stop  
       end if         
       close(199)
     

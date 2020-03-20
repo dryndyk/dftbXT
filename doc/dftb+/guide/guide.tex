@@ -30,13 +30,13 @@
   {\partname\ \thepart}{20pt}{\Huge}
 
 \title{TraNaS OpenSuite Guide}
-\release{\today}
-%\release{January 18, 2019}
+%\release{\today}
+\release{January 18, 2020}
 \author{}
 \newcommand{\sphinxlogo}{}
 %\renewcommand{\releasename}{Release}
-\renewcommand{\releasename}{version 1.03 (development)}
-%\renewcommand{\releasename}{version 1.02 (release)}
+%\renewcommand{\releasename}{version 1.03 (development)}
+\renewcommand{\releasename}{version 1.03 (release)}
 
 \newcommand{\dftbp}{\textsf{DFTB$^{\text{+}}$\ }} %% noodle (alias dftb+)
 \newcommand{\dftbpa}{\textsf{DFTB$^{\text{+}}$}} %% noodle (alias dftb+)
@@ -172,7 +172,7 @@
 
 {\bf Main developers of \dftbpxt}
 \begin{itemize}
-\item Dmitry A. Ryndyk (University of Bremen and TU Dresden, Germany)
+\item Dmitry A. Ryndyk (TU Dresden, Germany)
 \end{itemize}
   
 {\bf Main developers of \dftbp}
@@ -332,7 +332,7 @@ Hamiltonian = DFTB {
       Separator = "-"
       Suffix = ".skf"
    }
-   Eigensolver = TransportOnly{}
+   Solver = TransportOnly{}
 }
 \end{verbatim}
 
@@ -350,7 +350,7 @@ Hamiltonian = DFTB {
       MinimalGrid [Angstrom] = 0.5 0.5 0.5
       SavePotential = Yes
    }
-   Eigensolver = GreensFunction{}
+   Solver = GreensFunction{}
    Mixer = Broyden{}
       MixingParameter = 0.02
    }
@@ -358,18 +358,18 @@ Hamiltonian = DFTB {
 }  
 \end{verbatim}
 
-Note change of the \is{Eigensolver} method and new \is{Electrostatics} subblock, required for a self-consistent calculation of electron densities and electric field.
+Note change of the \is{Solver} method and new \is{Electrostatics} subblock, required for a self-consistent calculation of electron densities and electric field.
 
 \subsection{Green function solver}
 
 If you calculate electron transport properties using the Green function formalism, you need to determine the electron density in your system with respect to certain electrostatic boundary conditions for your system. For that, you must use the \iscb{GreensFunction} as eigensolver, which is capable to deliver the appropriate density. Please note, that this technique does not deliver any eigenvalues, it does not solve the eigenproblem (no eigenvectors are computed).
 
-You can instruct the code to use the Green function solver by setting \is{Eigensolver} in the block \iscb{Hamiltonian = DFTB} to \iscb{GreensFunction}:
+You can instruct the code to use the Green function solver by setting \is{Solver} in the block \iscb{Hamiltonian = DFTB} to \iscb{GreensFunction}:
 
 \begin{verbatim}
 Hamiltonian = DFTB {
    :
-   Eigensolver = GreensFunction{}
+   Solver = GreensFunction{}
    :
 }
 \end{verbatim}
@@ -377,7 +377,7 @@ Hamiltonian = DFTB {
 Let us discuss the most important parameters to be set in \iscb{GreensFunction}:
 
 \begin{verbatim}
-Eigensolver = GreensFunction {
+Solver = GreensFunction {
    FirstLayerAtoms =  1   61   121   181   241   301   361   421   481   541
    Delta [eV] = 1e-4
    ContourPoints = 20 20
@@ -572,7 +572,7 @@ density of states are computed and the energy step.
 
 See the \is{USER MANUAL} for details. The examples of transport calculations are given in the tutorial, see   {\hyperref[transport:electron-transport-calculations-in-armchair-nanoribbons]{Chapter\,\ref{transport:electron-transport-calculations-in-armchair-nanoribbons} Electron transport calculations in armchair nanoribbons}.
 
-\part{Tutorial on 2D Carbon Materials}
+\part[\dftbpxt Tutorial on 2D Carbon Materials]{\dftbpxt: \newline  Tutorial on 2D Carbon Materials}
 \label{2Dtutorial}    
 
 \chapter{Introduction}
@@ -587,13 +587,16 @@ Binding (DFTB) method, the Landauer method and the Green function technique of t
 
 \section{System environment}
 \label{introduction:system-environment}
-The easiest way to use this tutorial is to download the {\textsf{TraNaS OpenSuite LiveDVD}} ISO
+The easiest way to use this tutorial is to download the {\textsf{TraNaS OpenSuite Live}} ISO
 image from the \href{http://tranas.org/opensuite}{tranas.org/opensuite} site, which contains a preconfigured x86\_64/Linux system with all the
-necessary tools for the tutorial. One can directly boot the ISO image
+necessary tools for the tutorial. From version 1.03 we base the live system at the  {\textsf{Manjaro Linux}} (\href{https://manjaro.org/}{manjaro.org}). The live system is fully functional actual Manjaro distribution which can be used to install Manjaro Linux. 
+
+One can directly boot the ISO image
 within a virtual machine (e.g. \emph{VirtualBox}). Alternatively, one can
 create a bootable USB-drive (e.g. with \emph{usb-creator} under Linux or
-\emph{Universal USB Installer} under Windows) or DVD, which can then be
+\emph{Universal USB Installer} under Windows), which can then be
 used to boot up an X86\_64 machine with the live system.
+Note the username \emph{manjaro} and password \emph{manjaro} for live system.
 
 In case you want to try the tutorial outside of the live system, you
 will need the following tools to be installed:
@@ -624,7 +627,7 @@ data and isosurfaces.
 \emph{buildwire} -- Can be used to build a 1D geometry with the right ordering (included into the \dftbpxt package, \emph{tools/transport/}, but should be installed separately).
 
 \item {} 
-\emph{paraview} -- Software to visualise \emph{.vtk} or \emph{.cube} files.
+\emph{paraview} -- Software to visualise \emph{.vtk} or \emph{.cube} files. You can alternatively use your preferred program instead.
 
 \item {} 
 \emph{plotxy[.py]} -- Command line wrapper around the matplotlib python library (included into the \dftbpxt package, \emph{tools/misc/}).  
@@ -655,14 +658,14 @@ you understand why those commands must be executed in that order to
 obtain the necessary results.
 
 \item {} 
-The {\textsf{TraNaS OpenSuite LiveDVD}} version of the \dftbpxt code is free for use and full functional.
-It can be used to install the standard Debian GNU/Linux operating system.
+The {\textsf{TraNaS OpenSuite Live}} version of the \textsf{TraNaS OpenSuite} including \dftbpxt code is free for use and full functional.
+It can be used to install the standard Manjaro Linux operating system with preinstalled \textsf{TraNaS OpenSuite}.
 
 \end{itemize}
 
 \section{Creating of the directory with inputs}
 
-Please download the file \emph{tutorial\_input.zip} from the \dftbpxt site or copy it from the \emph{doc/dftb+/tutorial/} folder of the package. Then decompress it with:
+Please download the file \emph{tutorial\_input.zip} from the TraNaS site or copy it from the \emph{doc/dftb+/tutorial/} folder of the \dftbpxt package. Then decompress it with:
 %
 \begin{Verbatim}[commandchars=\\\{\}]
 unzip tutorial\_input.zip
@@ -671,10 +674,10 @@ unzip tutorial\_input.zip
 in some directory. The directory tree with input files and some additional files to speed up the calculations is created.
 
 \null
-If use the {\textsf{TraNaS OpenSuite LiveDVD}}, the tree with input files is placed in \emph{/home/user/Tutorial}, where one can also find the \emph{guide.pdf} and \emph{manual.pdf} files.
+If one uses the {\textsf{TraNaS OpenSuite Live}}, the tree with input files is already placed in \emph{/home/manjaro/Tutorial}, where one can also find the Guide (\emph{guide.pdf}) and the Manual (\emph{manual.pdf}) files. The same files are place to the Desktop.
 
 \null
-Note, that if you first install the Debian GNU/Linux from LiveDVD to the hard disk, the tutorial materials will be still in \emph{/home/user/Tutorial} and you should use the root access to copy it to your actual home directory and change access rights. The same should be done for \emph{/home/user/bin} with executable files and, finally, \emph{export PATH=\$PATH:\$HOME/bin} to make short commands available.
+Note, that if you first install the Manjaro Linux from Live ISO to the hard disk, the tutorial materials will be placed in your home directory.
 
 \chapter{Electronic structure of 2D carbon materials}
 \label{electstruct:electronic-structure-of-2d-carbon-materials}\label{electstruct::doc}
@@ -1754,44 +1757,59 @@ defined by repetition of identical PLs, the tool \emph{buildwire}
 (distributed with the code) can be used to build a 1D geometry with
 the right ordering.
 
+To see the input parameters, one can type:
+\begin{Verbatim}[commandchars=\\\{\}]
+  buildwire -h
+\end{Verbatim}
+%
+with the output:
+%
+\begin{Verbatim}[commandchars=\\\{\}]
+  buildwire pl.gen dir npls [-s]
+  pl.gen: gen file with PL definition (supercell)
+  dir: 1=x, 2=y, 3=z
+  npls: Number of pls in the scattering region
+  -s: (optional) makes a supercell structure
+\end{Verbatim}
+%
+here \emph{pl.gen} is the name of the file containing the input supercell,  \emph{dir npls} are the direction and the number of principal layers in the
+device region (we will set this to be 2). Last parameter is used to make periodic structure in perpendicular to transport directions. 
+  
 When you type:
-
+%
 \begin{Verbatim}[commandchars=\\\{\}]
-buildwire 2cell\PYGZus{}7.gen
+  buildwire 2cell_7.gen 3 2
 \end{Verbatim}
-
-you will be asked to type the name of the file containing the input
-supercell (\emph{2cell\_7.gen}), direction and the number of principal layers in the
-device region (we will set this to be 2). \emph{buildwire} will always give
-its output as a supercell structure, but in some cases we will need to
-manually modify this structure file so that it corresponds to the
-ordering explained in the previous paragraph.
-
-The following output will be visualised:
-
+%
+the following output will be visualised:
+%
 \begin{Verbatim}[commandchars=\\\{\}]
- Insert PL .gen file name: 
-2cell_7.gen
- Insert direction (e.g. 0 0 1)
-0 0 1
- Insert number of PLs in channel: 
-2
  structure built
- *iatc=
-         137         272 0
-         273         408 0
- *PLs=
-     1    69;  
+ Input for dftb+:
+
+ Transport\{
+   Device\{
+     AtomRange = 1 136
+     FirstLayerAtoms = 1 69
+   \}
+   Contact\{
+     Id = "source"
+     AtomRange = 137 272
+   \}
+   Contact\{
+     Id = "drain"
+     AtomRange = 273 408
+   \}
+   Task= contactHamiltonian\{
+     contactId = "source"
+   \}
+ \}  
 \end{Verbatim}
+%
+we discuss it in detail below.
 
-The indexes \textbf{iatc} and \textbf{PLs} define the atoms belonging to the
-contacts, to the device region and to the PLs of the device region,
-and will be useful when we will write the input files. You should take
-a note of them (the iterative algorithm used in solving the Green
-function requires these values). A file \emph{Ordered\_2cell\_7.gen} will
-have been created, and defined as a supercell format GEN file (\code{S}),
-which we will rename \emph{device\_7.gen} for the following:
-
+A file \emph{Ordered\_2cell\_7.gen} will have been created, which we will rename \emph{device\_7.gen} for the following:
+%
 \begin{Verbatim}[commandchars=\\\{\}]
 mv Ordered\PYGZus{}2cell\PYGZus{}7.gen device\PYGZus{}7.gen
 \end{Verbatim}
@@ -1823,21 +1841,50 @@ first contact. When you build a structure yourself, it is always a
 good idea to use a visualiser and verify that the atomic indices are
 consistent with the transport setup definitions.
 
-The last step is to change the supercell definition in the gen
+One should note the difference between supercell and cluster definitions in the gen
 structure file. From the point of view of an open boundary condition
-calculation, Supercell (\code{S}) and Cluster (\code{C}) have a slightly
+calculation, Supercell (\code{S} in the first line) and Cluster (\code{C} in the first line) have a slightly
 different meaning with respect to a canonical \emph{dftb} calculation. By
 Supercell we mean any structure which is \emph{periodic in any direction
 transverse to the transport direction}, while for cluster we mean any
 structure \emph{not periodic in any direction transverse to transport}. It
 follows that purely 1D systems, like nanowires and nanoribbons, should
-be regarded as clusters (\code{C}). Therefore we edit the structure file
-\emph{device\_7.gen}, changing in the first line the \code{S} (supercell) to be
-\code{C} (cluster) and remove the last four lines, which would normally
-only be defined for periodic systems.
+be regarded as clusters (\code{C}).
 
-This is the file we get after running \emph{buildwire}:
+The file \emph{device\_7.gen} contains the correct structure, defined as
+a cluster and with the proper atom ordering:
+%
+\begin{Verbatim}[commandchars=\\\{\}]
+408  C
+C    H
+  1    1     37.831463060000    \PYGZhy{}20.000000000000      0.710000000000
+  2    1     39.061219140000    \PYGZhy{}20.000000000000      1.420000000000
+  3    1     39.061219140000    \PYGZhy{}20.000000000000      2.840000000000
+  4    1     37.831463060000    \PYGZhy{}20.000000000000      3.550000000000
+  5    1     35.371950920000    \PYGZhy{}20.000000000000      0.710000000000
+  6    1     36.601706990000    \PYGZhy{}20.000000000000      1.420000000000
+  7    1     36.601706990000    \PYGZhy{}20.000000000000      2.840000000000
+  8    1     35.371950920000    \PYGZhy{}20.000000000000      3.550000000000
+  ........
+  65    2     20.880312110000    \PYGZhy{}20.000000000000    \PYGZhy{}11.870830122700
+  66    2     20.880312110000    \PYGZhy{}20.000000000000     \PYGZhy{}9.429169877000
+  67    2     40.025607920000    \PYGZhy{}20.000000000000    \PYGZhy{}11.870893735700
+  68    2     40.025607920000    \PYGZhy{}20.000000000000     \PYGZhy{}9.429106264000
+\end{Verbatim}
 
+This is the file we get after running \emph{buildwire} {\bf withtout} the parameter \code{-s}.
+Note that the numbering of atoms at the start of each line, as output
+by \emph{buildwire} are sequential according to the numbering of the
+initial structure, not its global position in the output file.
+
+If we use the parameter \code{-s}:
+
+\begin{Verbatim}[commandchars=\\\{\}]
+  buildwire 2cell_7.gen 3 2 -s
+\end{Verbatim}
+%
+we get the file:
+%
 \begin{Verbatim}[commandchars=\\\{\}]
 408  S
 C    H
@@ -1859,36 +1906,11 @@ C    H
   0.0000000000000000       \PYGZhy{}40.000000000000000        0.0000000000000000
   0.0000000000000000        0.0000000000000000        51.119999999999997
 \end{Verbatim}
+%
+Note the change in the first line of the C (cluster) to S (supercell) and
+addition of the last four lines, which would normally only be defined for periodic systems.
 
-Note that the numbering of atoms at the start of each line, as output
-by \emph{buildwire} are sequential according to the numbering of the
-initial structure, not its global position in the output file.
-
-The corrected definition for the 1D ribbon with open boundary
-conditions is then:
-
-\begin{Verbatim}[commandchars=\\\{\}]
-408  C
-C    H
-  1    1     37.831463060000    \PYGZhy{}20.000000000000      0.710000000000
-  2    1     39.061219140000    \PYGZhy{}20.000000000000      1.420000000000
-  3    1     39.061219140000    \PYGZhy{}20.000000000000      2.840000000000
-  4    1     37.831463060000    \PYGZhy{}20.000000000000      3.550000000000
-  5    1     35.371950920000    \PYGZhy{}20.000000000000      0.710000000000
-  6    1     36.601706990000    \PYGZhy{}20.000000000000      1.420000000000
-  7    1     36.601706990000    \PYGZhy{}20.000000000000      2.840000000000
-  8    1     35.371950920000    \PYGZhy{}20.000000000000      3.550000000000
-  ........
-  65    2     20.880312110000    \PYGZhy{}20.000000000000    \PYGZhy{}11.870830122700
-  66    2     20.880312110000    \PYGZhy{}20.000000000000     \PYGZhy{}9.429169877000
-  67    2     40.025607920000    \PYGZhy{}20.000000000000    \PYGZhy{}11.870893735700
-  68    2     40.025607920000    \PYGZhy{}20.000000000000     \PYGZhy{}9.429106264000
-\end{Verbatim}
-
-Now the file \emph{device\_7.gen} contains the correct structure, defined as
-a cluster and with the proper atom ordering. Next, we set up the input
-file for a transmission calculation.
-
+Next, we set up the input file for a transmission calculation.
 
 \subsection{Transmission and density of states}
 \label{transport:transmission-and-density-of-states}
@@ -1975,7 +1997,7 @@ Hamiltonian = DFTB \PYGZob{}
     Suffix = \PYGZdq{}.skf\PYGZdq{}
   \PYGZcb{}
 
-  Eigensolver = TransportOnly\PYGZob{}\PYGZcb{}
+  Solver = TransportOnly\PYGZob{}\PYGZcb{}
 
 \}
 \end{Verbatim}
@@ -1991,7 +2013,7 @@ we just use a keyword \emph{TransportOnly} to indicate that we do not want
 to solve an Eigenvalue problem. The other fields are filled up in the
 same way as for a regular \dftbp calculation.
 
-In general, in \dftbp an Eigensolver is regarded as a calculator
+In general, in \dftbp an Solver is regarded as a calculator
 which can provide charge density in the SCC cycle, therefore we will
 define a Green function based eigensolver later, but only for SCC
 calculations.
@@ -2625,7 +2647,7 @@ Electrostatics = Poisson \PYGZob{}
   SavePotential = Yes
 \PYGZcb{}
 
-Eigensolver = GreensFunction \PYGZob{}
+Solver = GreensFunction \PYGZob{}
   \PYGZcb{}
 
 Mixer = Broyden \PYGZob{}
@@ -2656,7 +2678,7 @@ will return a file containing the potential and charge density
 profile, for later reference. These files can be quite large,
 therefore the default is \emph{No}.
 
-The Eigensolver is now specified as \emph{GreensFunction}. With this
+The Solver is now specified as \emph{GreensFunction}. With this
 definition, we instruct the code not to solve an eigenvalue problem
 but rather to calculate the density matrix by integration of the
 Keldysh Green function. This block provides the SCC charge density
@@ -2907,7 +2929,7 @@ Hamiltonian = DFTB \PYGZob{}
     MinimalGrid [Angstrom] = 0.5 0.5 0.5
     SavePotential = Yes
   \PYGZcb{}
-  Eigensolver = GreensFunction \PYGZob{}
+  Solver = GreensFunction \PYGZob{}
     \PYGZcb{}
 \PYGZcb{}
 \end{Verbatim}
