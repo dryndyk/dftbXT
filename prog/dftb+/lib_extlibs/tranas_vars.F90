@@ -131,27 +131,43 @@ module tranas_vars
   !------------------------------------------------------------------------------------------------!
   !------------------------------------------------------------------------------------------------!
   
-  !Structure for contact information in transport calculation
+  !Structure for contact information in a transport calculation
   type ContactInfo
-    integer :: idxrange(2) ! Beginning (1) and end (2) of contact
+
+    ! Beginning (1) and end (2) of contact
+    integer :: idxrange(2)
+
+    !> Contact name
+    !> Note: a contact id is specifically defined because, with multiple definition of contacts in
+    !> the input file, relying on contact ordering to assign an integer can be inconsistent
     character(mc) :: name
-    ! Note: I explicitely define a contact id because with multiple definition
-    ! of contacts in the input file relying on contact ordering to assign an
-    ! integer can be inconsistent
-    real(dp) :: shiftAccuracy   = 0.0! Accuracy of rigid layer shift
-    integer :: dir              = 0
-    real(dp) :: length          = 0.0
-    real(dp) :: lattice(3)    ! Lattice vectors
-    real(dp) :: potential       = 0.0
-    ! for colinear spin we may need two fermi level (up and down)
-    real(dp) :: eFermi(2)       = (/0.0_dp, 0.0_dp /)
-    real(dp) :: kbT             = 0.0
-    ! Is it a contact in wide band approximation?
-    logical :: wideBand         = .false.
-    real(dp) :: wideBandDos     = 0.0
-    character(lc) :: output   ! Filename for contact infos (shiftcont_) TO BE
-                              !MOVED?
-    !DAR begin - Write/Read SE, GF
+
+    !> Accuracy of rigid layer shift
+    real(dp) :: shiftAccuracy = 0.0_dp
+
+    integer :: dir = 0
+
+    real(dp) :: length = 0.0_dp
+
+    !> contact vector
+    real(dp) :: lattice(3)
+
+    real(dp) :: potential = 0.0_dp
+
+    !> for colinear spin we may need two Fermi levels (up and down)
+    real(dp) :: eFermi(2) = [0.0_dp, 0.0_dp]
+
+    !> has the fermi level been set for this contact
+    logical :: tFermiSet = .false.
+
+    !> contact temperature
+    real(dp) :: kbT = 0.0_dp
+
+    ! Is it a contact in the wide band approximation?
+    logical :: wideBand = .false.
+
+    real(dp) :: wideBandDos = 0.0_dp
+
     logical :: tWriteSelfEnergy = .false.                                   
     logical :: tReadSelfEnergy = .false.                                    
     logical :: tWriteSurfaceGF = .false.                                   
@@ -159,8 +175,7 @@ module tranas_vars
     logical :: tUnformatted = .false.
     logical :: tWriteSeparatedSGF = .false.
     logical :: tReadSeparatedSGF = .false.
-    
-    !DAR end
+
   end type ContactInfo
  
   !------------------------------------------------------------------------------------------------!
@@ -168,12 +183,40 @@ module tranas_vars
   ! Options from Transport section (geometry and task)  
   type TTransPar
      
-    logical :: defined = .false.   ! True if the corresponding input block exists
-    !! From input file
-    type(ContactInfo), dimension(:), allocatable :: contacts
+    !> True if the corresponding input block exists
+    logical :: defined = .false.
     
+    !> Contacts in the system
+    type(ContactInfo), allocatable :: contacts(:)
+
+    !> Number of contacts
+    integer :: ncont = 0
+
+    !> Start and end index of device region
+    integer :: idxdevice(2)
+
+    !> Number of principal layers
+    integer :: nPLs =1
+
+    !> PL indices (starting atom)
+    integer, allocatable, dimension(:) :: PL
+
+    !> False: run the full OBC calculation / True: upload contact phase
+    logical :: taskUpload = .false.
+
+    !> Should contacts be written in binary format
+    logical :: tWriteBinShift = .false.
+
+    !> Should contacts be read in binary format
+    logical :: tReadBinShift = .false.
+
+    !> Index of contact for contact hamiltonian task, if any
+    integer :: taskContInd = 0
+
+    !> Not from input file
+    logical :: tPeriodic1D = .false.
+       
     !DAR begin - type TTransPar new items
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     type(TTraNaSInput) :: tranas_input
     
@@ -210,20 +253,8 @@ module tranas_vars
     type(fnode), pointer :: nodeVE
     type(fnode), pointer :: nodeBP
     logical :: tWriteTagged = .false.
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  
     !DAR end
-    
-    integer :: ncont = 0
-    !! Start and end index of device region
-    integer :: idxdevice(2)
-    integer :: nPLs =1                ! N. of principal layers
-    integer, allocatable, dimension(:) :: PL   ! PL indeces (starting atom)
-    ! False: run the full OBC calculation / True: upload contact phase
-    logical :: taskUpload = .false.
-    ! Index of contact for contact hamiltonian task, if any
-    integer :: taskContInd = 0
-    !! Not from input file
-    logical :: tPeriodic1D = .false.
     
   end type TTransPar
 

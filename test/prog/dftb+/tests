@@ -5,6 +5,9 @@
 #:include 'common.fypp'
 #:set LONG_TEST = not defined('TRAVIS')
 
+transport/C-chain+U                    #? WITH_TRANSPORT and MPI_PROCS <= 2
+transport/SiH-chain_bin                #? WITH_TRANSPORT and MPI_PROCS <= 2 and LONG_TEST
+transport/H-chain_Ef                   #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/model_H40                    #? WITH_TRANSPORT
 transport/CH4                          #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/GaAs                         #? WITH_TRANSPORT and MPI_PROCS <= 4

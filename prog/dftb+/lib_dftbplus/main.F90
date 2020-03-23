@@ -229,8 +229,7 @@ contains
       call TPlumedCalc_final(plumedCalc)
     end if
 
-    tGeomEnd = tMD .or. tGeomEnd .or. tDerivs
-    
+    tGeomEnd = tMD .or. tGeomEnd .or. tDerivs    
 
     if (env%tGlobalMaster) then
       if (tWriteDetailedOut) then
@@ -256,13 +255,19 @@ contains
       call writeShifts(fShifts, orb, potential%intShell)
     endif
 
-  #:if WITH_TRANSPORT
+#:if WITH_TRANSPORT
+  
+    !==========================================================================!
+    !  Transport section                                                       !
+    !==========================================================================!
+
     if (tContCalc) then
       ! Note: shift and charges are saved in QM representation (not UD)
-      call writeContactShifts(transpar%contacts(transpar%taskContInd)%output, orb, &
-          & potential%intShell, qOutput, Ef)
+      call writeContactShifts(transpar%contacts(transpar%taskContInd)%name, orb, &
+          & potential%intShell, qOutput, Ef, potential%intBlock, qBlockOut,&
+          & .not.transpar%tWriteBinShift)
     end if
-
+    
     if (tTunn) then
   #:if WITH_MPI
       call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over, &
@@ -270,6 +275,12 @@ contains
           & img2CentCell, iCellVec, cellVec, orb, nEl, tempElec,&
           & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, tWriteLDOS,&
           & mu, input%ginfo%tundos)
+      !!DAR!! - input%ginfo%tundos is added,
+      !         it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface   
+      !NEW call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over,&
+      !NEW    & neighbourList%iNeighbour, nNeighbourSK, densedesc%iAtomStart, iSparseStart,&
+      !NEW    & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, transmission, current, ldos,&
+      !NEW    & leadCurrents, writeTunn, writeLDOS, mu)    
   #:else        
       call calc_current(parallelKS%localKS, ham, over,&
           & descHS, neighbourList%iNeighbour, nNeighbourSK, densedesc%iAtomStart, iSparseStart,&
@@ -281,17 +292,16 @@ contains
 
     if (tLocalCurrents) then
   #:if WITH_MPI
-  
       call local_currents(env%mpi%globalComm, parallelKS%localKS, ham, over,& 
           & neighbourList%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
           & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, coord0Fold, .false., mu, input%ginfo%tundos)
           !!DAR!! - input%ginfo%tundos is added,
           !         it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface)
      
-!NEW      call local_currents(env%mpi%globalComm, parallelKS%localKS, ham, over,&
-!NEW          & neighbourList, nNeighbourSK, cutOff%skCutoff, denseDesc%iAtomStart, iSparseStart,&
-!NEW          & img2CentCell, iCellVec, cellVec, rCellVec, orb, kPoint, kWeight, coord0Fold, &
-!NEW          & species0, speciesName, mu, lCurrArray)
+!NEW  call local_currents(env%mpi%globalComm, parallelKS%localKS, ham, over,&
+!NEW      & neighbourList, nNeighbourSK, cutOff%skCutoff, denseDesc%iAtomStart, iSparseStart,&
+!NEW      & img2CentCell, iCellVec, cellVec, rCellVec, orb, kPoint, kWeight, coord0Fold, &
+!NEW      & species0, speciesName, mu, lCurrArray)
   #:else
       call local_currents(parallelKS%localKS, ham, over,&
           & neighbourList, nNeighbourSK, cutOff%skCutoff, denseDesc%iAtomStart, iSparseStart,&
@@ -299,7 +309,12 @@ contains
           & species0, speciesName, mu, lCurrArray)
   #:endif
     end if
-  #:endif
+    
+   !==========================================================================!
+   ! END Transport part                                                       !
+   !==========================================================================!  
+
+#:endif
 
     if (allocated(pipekMezey)) then
       ! NOTE: the canonical DFTB ground state orbitals are over-written after this point
@@ -531,7 +546,7 @@ contains
       #:if WITH_TRANSPORT
         ! Overrides input charges with uploaded contact charges
         if (tUpload) then
-          call overrideContactCharges(qInput, chargeUp, transpar)
+          call overrideContactCharges(qInput, chargeUp, transpar, qBlockIn, blockUp)
         end if
       #:endif
 
@@ -616,7 +631,7 @@ contains
       #:if WITH_TRANSPORT
         ! Override charges with uploaded contact charges
         if (tUpload) then
-          call overrideContactCharges(qOutput, chargeUp, transpar)
+          call overrideContactCharges(qOutput, chargeUp, transpar, qBlockIn, blockUp)
         end if
       #:endif
 
@@ -1015,40 +1030,6 @@ contains
       call error("Internal error: code compiled without socket support")
     #:endif
     end if
-    
-    
-    !==========================================================================!
-    !  Transport section                                                       !
-    !==========================================================================!
-
-  #:if WITH_TRANSPORT
-    if (tContCalc) then
-      ! Note: shift and charges are saved in QM representation (not UD)
-      associate(tp => transpar)
-      call writeContactShifts(tp%contacts(tp%taskContInd)%output, orb, potential%intShell,&
-          & qOutput, Ef)
-      end associate
-    end if
-
-    if (tTunn) then
-      call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over, &
-          & descHS, neighbourList%iNeighbour, nNeighbourSK, denseDesc%iAtomStart, iSparseStart,&
-          & img2CentCell, iCellVec, cellVec, orb, nEl, tempElec,&
-          & kPoint, kWeight, tunnTot, ldosTot, currTot, writeTunn, tWriteLDOS,&
-          & mu, input%ginfo%tundos)
-      !!DAR!! - input%ginfo%tundos is added,
-      !         it is necessary for 'call negf_init_elph(tundos%elph)' in tranas_interface   
-      !NEW call calc_current(env%mpi%globalComm, parallelKS%localKS, ham, over,&
-      !NEW    & neighbourList%iNeighbour, nNeighbourSK, densedesc%iAtomStart, iSparseStart,&
-      !NEW    & img2CentCell, iCellVec, cellVec, orb, kPoint, kWeight, transmission, current, ldos,&
-      !NEW    & leadCurrents, writeTunn, writeLDOS, mu)
-    end if
-  #:endif
-
-   !==========================================================================!
-   ! END Transport part                                                       !
-   !==========================================================================!  
-
 
   end subroutine getNextGeometry
 
@@ -1750,7 +1731,7 @@ contains
 #:if WITH_TRANSPORT
 
   !> Replace charges with those from the stored contact values
-  subroutine overrideContactCharges(qInput, chargeUp, transpar)
+  subroutine overrideContactCharges(qInput, chargeUp, transpar, qBlockInput, blockUp)
     !> input charges
     real(dp), intent(inout) :: qInput(:,:,:)
 
@@ -1760,6 +1741,12 @@ contains
     !> Transport parameters
     type(TTransPar), intent(in) :: transpar
 
+    !> block charges, for example from DFTB+U
+    real(dp), allocatable, intent(inout) :: qBlockInput(:,:,:,:)
+
+    !> uploaded block charges
+    real(dp), allocatable, intent(in) :: blockUp(:,:,:,:)
+
     integer :: ii, iStart, iEnd
 
     do ii = 1, transpar%ncont
@@ -1767,6 +1754,15 @@ contains
       iEnd = transpar%contacts(ii)%idxrange(2)
       qInput(:,iStart:iEnd,:) = chargeUp(:,iStart:iEnd,:)
     end do
+
+  @:ASSERT(allocated(qBlockInput) .eqv. allocated(blockUp))
+    if (allocated(qBlockInput)) then
+      do ii = 1, transpar%ncont
+        iStart = transpar%contacts(ii)%idxrange(1)
+        iEnd = transpar%contacts(ii)%idxrange(2)
+        qBlockInput(:,:,iStart:iEnd,:) = blockUp(:,:,iStart:iEnd,:)
+      end do
+    end if
 
   end subroutine overrideContactCharges
 
