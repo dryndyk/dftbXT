@@ -1,7 +1,7 @@
 \begin{thebibliography}{10}
 
 \bibitem{OpenSuite}
-D.~A. Ryndyk, {\it TraNaS OpenSuite}, tranas.org/opensuite.
+{\it TraNaS OpenSuite}, tranas.org/opensuite.
 
 \bibitem{dftbp-paper}
 B. Aradi, B. Hourahine, and T. Frauenheim, ``{DFTB+}, a Sparse Matrix-Based
@@ -146,6 +146,15 @@ S. Grimme, S. Ehrlich, and L. Goerigk, ``Effect of the Damping Function in
   Dispersion Corrected Density Functional Theory,'' J{.} Chem{.} Phys{.} {\bf
   32},  1456  (2011).
 
+\bibitem{caldweyher-jcp-147-034112}
+E. Caldeweyher, C. Bannwarth, and S. Grimme, ``Extension of the {D}3 dispersion
+  coefficient model,'' J{.} Chem{.} Phys{.} {\bf 147},  034112  (2017).
+
+\bibitem{caldeweyher-jcp-150-154122}
+E. Caldeweyher, S. Ehlert, A. Hansen, H. Neugebauer, S. Spicher, C. Bannwarth,
+  and S. Grimme, ``A generally applicable atomic-charge dependent {L}ondon
+  dispersion correction,'' J{.} Chem{.} Phys{.} {\bf 150},  154122  (2019).
+
 \bibitem{zhechkov-JCTC-1-841}
 L. Zhechkov, T. Heine, S. Patchkovskii, G. Seifert, and H.~A. Duarte, ``An
   Efficient a Posteriori Treatment for Dispersion Interaction in
@@ -174,6 +183,12 @@ Y. Yang, H. Yu, D. York, Q. Cui, and M. Elstner, ``Extension of the
   Expansion of the Density Functional Theory Total Energy and Introduction of a
   Modified Effective Coulomb Interaction,'' J{.} Phys{.} Chem{.} A {\bf 111},
   10861  (2007).
+
+\bibitem{kubillus-jctc-11-332}
+M. Kubillus, T. Kuba{\v r}, M. Gaus, J. {\v R}ez{\'a}{\v c}, and M. Elstner,
+  ``Parameterization of the \mbox{DFTB3} Method for {B}r, {C}a, {C}l, {F}, {I},
+  {K}, and {N}a in Organic and Biological Systems,'' J{.} of Chem{.} Theory
+  Comput{.} {\bf 11},  332  (2014).
 
 \bibitem{niehaus-PSSB-249-237}
 T.~A. Niehaus and F. Della~Sala, ``Range separated functionalsin the density

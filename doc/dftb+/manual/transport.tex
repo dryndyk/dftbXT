@@ -254,6 +254,7 @@ example to calculate the source case.
 Task = ContactHamiltonian {
   ContactId = source
   ContactSeparation [Angstrom] = 50.0
+  WriteBinaryContact = Yes
 }
 \end{verbatim}
 
@@ -262,6 +263,7 @@ When \kw{Task}=\is{ContactHamiltonian} the following options can be defined
 \begin{ptable}
   \kw{ContactId} & s &  & & \\
   \kw{ContactSeparation} & r & & 1e3 & \\
+  \kw{WriteBinaryContact} & l & & No & \\
   \hline
 \end{ptable}
 
@@ -269,6 +271,8 @@ When \kw{Task}=\is{ContactHamiltonian} the following options can be defined
 \item[\is{ContactId}] Id label of the contact to be calculated.
 \item[\is{ContactSeparation}]\modif{\modtype{length}} Dummy separation in
   transverse direction (see the following explanation).
+\item[\is{WriteBinaryContact}] If set to \is{Yes}, the \verb|shiftcont_ContactId.bin| binary files are written
+  instead of text format.  
 \end{description}
 
 The contact calculation computes the {\em bulk} Hamiltonian, self-consistent
@@ -349,9 +353,22 @@ further clarification.
 
 \htcbsubsection{Task = UploadContacts} After the contact calculations, it is
 possible to perform actual transport calculations. This is activated simply
-specifying \kw{Task = UploadContacts}, without additional options ({\bf Note} if
-no task is specified, \dftbp{} assumes \is{UploadContacts} is the required task
-in the transport block). In order to set up a proper transport calculation the
+specifying \kw{Task = UploadContacts}, with possible additional option
+
+\begin{ptable}
+  \kw{ReadBinaryContact} & l & & No & \\
+  \hline
+\end{ptable}
+%
+\begin{description}
+  \item[\is{ReadBinaryContact}] If set to \is{Yes}, the \verb|shiftcont_ContactId.bin| binary files are red
+    instead of text format.  
+\end{description}
+
+{\bf Note:} if no task is specified, \dftbp{} assumes \is{UploadContacts} is the required task
+in the transport block and the \verb|shiftcont_ContactId.dat| text files are used.
+
+In order to set up a proper transport calculation the
 user should also define the contacts' Fermi levels (as printed in the files
 previously produced by using \is{ContactHamiltonian} tasks) and any required
 potential shift for each contact.
@@ -372,7 +389,9 @@ Transport {
     FermiLevel [eV] = -8.4123
     Potential = 1.0
   }
-  Task = UploadContacts
+  Task = UploadContacts {
+    ReadBinaryContact = Yes
+  }
 }
 \end{verbatim}
 

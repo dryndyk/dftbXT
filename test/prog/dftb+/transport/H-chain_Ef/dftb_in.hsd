@@ -17,7 +17,9 @@ Transport {
         AtomRange = 22 31
         Potential [eV] = 2.0
     }
-    ReadBinaryContact = No
+    Task = UploadContacts {
+      ReadBinaryContact = No
+    }
 }
 
 Hamiltonian = DFTB {

@@ -4699,13 +4699,13 @@ contains
 
       transpar%ncont = 0
 
-      call getChildValue(root, "writeBinaryContact", transpar%tWriteBinShift, .true.)
+      call getChildValue(pTaskType, "writeBinaryContact", transpar%tWriteBinShift, .false.)
 
     case ("uploadcontacts")
     
       transpar%taskUpload = .true.
 
-      call getChildValue(root, "readBinaryContact", transpar%tReadBinShift, .true.)
+      call getChildValue(pTaskType, "readBinaryContact", transpar%tReadBinShift, .false.)
 
     case default
     
