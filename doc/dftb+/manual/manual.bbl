@@ -3,11 +3,6 @@
 \bibitem{OpenSuite}
 {\it TraNaS OpenSuite}, tranas.org/opensuite.
 
-\bibitem{dftbp-paper}
-B. Aradi, B. Hourahine, and T. Frauenheim, ``{DFTB+}, a Sparse Matrix-Based
-  Implementation of the {DFTB} Method,'' J{.} Phys{.} Chem{.} A {\bf 111},
-  5678  (2007), dftbplus.org.
-
 \bibitem{Pecchia_NJP}
 A. Pecchia, G. Penazzi, L. Salvucci, and A.~D. Carlo, ``Non-equilibrium Green's
   functions in density functional tight binding: method and applications,'' New
@@ -18,6 +13,11 @@ T. Frauenheim, G. Seifert, M. Elstner, T. Niehaus, C. Kohler, M. Amkreutz, M.
   Sternberg, Z. Hajnal, A. Di~Carlo, and S. Suhai, ``Atomistic simulations of
   complex materials: ground-state and excited-state properties,'' J{.} Phys{.}
   Cond{.} Matter {\bf 14},  3015  (2002).
+
+\bibitem{dftbp-2020paper}
+B. Hourahine {\it et~al.}, ``\mbox{DFTB}+, a software package for efficient
+  approximate density functional theory based atomistic simulations,'' J{.}
+  Chem{.} Phys{.} {\bf 152},  124101  (2020).
 
 \bibitem{kovalenko-JCC-20-928}
 A. Kovalenko, S. Ten-no, and F. Hirata, ``Solution of three-dimensional
@@ -171,6 +171,10 @@ J. {\v R}ez{\'a}{\v c} and P. Hobza, ``Advanced Corrections of Hydrogen Bonding
   and Dispersion for Semiempirical Quantum Mechanical Methods,'' J{.} of
   Chem{.} Theory Comput{.} {\bf 8},  141  (2012).
 
+\bibitem{rappe1991}
+A.~K. Rapp{\'e} and W.~A. Goddard~III, ``Charge Equilibration for Molecular
+  Dynamics Simulation,'' J{.} Chem{.} Phys{.} {\bf 95},  3358  (1991).
+
 \bibitem{gauss-jctc-7-931}
 M. Gaus, Q. Cui, and M. Elstner, ``\mbox{DFTB}3: {E}xtension of the
   {S}elf-{C}onsistent-{C}harge {D}ensity-{F}unctional {T}ight-{B}inding
@@ -237,6 +241,11 @@ D. Heringer, T.~A. Niehaus, M. Wanko, and T. Frauenheim, ``Analytical excited
 S. Lany and A. Zunger, ``Accurate prediction of defect properties in density
   functional supercell calculations,'' Modelling and Simulation in Materials
   Science and Engineering {\bf 17},  084002  (2009).
+
+\bibitem{dftbp-2007paper}
+B. Aradi, B. Hourahine, and T. Frauenheim, ``{DFTB+}, a Sparse Matrix-Based
+  Implementation of the {DFTB} Method,'' J{.} Phys{.} Chem{.} A {\bf 111},
+  5678  (2007), dftbplus.org.
 
 \bibitem{Pecchia_spring}
 A. Di~Carlo, A. Pecchia, L. Latessa, T. Frauenheim, and G. Seifert,  in {\em

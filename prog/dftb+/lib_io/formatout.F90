@@ -349,7 +349,7 @@ contains
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.03 (22.03.2020)                   ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.03 (01.04.2020)                   ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for quantum nanoscale modeling                      ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2006-2020 DFTB+ developers group                             ',hBar,hBar
@@ -359,12 +359,12 @@ contains
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' Please cite as:                                                            ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' TraNaS OpenSuite [1], partially based on the DFTB+ [2,3] source code       ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' and the CP2K software package [4].                                         ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' [1] TraNaS OpenSuite, tranas.org/opensuite                                 ',hBar,hBar 
-    write(outunit, '(5A)') hBar,hBar,' [2] B. Aradi, B. Hourahine and T. Frauenheim,                              ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'     J. Phys. Chem. A 111, 5678 (2007); dftbplus.org                        ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' [3] A. Pecchia, G. Penazzi, L. Salvucci and A. Di Carlo,                   ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'     New Journal of Physics 10, 065022 (2008)                               ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' [2] B. Hourahine et al., J. Chem. Phys. 152, 124101 (2020)                 ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,' [3] A. Pecchia et al., New Journal of Physics 10, 065022 (2008)            ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' [4] CP2K (Development Version), cp2k.org                                   ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' You should also cite additional publications crediting the parametrization ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' data you use. Please consult the documentation of the SK-files for the     ',hBar,hBar
