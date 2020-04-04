@@ -6269,6 +6269,7 @@ contains
       call getChildValue(node, "SpinDegeneracy", tp%tSpinDegeneracy,.false.)
       call getChildValue(node, "Orthonormal", tp%tOrthonormal,.false.)
       call getChildValue(node, "OrthonormalDevice", tp%tOrthonormalDevice,.false.)
+      call getChildValue(node, "WriteOrthonormal", tp%tWriteOrthonormal,.false.)
       
       call getChild(node, "External", value, requested=.false.)
     

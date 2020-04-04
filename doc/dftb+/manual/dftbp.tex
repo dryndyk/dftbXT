@@ -1120,8 +1120,8 @@ following properties:
   \kw{CustomisedHubbards} & p & SCC = Yes & & \\
   \kw{CustomisedOccupations} & p & SCC = Yes & & \\
   \kw{\new Dephasing} & p & & &  \pref{sec_deph} \\
-  \kw{Orthonormal} & l & & No & \\
-  \kw{OrthonormalDevice} & l & & No & \\
+  \kw{Orthonormal} & l & only for transport & No & \\
+  \kw{OrthonormalDevice} & l & only for transport & No & \\
   \kw{TruncateSKRange} & p & & & \\
   \hline
 \end{ptable}
@@ -1418,9 +1418,9 @@ following properties:
 
 \item[\is{Dephasing}] Two models of elastic dephasing ("B\"uttiker probe" and "vibronic dephasing") can be used now to include the dephasing and dissipation beyond the coherent Green function method. Thus, we made a new step towards realistic material and device modeling. See Sec.\,\ref{sec_deph}. 
 
-\item[\is{Orthonormal}] When set to \is{Yes}, L\"{o}wdin orthogonalization is performed to full Hamiltonian.
+\item[\is{Orthonormal}] Only for transport calculations. When set to \is{Yes}, L\"{o}wdin orthogonalization is performed to full Hamiltonian.
 
-\item[\is{OrthonormalDevice}] When set to \is{Yes}, L\"{o}wdin orthogonalization is performed only to the central ``device'' part.
+\item[\is{OrthonormalDevice}] Only for transport calculations. When set to \is{Yes}, L\"{o}wdin orthogonalization is performed only to the central ``device'' part.
   
 \item[\is{TruncateSKRange}] Enables overriding of the number of elements to be
   read from the Slater-Koster parameters, shortening the interaction range of

@@ -329,6 +329,26 @@ contains
           & cellVec, runId, orb, species, speciesName, parallelKS, localisation, eigvecsReal,&
           & SSqrReal, eigvecsCplx, SSqrCplx)
     end if
+    
+    !==========================================================================!
+
+    if(transpar%tWriteOrthonormal.and..not.transpar%tOrthonormal) then
+      if(.not.transpar%tReadDFTB) then  
+        !Writing H to file H_dftb.mtr      
+        call writeSparseAsSquare_old('H_dftb.mtr', ham(:,1)*27.21138469, neighbourList%iNeighbour, nNeighbourSK, &
+                                      &denseDesc%iAtomStart, iSparseStart, img2CentCell)
+        if (input%ctrl%verbose.gt.50) write(stdout,"(/,' Hamiltonian is written to the file ',A)")trim('H_dftb.mtr')
+        !Writing S to file S_dftb.mtr
+        call writeSparseAsSquare_old('S_dftb.mtr', over, neighbourList%iNeighbour, nNeighbourSK, &
+                                      &denseDesc%iAtomStart, iSparseStart, img2CentCell)
+        if (input%ctrl%verbose.gt.50) write(stdout,"(' Overlap is written to the file ',A)")trim('S_dftb.mtr')
+      else
+        if (input%ctrl%verbose.gt.50) write(stdout,*)
+      end if  
+      call calcOrthogonalization(input%ctrl%verbose)
+    end if  
+
+    !==========================================================================!
       
     if (tWriteAutotest) then
       if (tPeriodic) then
@@ -6146,6 +6166,139 @@ contains
     end if
 
   end subroutine calcPipekMezeyLocalisation
+  
+  !> Calculates and prints Löwdin orthogonalization of the Hamiltonian
+  subroutine calcOrthogonalization(verbose)
+  
+    integer :: i, verbose
+    integer :: INFO, N
+    real(dp), allocatable :: S_all(:,:),H_all(:,:)
+    real(dp), allocatable :: A(:,:), WORK(:), W(:)
+    real(dp), allocatable :: B(:,:),C(:,:)
+    character(mc) :: strForm
+
+    if (verbose.gt.50) write(stdout,"(' Löwdin orthogonalization is started')")
+
+    if (verbose.gt.50) write(stdout,"(' Hamiltonian is red from the file ',A)")trim('H_dftb.mtr')
+     
+    open(11,file='H_dftb.mtr',action="read")
+    read(11,*);read(11,*)strForm,N;read(11,*);read(11,*);read(11,*)
+    if(.not.allocated(H_all)) allocate(H_all(N,N))
+    H_all=0.0_dp
+    do i=1,N
+      read(11,*)H_all(i,1:N)
+    end do
+    close(11)
+    
+    !print *,'H_dftb [eV]'
+    !do i=1,N
+    !   write(*,*)H_all(i,1:N)
+    !end do
+       
+    H_all=H_all/27.21138469
+    
+    !print *,'H_dftb'
+    !do i=1,N
+    !   write(*,*)H_all(i,1:N)
+    !end do
+    
+    if (verbose.gt.50) write(stdout,"(' Overlap is red from the file ',A)")trim('S_dftb.mtr')
+     
+    open(11,file='S_dftb.mtr',action="read")
+    read(11,*);read(11,*);read(11,*);read(11,*);read(11,*)
+    if(.not.allocated(S_all)) allocate(S_all(N,N))
+    S_all=0.0_dp
+    do i=1,N
+      read(11,*)S_all(i,1:N)
+    end do
+    close(11)
+    
+    !print *,'S_dftb'
+    !do i=1,N
+    !   write(*,*)S_all(i,1:N)
+    !end do
+
+    allocate(A(N,N),WORK(3*N),W(N))
+    allocate(B(N,N),C(N,N))
+    W=0.0_dp
+    WORK=0.0_dp
+    A=0.0_dp
+    B=0.0_dp
+    C=0.0_dp
+    
+    A=S_all
+
+    call DSYEV('V','U',N,A,N,W,WORK,3*N,INFO )
+
+    !print  *,'U matrix, Eigenvectors for S diagonalization'
+    !do i=1,N
+    !   write(*,*)A(i,1:N)
+    !end do
+
+    B=matmul(transpose(A),A)
+    !print *,'U matrix unitarity check'
+    !do i=1,N
+    !   write(*,*)B(i,1:N)
+    !end do
+
+    B=matmul(transpose(A),matmul(S_all,A))
+    !print *,'S diagonal (transformed)'
+    !do i=1,N
+    !   write(*,*)B(i,1:N)
+    !end do
+
+    !B=sqrt(Sdiag)inverted
+    do i=1,N
+       B(i,i)=1./sqrt(B(i,i))
+    end do
+
+    !C=sqrt(S)
+    C=matmul(A,matmul(B,transpose(A)))
+    !print *,'sqrt(S) inverted'
+    !do i=1,N
+    !   write(*,*)C(i,1:N)
+    !end do
+
+    B=matmul(transpose(C),matmul(S_all,C))
+    !print *,'S unity check'
+    !do i=1,N
+    !   write(*,*)B(i,1:N)
+    !end do
+
+    !print *,'H_dftb before orthogonalization'
+    !do i=1,N
+    !   write(*,*)negf%H_all(i,1:N)
+    !end do
+
+    H_all=matmul(transpose(C),matmul(H_all,C))
+
+    !print *,'H_dftb_orth'
+    !do i=1,N
+    !   write(*,*)negf%H_all(i,1:N)
+    !end do
+
+    !Save H_dftb_orth.mtr to file
+    write (strForm, "(A,I0,A)") "(", N, "ES24.15)"
+    open(12,file='H_dftb_orth.mtr',action="write")
+    do i=1,N
+       write(12,strForm)H_all(i,1:N)*27.21138469
+    end do
+    close(12)
+    
+    S_all=matmul(transpose(C),matmul(S_all,C))
+    
+    !Save S_dftb_orth.mtr to file
+    open(12,file='S_dftb_orth.mtr',action="write")
+    do i=1,N
+       write(12,strForm)S_all(i,1:N)
+    end do
+    close(12)
+    
+    if (verbose.gt.50) write(stdout,"(' Hamiltonian is written to the file ',A)")trim('H_dftb_orth.mtr')
+    if (verbose.gt.50) write(stdout,"(' Overlap is written to the file ',A)")trim('S_dftb_orth.mtr')
+    if (verbose.gt.50) write(stdout,"(' Löwdin orthogonalization is done! ')") 
+  
+  end subroutine calcOrthogonalization
 
   subroutine printMaxForces(derivs, constrLatDerivs, tCoordOpt, tLatOpt, indMovedAtoms)
     real(dp), intent(in), allocatable :: derivs(:,:)
