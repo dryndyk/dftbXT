@@ -216,11 +216,11 @@ PLs (tolerance for rule~\ref{rule4} of structures, i.e.\ that accuracy to which
 \item[\is{Temperature}]\modif{\modtype{energy}} Specifies the electronic
   temperature of the contact (see a more detailed discussion after the section 
   \"Analysis\").
-\item[\is{FermiLevel}]\modif{\modtype{energy}} Optional over-riding of the Fermi
-  energy specified in the appropriate contact shift file.
+\item[\is{FermiLevel}]\modif{\modtype{energy}} Optional overriding of the Fermi
+  energy that is specified in the appropriate contact shift file.
 \item[\is{Potential}]\modif{\modtype{energy}} Specifies any additional
   electrostatic potential applied to the contact. The natural units of this
-  quantity are a potential energy.
+  quantity are a (potential) energy.
 \item[\is{WideBand}] Use the wide band approximation for the contact. If set to
   \is{Yes}, the surface Green's function of the contact is not explicitly
   calculated but is instead assumed to be local and constant according to a
@@ -355,7 +355,7 @@ KpointsAndWeights = SupercellFolding {
 
 This could seem confusing, but the underlining reasons is that in the cluster
 calculation the reciprocal lattice is set up by the code itself, while in the
-periodic calculation is set up by the user who can chose any arbitrary
+periodic calculation is set up by the user, who can chose any arbitrary
 direction.  Refer to the transport cookbook and to the distributed examples for
 further clarification.
 
@@ -389,8 +389,8 @@ Transport {
   Contact {
     Id = "source"
     AtomRange = 9 24
-    FermiLevel [eV] = -8.4123
-    Potential = 0.0
+    # Fermi level is specified in the contact shift file
+    # Potential = 0.0 is assumed
   }
   Contact {
     Id = "drain"
