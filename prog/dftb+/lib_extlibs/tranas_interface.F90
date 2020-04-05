@@ -579,6 +579,7 @@ module tranas_interface
     negf%tReadDFTB=transpar%tReadDFTB
     negf%tOrthonormal=transpar%tOrthonormal
     negf%tOrthonormalDevice=transpar%tOrthonormalDevice
+    negf%tWriteOrthonormal=transpar%tWriteOrthonormal
     negf%tModel=transpar%tModel
     negf%tSpinDegeneracy=transpar%tSpinDegeneracy
     negf%tReadU=transpar%tReadU
@@ -2601,6 +2602,7 @@ module tranas_interface
     integer :: INFO, N
     real(dp), allocatable :: A(:,:), WORK(:), W(:)
     real(dp), allocatable :: B(:,:),C(:,:)
+    character(mc) :: strForm
 
     if (id0.and.negf%verbose.gt.50) write(*,"(' Löwdin orthogonalization is started')")
 
@@ -2684,15 +2686,18 @@ module tranas_interface
        negf%S_all(i,i)=1.0_dp
     end do
 
-    !Save H_dftb_orth.mtr to file
-    open(12,file='H_dftb_orth.mtr',action="write")
-    do i=1,N
-       write(12,*)negf%H_all(i,1:N)*27.21138469
-    end do
-    close(12)
+    write (strForm, "(A,I0,A)") "(", N, "ES24.15)"
+    if (id0) then
+      !Save H_dftb_orth.mtr to file
+      open(12,file='H_dftb_orth.mtr',action="write")
+      do i=1,N
+        write(12, strForm)negf%H_all(i,1:N)*27.21138469
+      end do
+      close(12)
+    end if  
 
     negf%delta=0.0001
-    
+    if (id0.and.negf%verbose.gt.50) write(*,"(' Hamiltonian is written to the file ',A)")trim('H_dftb_orth.mtr')
     if (id0.and.negf%verbose.gt.50) write(*,"(' Löwdin orthogonalization is done! ')")
     
   end subroutine orthogonalization
@@ -2705,6 +2710,7 @@ module tranas_interface
     integer :: INFO, N, N2
     real(dp), allocatable :: A(:,:), WORK(:), W(:)
     real(dp), allocatable :: B(:,:),C(:,:)
+    character(mc) :: strForm
 
     if (id0.and.negf%verbose.gt.50) write(*,"(' Löwdin orthogonalization for device only is started')")
 
@@ -2807,17 +2813,18 @@ module tranas_interface
     !   write(*,*)negf%S_all(i,1:N)
     !end do
 
+    write (strForm, "(A,I0,A)") "(", N, "ES24.15)"
     if (id0) then 
       !Save H_dftb_orth.mtr to file
-      open(12,file='H_dftb_orth.mtr',action="write")
+      open(12,file='H_dftb_orth_dev.mtr',action="write")
       do i=1,N
-        write(12,*)negf%H_all(i,1:N)*27.21138469
+        write(12, strForm)negf%H_all(i,1:N)*27.21138469
       end do
       close(12)
       !Save S_dftb_orth.mtr to file
-      open(12,file='S_dftb_orth.mtr',action="write")
+      open(12,file='S_dftb_orth_dev.mtr',action="write")
       do i=1,N
-        write(12,*)negf%S_all(i,1:N)
+        write(12, strForm)negf%S_all(i,1:N)
       end do
       close(12)
     end if
@@ -2826,6 +2833,8 @@ module tranas_interface
 
     negf%delta=0.000001
     
+    if (id0.and.negf%verbose.gt.50) write(*,"(' Hamiltonian is written to the file ',A)")trim('H_dftb_orth_dev.mtr')
+    if (id0.and.negf%verbose.gt.50) write(*,"(' Overlap is written to the file ',A)")trim('S_dftb_orth_dev.mtr')
     if (id0.and.negf%verbose.gt.50) write(*,"(' Löwdin orthogonalization for device only is done! ')")
     
   end subroutine orthogonalization_dev

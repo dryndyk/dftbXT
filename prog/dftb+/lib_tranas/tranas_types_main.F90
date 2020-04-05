@@ -248,6 +248,7 @@ module tranas_types_main
     logical :: tReadDFTB = .false.
     logical :: tOrthonormal = .false.
     logical :: tOrthonormalDevice = .false.
+    logical :: tWriteOrthonormal = .false.
     logical :: tModel = .false.
     logical :: tSpinDegeneracy = .false.
     logical :: tReadU = .false.
