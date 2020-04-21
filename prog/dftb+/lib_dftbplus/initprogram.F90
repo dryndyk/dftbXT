@@ -27,6 +27,7 @@ module dftbp_initprogram
   use dftbp_elecsolvers
   use dftbp_elsisolver, only : TElsiSolver_init, TElsiSolver_final
   use dftbp_elsiiface
+  use dftbp_gpuinfo, only : gpuInfo
   use dftbp_periodic
   use dftbp_accuracy
   use dftbp_intrinsicpr
@@ -57,7 +58,7 @@ module dftbp_initprogram
   use dftbp_andersentherm
   use dftbp_berendsentherm
   use dftbp_nhctherm
-  use dftbp_tempprofile
+  use dftbp_tempprofile, only : TTempProfile, TempProfile_init
   use dftbp_numderivs2
   use dftbp_lapackroutines
   use dftbp_simplealgebra
@@ -100,10 +101,8 @@ module dftbp_initprogram
   use dftbp_elstattypes, only : elstatTypes
   use dftbp_plumed, only : withPlumed, TPlumedCalc, TPlumedCalc_init
   use dftbp_magmahelper
-#:if WITH_GPU
-  use iso_c_binding, only :  c_int
-  use device_info
-#:endif
+  use dftbp_solvation, only : TSolvation
+  use dftbp_solvinput, only : createSolvationModel, writeSolvationInfo
 
 #:if WITH_TRANSPORT
   use tranas_vars
@@ -113,11 +112,6 @@ module dftbp_initprogram
 #:endif
   use dftbp_transportio
   implicit none
-
-#:if WITH_GPU
-  integer (c_int):: ngpus
-  integer (c_int):: req_ngpus
-#:endif
 
   !> Container for external potentials
   type :: TRefExtPot
@@ -740,6 +734,9 @@ module dftbp_initprogram
 
   !> dispersion data and calculations
   class(TDispersionIface), allocatable :: dispersion
+
+  !> Solvation data and calculations
+  class(TSolvation), allocatable :: solvation
 
   !> Can stress be calculated?
   logical :: tStress
@@ -2097,6 +2094,19 @@ contains
       cutOff%mCutOff = max(cutOff%mCutOff, dispersion%getRCutOff())
     end if
 
+    if (allocated(input%ctrl%solvInp)) then
+      if (allocated(input%ctrl%solvInp%GBInp)) then
+        if (tPeriodic) then
+          call createSolvationModel(solvation, input%ctrl%solvInp%GBInp, &
+              & nAtom, species0, speciesName, latVec)
+        else
+          call createSolvationModel(solvation, input%ctrl%solvInp%GBInp, &
+              & nAtom, species0, speciesName)
+        end if
+      end if
+      cutOff%mCutOff = max(cutOff%mCutOff, solvation%getRCutOff())
+    end if
+
     if (allocated(halogenXCorrection)) then
       cutOff%mCutOff = max(cutOff%mCutOff, halogenXCorrection%getRCutOff())
     end if
@@ -2228,7 +2238,7 @@ contains
       ! Create temperature profile, if thermostat is not the dummy one
       if (input%ctrl%iThermostat /= 0) then
         allocate(temperatureProfile)
-        call init(temperatureProfile, input%ctrl%tempMethods, input%ctrl%tempSteps,&
+        call TempProfile_init(temperatureProfile, input%ctrl%tempMethods, input%ctrl%tempSteps,&
             & input%ctrl%tempValues)
         pTempProfile => temperatureProfile
       else
@@ -2601,6 +2611,9 @@ contains
       if (nSpin > 2) then
         call error("Non-colinear spin not currently compatible with transport calculations")
       end if
+      if (allocated(solvation)) then
+        call error("Solvation is currently not available with transport calculations")
+      end if
     end if
 
     if (env%tGlobalMaster) then
@@ -2917,17 +2930,7 @@ contains
     if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Electronic solver", electronicSolver%getSolverName()
 
     if (electronicSolver%iSolver == electronicSolverTypes%magma_gvd) then
-    #:if WITH_GPU
-      call  gpu_avail(ngpus)
-      call  gpu_req(req_ngpus)
-      write(StdOut,*) "Number of GPUs requested:",req_ngpus
-      write(StdOut,*) "Number of GPUs found    :",ngpus
-      if ((req_ngpus .le. ngpus) .and. (req_ngpus .ge. 1)) then
-        ngpus = req_ngpus
-      endif
-    #:else
-      call error("Compiled without GPU support")
-    #:endif
+      call gpuInfo()
     endif
 
     if (tSccCalc) then
@@ -3049,6 +3052,10 @@ contains
       class default
         call error("Unknown dispersion model - this should not happen!")
       end select
+    end if
+
+    if (allocated(solvation)) then
+      call writeSolvationInfo(stdOut, solvation)
     end if
 
     if (tSccCalc) then

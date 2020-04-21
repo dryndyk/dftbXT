@@ -32,6 +32,7 @@ module dftbp_inputdata
 #:endif
   use dftbp_pmlocalisation, only : TPipekMezeyInp
   use dftbp_elstatpot, only : TElStatPotentialsInp
+  use dftbp_solvinput, only : TSolvationInp
   
 #:if WITH_TRANSPORT
   use tranas_vars  !DAR
@@ -456,6 +457,9 @@ module dftbp_inputdata
 
     !> Dispersion related stuff
     type(TDispersionInp), allocatable :: dispInp
+
+    !> Solvation
+    class(TSolvationInp), allocatable :: solvInp
 
 
     !> Local potentials
