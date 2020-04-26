@@ -3,6 +3,11 @@
 \bibitem{OpenSuite}
 {\it TraNaS OpenSuite}, tranas.org/opensuite.
 
+\bibitem{dftbp-2020paper}
+B. Hourahine {\it et~al.}, ``\mbox{DFTB}+, a software package for efficient
+  approximate density functional theory based atomistic simulations,'' J{.}
+  Chem{.} Phys{.} {\bf 152},  124101  (2020).
+
 \bibitem{Pecchia_NJP}
 A. Pecchia, G. Penazzi, L. Salvucci, and A.~D. Carlo, ``Non-equilibrium Green's
   functions in density functional tight binding: method and applications,'' New
@@ -13,11 +18,6 @@ T. Frauenheim, G. Seifert, M. Elstner, T. Niehaus, C. Kohler, M. Amkreutz, M.
   Sternberg, Z. Hajnal, A. Di~Carlo, and S. Suhai, ``Atomistic simulations of
   complex materials: ground-state and excited-state properties,'' J{.} Phys{.}
   Cond{.} Matter {\bf 14},  3015  (2002).
-
-\bibitem{dftbp-2020paper}
-B. Hourahine {\it et~al.}, ``\mbox{DFTB}+, a software package for efficient
-  approximate density functional theory based atomistic simulations,'' J{.}
-  Chem{.} Phys{.} {\bf 152},  124101  (2020).
 
 \bibitem{kovalenko-JCC-20-928}
 A. Kovalenko, S. Ten-no, and F. Hirata, ``Solution of three-dimensional
@@ -188,6 +188,15 @@ Y. Yang, H. Yu, D. York, Q. Cui, and M. Elstner, ``Extension of the
   Modified Effective Coulomb Interaction,'' J{.} Phys{.} Chem{.} A {\bf 111},
   10861  (2007).
 
+\bibitem{onufriev2019}
+A.~V. Onufriev and D.~A. Case, ``Generalized {B}orn Implicit Solvent Models for
+  Biomolecules,'' Annu{.} Rev{.} Biophys{.} {\bf 48},  275  (2019).
+
+\bibitem{onufriev2004}
+A. Onufriev, D. Bashford, and D.~A. Case, ``Exploring protein native states and
+  large-scale conformational changes with a modified generalized born model,''
+  Proteins {\bf 55},  383  (2004).
+
 \bibitem{kubillus-jctc-11-332}
 M. Kubillus, T. Kuba{\v r}, M. Gaus, J. {\v R}ez{\'a}{\v c}, and M. Elstner,
   ``Parameterization of the \mbox{DFTB3} Method for {B}r, {C}a, {C}l, {F}, {I},
@@ -236,6 +245,12 @@ https://github.com/opencollab/arpack-ng.
 D. Heringer, T.~A. Niehaus, M. Wanko, and T. Frauenheim, ``Analytical excited
   state forces for the time-dependent density-functional tight-binding
   method.,'' J{.} Comp{.} Chem{.} {\bf 28},  2589  (2007).
+
+\bibitem{Lee_JCTC_2019}
+I.~S. Lee, M. Filatov, and S.~K. Min, ``Formulation and Implementation of the
+  Spin-Restricted Ensemble-Referenced Kohn-Sham Method in the Context of the
+  Density Functional Tight Binding Approach,'' J{.} of Chem{.} Theory Comput{.}
+  {\bf 15},  3021  (2019).
 
 \bibitem{Lany_2009}
 S. Lany and A. Zunger, ``Accurate prediction of defect properties in density

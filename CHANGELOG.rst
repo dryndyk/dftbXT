@@ -1,9 +1,9 @@
-******************
-Change Log DFTB+XT
-******************
+****************************
+Change Log DFTB+ and DFTB+XT
+****************************
 
-Notable project changes from release 1.01 (2018-01-18).
-Changes in base DFTB+ are below.
+Notable project changes in both DFTB+ and DFTB+XT since release 1.3.1 (2017-02-22).
+The changes specific to DFTB+XT are below.
 
 
 Unreleased
@@ -11,6 +11,8 @@ Unreleased
 
 Added
 -----
+
+- REKS calculations for a strongly correlated system
 
 - New algorithm for long-range corrected Hamiltonian
 
@@ -27,6 +29,8 @@ Added
 
 - The DFT-D4 dispersion model (see DOIs: 10.1063/1.4993215 10.1063/1.5090222
   10.26434/chemrxiv.10299428 )
+
+- Generalized Born implicit solvation model
 
 Changed
 -------
@@ -46,83 +50,11 @@ Fixed
 
 - MD temperature profiles that do not start with an initial constant temperature
 
-1.02 (2019-01-18)
-=================
-
-Added
------
-
-- New git repository at GitHub github.com/tranas-open/dftbXT
-  and re-fork from github.com/dftbplus/dftbplus/master.
-
-- Integration with CP2K+XT.
-
-- New web site tranas.org/opensuite/dftb+xt.html.
-
-
-Changed
--------
-
-- Write/Read options for contact Green functions and self-energies.
-
-
-Fixed
------
-
-
-1.01 (2018-01-18)
-=================
-
-Added
------
-
-- Model Hamiltonians for transport calculations.
-  We introduced the possibility to read model Hamiltonians from external data files and use it with
-  or without a geometry structure. 
-
-- Elastic dephasing.
-  Two models of elastic dephasing ("Büttiker probe" and "vibronic dephasing") can be used now 
-  to include the dephasing and dissipation beyond the coherent Green function method. 
-
-- Application to STM spectroscopy.
-  We added new options to simplify and make faster the calculation of currents for systems with 
-  changeable geometry (like the STM setup). 
-
-
-Changed
--------
-
-
-Fixed
------
-
-
-****************
-Change Log DFTB+
-****************
-
-Notable project changes since release 1.3.1 (2017-02-22).
-
-
-Unreleased
-==========
-
-Added
------
-
-Changed
--------
-
-Fixed
------
-
 19.1 (2019-07-01)
 =================
 
 Added
 -----
-
-- Non-equilibrium Green's function transport.
 
 - Use of the ELSI library.
  
@@ -281,3 +213,73 @@ Fixed
   modes.
 
 - Make geometry writing in gen and xyz files consistent.
+
+***********************
+Change Log DFTB+XT only
+***********************
+
+Notable only DFTB+XT related project changes from release 1.01 (2018-01-18).
+
+Unreleased
+==========
+
+Added
+-----
+
+Changed
+-------
+
+Fixed
+-----
+
+
+1.02 (2019-01-18)
+=================
+
+Added
+-----
+
+- New git repository at GitHub github.com/tranas-open/dftbXT
+  and re-fork from github.com/dftbplus/dftbplus/master.
+
+- Integration with CP2K+XT.
+
+- New web site tranas.org/opensuite/dftb+xt.html.
+
+
+Changed
+-------
+
+- Write/Read options for contact Green functions and self-energies.
+
+
+Fixed
+-----
+
+
+1.01 (2018-01-18)
+=================
+
+Added
+-----
+
+- Model Hamiltonians for transport calculations.
+  We introduced the possibility to read model Hamiltonians from external data files and use it with
+  or without a geometry structure. 
+
+- Elastic dephasing.
+  Two models of elastic dephasing ("Büttiker probe" and "vibronic dephasing") can be used now 
+  to include the dephasing and dissipation beyond the coherent Green function method. 
+
+- Application to STM spectroscopy.
+  We added new options to simplify and make faster the calculation of currents for systems with 
+  changeable geometry (like the STM setup). 
+
+
+Changed
+-------
+
+
+Fixed
+-----
+
