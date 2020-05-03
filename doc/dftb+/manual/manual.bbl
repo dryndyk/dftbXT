@@ -197,6 +197,25 @@ A. Onufriev, D. Bashford, and D.~A. Case, ``Exploring protein native states and
   large-scale conformational changes with a modified generalized born model,''
   Proteins {\bf 55},  383  (2004).
 
+\bibitem{marenich2012}
+A.~V. Marenich, S.~V. Jerome, C.~J. Cramer, and D.~G. Truhlar, ``Charge Model
+  5: An Extension of {H}irshfeld Population Analysis for the Accurate
+  Description of Molecular Interactions in Gaseous and Condensed Phases,'' J{.}
+  of Chem{.} Theory Comput{.} {\bf 8},  527  (2012).
+
+\bibitem{mantina2010}
+M. Mantina, R. Valero, C. Cramer, and D. Truhlar, {\em CRC Handbook of
+  Chemistry and Physics} (CRC Press Boca Raton, FL, 2010).
+
+\bibitem{im2003}
+W. Im, M.~S. Lee, and C.~L. Brooks~III, ``Generalized {B}orn model with a
+  simple smoothing function,'' J{.} Comp{.} Chem{.} {\bf 24},  1691  (2003).
+
+\bibitem{lebedev1999}
+V.~I. Lebedev and D.~N. Laikov, ``A quadrature formula for the sphere of the
+  131st algebraic order of accuracy,'' Doklady Mathematics {\bf 59},  477
+  (1999).
+
 \bibitem{kubillus-jctc-11-332}
 M. Kubillus, T. Kuba{\v r}, M. Gaus, J. {\v R}ez{\'a}{\v c}, and M. Elstner,
   ``Parameterization of the \mbox{DFTB3} Method for {B}r, {C}a, {C}l, {F}, {I},
@@ -245,6 +264,12 @@ https://github.com/opencollab/arpack-ng.
 D. Heringer, T.~A. Niehaus, M. Wanko, and T. Frauenheim, ``Analytical excited
   state forces for the time-dependent density-functional tight-binding
   method.,'' J{.} Comp{.} Chem{.} {\bf 28},  2589  (2007).
+
+\bibitem{Yang2017}
+Y. Yang, A. Dominguez, D. Zhang, V. Lutsker, T.~A. Niehaus, T. Frauenheim, and
+  W. Yang., ``Charge transfer excitations from particle-particle random phase
+  approximation - Opportunities and challenges arising from two-electron
+  deficient systems.,'' J{.} Chem{.} Phys{.} {\bf 146},  124104  (2017).
 
 \bibitem{Lee_JCTC_2019}
 I.~S. Lee, M. Filatov, and S.~K. Min, ``Formulation and Implementation of the

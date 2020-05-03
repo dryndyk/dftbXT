@@ -166,9 +166,11 @@ scc/HH_custom-ref                      #? MPI_PROCS <= 1
 spin/Fe4                               #? MPI_PROCS == 2 or not WITH_MPI
 spin/Fe4_commonFermi                   #? MPI_PROCS <= 2
 
+solvation/sasa_i10e                    #? MPI_PROCS <= 1
 solvation/gb_ionpair                   #? MPI_PROCS <= 1
 solvation/gb_reference                 #? MPI_PROCS <= 1
 solvation/gb_mol1bar                   #? MPI_PROCS <= 1
+solvation/gb_cm5                       #? MPI_PROCS <= 1
 
 timedep/2CH3-Temp                      #? WITH_ARPACK and MPI_PROCS <= 1
 timedep/2CH3-Triplet-Temp              #? WITH_ARPACK and MPI_PROCS <= 1
@@ -319,3 +321,8 @@ geoopt/Vsi+O_lbfgs                     #? MPI_PROCS <= 4 and LONG_TEST
 geoopt/Vsi+O                           #? MPI_PROCS <= 4 and LONG_TEST
 scc/SiC64+V_dynforce_groups            #? (MPI_PROCS <= 8 and MPI_PROCS % 4 == 0) or not WITH_MPI
 scc/SiC64+V_dynforce                   #? (MPI_PROCS <= 4 and MPI_PROCS % 2 == 0) or not WITH_MPI
+
+
+pp-RPA/ethene                          #? not WITH_MPI
+pp-RPA/benzene_TammDancoff             #? not WITH_MPI
+pp-RPA/furan_OrbConst                  #? not WITH_MPI
