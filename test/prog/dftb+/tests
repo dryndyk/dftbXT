@@ -5,7 +5,7 @@
 #:include 'common.fypp'
 #:set LONG_TEST = not defined('TRAVIS')
 
-transport/C-chain+U                    #? WITH_TRANSPORT and MPI_PROCS <= 2
+transport/C-chain+U                    #? WITH_TRANSPORT and MPI_PROCS <= 2 and LONG_TEST
 transport/SiH-chain_bin                #? WITH_TRANSPORT and MPI_PROCS <= 2 and LONG_TEST
 transport/H-chain_Ef                   #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/model_H40                    #? WITH_TRANSPORT
@@ -24,13 +24,13 @@ transport/SiH-chain_allSteps           #? WITH_TRANSPORT and MPI_PROCS <= 2
 transport/H-chain                      #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/H-sheet                      #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/H-3conts                     #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/SiH-chain                    #? WITH_TRANSPORT and MPI_PROCS <= 4
+transport/SiH-chain                    #? WITH_TRANSPORT and MPI_PROCS <= 4 and LONG_TEST
 transport/SiH-chain-cont               #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/SiH-cont-poiss               #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/graphene_x                   #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/graphene3T                   #? WITH_TRANSPORT and MPI_PROCS <= 4
 transport/Au-chain                     #? WITH_TRANSPORT and MPI_PROCS <= 4
-transport/SiH-chain_semiInf            #? WITH_TRANSPORT and MPI_PROCS <= 2
+transport/SiH-chain_semiInf            #? WITH_TRANSPORT and MPI_PROCS <= 2 and LONG_TEST
 transport/H-sheet_end                  #? WITH_TRANSPORT and MPI_PROCS <= 4
 #! transport/local-curr                   #? WITH_TRANSPORT and MPI_PROCS <= 4
 #! transport/polyacetylene_semiInf        #? WITH_TRANSPORT and MPI_PROCS <= 4
@@ -308,8 +308,8 @@ non-scc/Si_384                         #? MPI_PROCS <= 4
 md/DNA                                 #? MPI_PROCS <= 4
 md/DNA_Berendsen2                      #? MPI_PROCS <= 4
 md/ptcda-xlbomd                        #? MPI_PROCS <= 4
-md/SiC64-xlbomdfast-T0                 #? MPI_PROCS <= 4
-md/SiC64-xlbomdfast                    #? MPI_PROCS <= 4
+md/SiC64-xlbomdfast-T0                 #? MPI_PROCS <= 4 and LONG_TEST
+md/SiC64-xlbomdfast                    #? MPI_PROCS <= 4 and LONG_TEST
 
 timedep/C66O10N4H44_OscWindow          #? WITH_ARPACK and MPI_PROCS <= 1
 timedep/C60_OscWindow                  #? WITH_ARPACK and MPI_PROCS <= 1
@@ -322,6 +322,7 @@ geoopt/Vsi+O                           #? MPI_PROCS <= 4 and LONG_TEST
 scc/SiC64+V_dynforce_groups            #? (MPI_PROCS <= 8 and MPI_PROCS % 4 == 0) or not WITH_MPI
 scc/SiC64+V_dynforce                   #? (MPI_PROCS <= 4 and MPI_PROCS % 2 == 0) or not WITH_MPI
 
+poisson/CH4-poisson                    #? MPI_PROCS <= 4
 
 pp-RPA/ethene                          #? not WITH_MPI
 pp-RPA/benzene_TammDancoff             #? not WITH_MPI

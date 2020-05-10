@@ -61,8 +61,8 @@ module dftbp_parser
   use dftbp_wrappedintr
   use dftbp_tempprofile, only : identifyTempProfile
   use dftbp_plumed, only : withPlumed
-#:if WITH_TRANSPORT
   use poisson_init
+#:if WITH_TRANSPORT
   use tranas_vars
 #:endif
   use dftbp_atomicrad, only : getAtomicRad
@@ -312,7 +312,7 @@ contains
 
     ! electronic Hamiltonian
     call getChildValue(root, "Hamiltonian", hamNode)
-    call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako)
+    call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako, input%poisson)
 
 #:endif
 
@@ -1261,7 +1261,7 @@ contains
 #:if WITH_TRANSPORT
   subroutine readHamiltonian(node, ctrl, geo, slako, tp, greendens, poisson)
 #:else
-  subroutine readHamiltonian(node, ctrl, geo, slako)
+  subroutine readHamiltonian(node, ctrl, geo, slako, poisson)
 #:endif
 
     !> Node to get the information from
@@ -1283,10 +1283,10 @@ contains
     !> Green's function paramenters
     !DAR type(TNEGFGreenDensInfo), intent(inout) :: greendens
     type(TGDFTBGreenDensInfo), intent(inout) :: greendens !DAR
+  #:endif
 
     !> Poisson solver paramenters
     type(TPoissonInfo), intent(inout) :: poisson
-#:endif    
 
     type(string) :: buffer
 
@@ -1296,13 +1296,13 @@ contains
 #:if WITH_TRANSPORT
       call readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
 #:else
-      call readDFTBHam(node, ctrl, geo, slako)
+      call readDFTBHam(node, ctrl, geo, slako, poisson)
 #:endif
     case ("xtb")
   #:if WITH_TRANSPORT
       call readXTBHam(node, ctrl, geo, tp, greendens, poisson)
   #:else
-      call readXTBHam(node, ctrl, geo)
+      call readXTBHam(node, ctrl, geo, poisson)
   #:endif
     case default
       call detailedError(node, "Invalid Hamiltonian")
@@ -1315,7 +1315,7 @@ contains
 #:if WITH_TRANSPORT
   subroutine readDFTBHam(node, ctrl, geo, slako, tp, greendens, poisson)
 #:else
-  subroutine readDFTBHam(node, ctrl, geo, slako)
+  subroutine readDFTBHam(node, ctrl, geo, slako, poisson)
 #:endif
 
     !> Node to get the information from
@@ -1338,9 +1338,10 @@ contains
     !DAR type(TNEGFGreenDensInfo), intent(inout) :: greendens
     type(TGDFTBGreenDensInfo), intent(inout) :: greendens !DAR
 
+  #:endif
+
     !> Poisson solver paramenters
     type(TPoissonInfo), intent(inout) :: poisson
-#:endif
 
     type(fnode), pointer :: value1, value2, child, child2, child3, field
     type(fnodeList), pointer :: children
@@ -1589,7 +1590,7 @@ contains
   #:if WITH_TRANSPORT
     call readSolver(node, ctrl, geo, tp, greendens, poisson)
   #:else
-    call readSolver(node, ctrl, geo)
+    call readSolver(node, ctrl, geo, poisson)
   #:endif
 
     ! Charge
@@ -1749,7 +1750,7 @@ contains
   #:if WITH_TRANSPORT
     call readElectrostatics(node, ctrl, geo, tp, poisson)
   #:else
-    call readElectrostatics(node, ctrl, geo)
+    call readElectrostatics(node, ctrl, geo, poisson)
   #:endif
 
     ! Third order stuff
@@ -1831,7 +1832,7 @@ contains
 #:if WITH_TRANSPORT
   subroutine readXTBHam(node, ctrl, geo, tp, greendens, poisson)
 #:else
-  subroutine readXTBHam(node, ctrl, geo)
+  subroutine readXTBHam(node, ctrl, geo, poisson)
 #:endif
 
     !> Node to get the information from
@@ -1851,9 +1852,10 @@ contains
     !DAR type(TNEGFGreenDensInfo), intent(inout) :: greendens
     type(TGDFTBGreenDensInfo), intent(inout) :: greendens !DAR
 
+  #:endif
+
     !> Poisson solver paramenters
     type(TPoissonInfo), intent(inout) :: poisson
-  #:endif
 
     type(fnode), pointer :: value1, child
     integer :: gfnLevel, ii
@@ -1909,7 +1911,7 @@ contains
   #:if WITH_TRANSPORT
     call readSolver(node, ctrl, geo, tp, greendens, poisson)
   #:else
-    call readSolver(node, ctrl, geo)
+    call readSolver(node, ctrl, geo, poisson)
   #:endif
 
     ! Charge
@@ -1941,7 +1943,7 @@ contains
   #:if WITH_TRANSPORT
     call readElectrostatics(node, ctrl, geo, tp, poisson)
   #:else
-    call readElectrostatics(node, ctrl, geo)
+    call readElectrostatics(node, ctrl, geo, poisson)
   #:endif
 
     ! Third order stuff
@@ -2121,7 +2123,7 @@ contains
 #:if WITH_TRANSPORT
   subroutine readElectrostatics(node, ctrl, geo, tp, poisson)
 #:else
-  subroutine readElectrostatics(node, ctrl, geo)
+  subroutine readElectrostatics(node, ctrl, geo, poisson)
 #:endif
 
     !> Node to get the information from
@@ -2136,34 +2138,38 @@ contains
   #:if WITH_TRANSPORT
     !> Transport parameters
     type(TTransPar), intent(inout)  :: tp
+  #:endif
 
     !> Poisson solver paramenters
     type(TPoissonInfo), intent(inout) :: poisson
-  #:endif
 
     type(fnode), pointer :: value1, child
     type(string) :: buffer
 
     ctrl%tPoisson = .false.
 
-  #:if WITH_TRANSPORT
     ! Read in which kind of electrostatics method to use.
     call getChildValue(node, "Electrostatics", value1, "GammaFunctional", child=child)
     call getNodeName(value1, buffer)
     select case (char(buffer))
     case ("gammafunctional")
+    #:if WITH_TRANSPORT
       if (tp%taskUpload .and. ctrl%tSCC) then
         call detailedError(child, "GammaFunctional not available, if you upload contacts in an SCC&
             & calculation.")
       end if
+    #:endif
     case ("poisson")
       ctrl%tPoisson = .true.
+    #:if WITH_TRANSPORT
       call readPoisson(value1, poisson, geo%tPeriodic, tp, geo%latVecs)
+    #:else
+      call readPoisson(value1, poisson, geo%tPeriodic, geo%latVecs)
+    #:endif
     case default
       call getNodeHSDName(value1, buffer)
       call detailedError(child, "Unknown electrostatics '" // char(buffer) // "'")
     end select
-  #:endif
 
   end subroutine readElectrostatics
 
@@ -2450,7 +2456,7 @@ contains
 #:if WITH_TRANSPORT
   subroutine readSolver(node, ctrl, geo, tp, greendens, poisson)
 #:else
-  subroutine readSolver(node, ctrl, geo)
+  subroutine readSolver(node, ctrl, geo, poisson)
 #:endif
 
     !> Relevant node in input tree
@@ -2470,9 +2476,10 @@ contains
     !DAR type(TNEGFGreenDensInfo), intent(inout) :: greendens
     type(TGDFTBGreenDensInfo), intent(inout) :: greendens !DAR
 
+  #:endif
+
     !> Poisson solver paramenters
     type(TPoissonInfo), intent(inout) :: poisson
-  #:endif
 
     type(fnode), pointer :: value1, child
     type(string) :: buffer, modifier
@@ -5490,10 +5497,15 @@ contains
       end if
 
   end subroutine readGreensFunction
+#:endif
 
 
   !> Read in Poisson related data
+#:if WITH_TRANSPORT
   subroutine readPoisson(pNode, poisson, tPeriodic, transpar, latVecs)
+#:else
+  subroutine readPoisson(pNode, poisson, tPeriodic, latVecs)
+#:endif
 
     !> Input tree
     type(fnode), pointer :: pNode
@@ -5504,11 +5516,13 @@ contains
     !> Is this a periodic calculation
     logical, intent(in) :: tPeriodic
 
-    !> Lattice vectors if periodic
-    real(dp), allocatable, intent(in) :: latVecs(:,:)
-
+  #:if WITH_TRANSPORT
     !> Parameters of the transport calculation
     type(TTransPar), intent(inout) :: transpar
+  #:endif
+
+    !> Lattice vectors if periodic
+    real(dp), allocatable, intent(in) :: latVecs(:,:)
 
     type(fnode), pointer :: pTmp, pTmp2, pChild, field
     type(string) :: buffer, modifier
@@ -5518,9 +5532,13 @@ contains
     logical :: needsPoissonBox
 
     poisson%defined = .true.
-    needsPoissonBox = (.not. tPeriodic) .or. transpar%tPeriodic1D .or. (transpar%nCont == 1)
+    needsPoissonBox = .not. tPeriodic
+  #:if WITH_TRANSPORT
+    needsPoissonBox = needsPoissonBox .or. transpar%tPeriodic1D .or. transpar%nCont == 1
+  #:endif
 
     if (needsPoissonBox) then
+    #:if WITH_TRANSPORT
       if (transpar%nCont == 1 .and. .not. transpar%tPeriodic1D) then
         poisson%poissBox(:) = 0.0_dp
         do ii = 1, 3
@@ -5536,6 +5554,10 @@ contains
         call getChildValue(pNode, "PoissonBox", poisson%poissBox, modifier=modifier, child=field)
         call convertByMul(char(modifier), lengthUnits, field, poisson%poissBox)
       end if
+    #:else
+      call getChildValue(pNode, "PoissonBox", poisson%poissBox, modifier=modifier, child=field)
+      call convertByMul(char(modifier), lengthUnits, field, poisson%poissBox)
+    #:endif
     end if
 
     poisson%foundBox = needsPoissonBox
@@ -5747,7 +5769,7 @@ contains
 
   end subroutine getPoissonBoundaryConditionOverrides
 
-
+#:if WITH_TRANSPORT
   !> Sanity checking of atom ranges and returning contact vector and direction.
   subroutine getContactVector(atomrange, geom, id, name, pContact, contactLayerTol, contactVec,&
       & contactDir, verbose)
@@ -6347,7 +6369,8 @@ contains
         call getNodeName2(child1, buffer)
         if (char(buffer) == "") then
           contacts(ii)%tFermiSet = .false.
-          call detailedWarning(pNode, "Missing Fermi level(s) - required in solver block")
+          call detailedWarning(pNode, "Missing Fermi level - required to be set in solver block or&
+              & read from a contact shift file")
         else
           call init(fermiBuffer)
           call getChildValue(child2, "", fermiBuffer, modifier=modifier)

@@ -18,7 +18,7 @@ module dftbp_inputsetup
   use dftbp_repcont
   use dftbp_linkedlist
   use dftbp_wrappedintr 
-  use libnegf_vars
+  use tranas_vars
 
   implicit none
   private

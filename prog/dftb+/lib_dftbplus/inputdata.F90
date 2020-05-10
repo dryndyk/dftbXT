@@ -40,8 +40,8 @@ module dftbp_inputdata
 #:if WITH_TRANSPORT
   use tranas_vars  !DAR
   use tranas_types_main, only : TTraNaSInput !DAR
-  use poisson_init
 #:endif
+  use poisson_init
 
   implicit none
   private
@@ -554,8 +554,8 @@ module dftbp_inputdata
     type(TTraNaSInput) :: tranas !Container for TraNaS input. !DAR  
     type(TTransPar) :: transpar
     type(TNEGFInfo) :: ginfo
-    type(TPoissonInfo) :: poisson
   #:endif
+    type(TPoissonInfo) :: poisson
   end type TInputData
 
 

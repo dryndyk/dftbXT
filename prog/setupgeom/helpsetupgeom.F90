@@ -16,7 +16,7 @@ module dftbp_helpsetupgeom
   use dftbp_linkedlist
   use dftbp_typegeometry
   use dftbp_f08math
-  use libnegf_vars, only : contactInfo
+  use tranas_vars, only : contactInfo
   implicit none
 
   public :: setupGeometry

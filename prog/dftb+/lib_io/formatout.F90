@@ -349,7 +349,7 @@ contains
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.03 (03.05.2020)                   ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.03 (10.05.2020)                   ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for quantum nanoscale modeling                      ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2006-2020 DFTB+ developers group                             ',hBar,hBar

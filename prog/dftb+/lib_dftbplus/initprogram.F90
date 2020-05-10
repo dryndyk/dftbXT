@@ -109,9 +109,9 @@ module dftbp_initprogram
 #:if WITH_TRANSPORT
   use tranas_vars
   use tranas_interface
-  use poisson_init
   use blacsfx_module !DAR
 #:endif
+  use poisson_init
   use dftbp_transportio
   implicit none
 
@@ -238,7 +238,7 @@ module dftbp_initprogram
 
 
   !> ADT for neighbour parameters
-  type(TNeighbourList), allocatable, save :: neighbourList
+  type(TNeighbourList), allocatable :: neighbourList
 
   !> nr. of neighbours for atoms out to max interaction distance (excluding Ewald terms)
   integer, allocatable :: nNeighbourSK(:)
@@ -636,10 +636,10 @@ module dftbp_initprogram
 
 
   !> Partial density of states (PDOS) projection regions
-  type(TListIntR1), save :: iOrbRegion
+  type(TListIntR1) :: iOrbRegion
 
   !> PDOS region labels
-  type(TListCharLc), save :: regionLabels
+  type(TListCharLc) :: regionLabels
 
   !> Third order DFTB
   logical :: t3rd
@@ -672,7 +672,7 @@ module dftbp_initprogram
   logical :: tPrintExcitedEigVecs
 
   !> data type for linear response
-  type(TLinresp), save :: lresp
+  type(TLinresp) :: lresp
 
   !> Whether to run a range separated calculation
   logical :: tRangeSep
@@ -756,7 +756,7 @@ module dftbp_initprogram
   type(TXLBOMD), allocatable :: xlbomdIntegrator
 
   !> Differentiation method for (H^0,S)
-  type(TNonSccDiff), save :: nonSccDeriv
+  type(TNonSccDiff) :: nonSccDeriv
 
   !> Whether lattice has changed since last geometry iteration
   logical :: tLatticeChanged
@@ -916,10 +916,11 @@ module dftbp_initprogram
 
   private :: createRandomGenerators
 
-#:if WITH_TRANSPORT
-  !> Transport variables
   !> Container for the atomistic structure for poisson
   type(TPoissonStructure) :: poissStr
+
+#:if WITH_TRANSPORT
+  !> Transport variables
   type(TTransPar) :: transpar
   type(TNEGFInfo) :: ginfo
 
@@ -972,9 +973,6 @@ module dftbp_initprogram
 
   !> Array storing local (bond) currents
   real(dp), allocatable :: lCurrArray(:,:)
-  !> Poisson Derivatives (forces)
-  real(dp), allocatable :: poissonDerivs(:,:)
-
   !> Shell-resolved Potential shifts uploaded from contacts
   real(dp), allocatable :: shiftPerLUp(:,:)
 
@@ -1141,6 +1139,8 @@ contains
     integer :: nBufferedCholesky
 
     character(sc), allocatable :: shellNamesTmp(:)
+
+    logical :: tInitialized
 
     !> Format for two using exponential notation values with units
     character(len=*), parameter :: format2Ue = "(A, ':', T30, E14.6, 1X, A, T50, E14.6, 1X, A)"
@@ -1424,12 +1424,6 @@ contains
     end if
 
     tPoisson = input%ctrl%tPoisson
-  #:if not WITH_TRANSPORT
-    if (tPoisson) then
-      ! note: should eventually refactor to allow Poisson solution without transport requirements
-      call error("Poisson solver requires transport support to be compiled in")
-    end if
-  #:endif
 
     if (tSccCalc) then
       allocate(sccInp)
@@ -2498,8 +2492,8 @@ contains
         if (tReadChrg) then
           if (tFixEf .or. input%ctrl%tSkipChrgChecksum) then
             ! do not check charge or magnetisation from file
-            call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb, qBlockIn, qiBlockIn,&
-                & deltaRhoIn)
+            call initQFromFile(qInput, fCharges, input%ctrl%tReadChrgAscii, orb, qBlockIn,&
+                & qiBlockIn, deltaRhoIn)
           else
             ! check number of electrons in file
             if (nSpin /= 2) then
@@ -2516,9 +2510,9 @@ contains
 
           if (allocated(input%ctrl%initialCharges)) then
             if (abs(sum(input%ctrl%initialCharges) - input%ctrl%nrChrg) > 1e-4_dp) then
-              write(strTmp, "(A,G13.6,A,G13.6,A,A)") "Sum of initial charges does not match specified&
-                  & total charge. (", sum(input%ctrl%initialCharges), " vs. ", input%ctrl%nrChrg,&
-                  & ") ", "Your initial charge distribution will be rescaled."
+              write(strTmp, "(A,G13.6,A,G13.6,A,A)") "Sum of initial charges does not match&
+                  & specified total charge. (", sum(input%ctrl%initialCharges), " vs. ",&
+                  & input%ctrl%nrChrg,") ", "Your initial charge distribution will be rescaled."
               call warning(strTmp)
             end if
             call initQFromAtomChrg(qInput, input%ctrl%initialCharges, referenceN0, species0,&
@@ -2681,14 +2675,40 @@ contains
       tUpload = .false.
     end if
 
-    call initTransportArrays(tUpload, tPoisson, input%transpar, species0, orb, nAtom, nSpin,&
-        & shiftPerLUp, chargeUp, poissonDerivs, allocated(qBlockIn), blockUp, shiftBlockUp)
+    call initTransportArrays(tUpload, input%transpar, species0, orb, nAtom, nSpin, shiftPerLUp,&
+        & chargeUp, allocated(qBlockIn), blockUp, shiftBlockUp)
 
     call initTransport(env, input, tDefinedFreeE)
   #:else
     tNegf = .false.
   #:endif
 
+    if (tPoisson) then
+      poissStr%nAtom = nAtom
+      poissStr%nSpecies = nType
+      poissStr%specie0 => species0
+      poissStr%x0 => coord0
+      poissStr%nel = nEl0
+      poissStr%isPeriodic = tPeriodic
+      if (tPeriodic) then
+        poissStr%latVecs(:,:) = latVec(:,:)
+      else
+        poissStr%latVecs(:,:) = 0.0_dp
+      end if
+      poissStr%tempElec = tempElec
+
+      call poiss_init(env, poissStr, orb, hubbU, input%poisson,&
+        #:if WITH_TRANSPORT
+          & input%transpar,&
+        #:endif
+          & tInitialized)
+
+      if (.not. tInitialized) then
+        call error("Poisson solver not initialized")
+      end if
+    end if
+
+    tPoissonTwice = input%poisson%solveTwice
 
     if (tNegf) then
       if (tDispersion) then
@@ -3585,7 +3605,7 @@ contains
     @:SAFE_DEALLOC(HSqrCplx, SSqrCplx, eigvecsCplx, HSqrReal, SSqrReal, eigvecsReal, eigen)
     @:SAFE_DEALLOC(RhoSqrReal, qDepExtPot, derivs, chrgForces, excitedDerivs, dipoleMoment)
     @:SAFE_DEALLOC(coord0Fold, newCoords, orbitalL, occNatural, mu)
-    @:SAFE_DEALLOC(poissonDerivs, shiftPerLUp, chargeUp)
+    @:SAFE_DEALLOC(shiftPerLUp, chargeUp)
     @:SAFE_DEALLOC(regionLabelLDOS)
     @:SAFE_DEALLOC(iAtInCentralRegion, energiesCasida)
     @:SAFE_DEALLOC(reks)
@@ -3669,16 +3689,16 @@ contains
   subroutine initTransport(env, input, tDefinedFreeE)
 
     !> Computational environment
-    type(TEnvironment), intent(in) :: env
+    type(TEnvironment), intent(inout) :: env
 
     !> Input data
     type(TInputData), intent(in) :: input
 
     !> Is the free energy defined (i.e. equilibrium calculation)
     logical, intent(out) :: tDefinedFreeE
-
+    
     ! Whether transport has been initialized
-    logical :: tInitialized
+    logical :: tInitialized    
 
     logical :: tAtomsOutside
     integer :: iSpin, isz
@@ -3687,12 +3707,6 @@ contains
 
     if(input%ctrl%verbose.gt.30) write(stdOut,"(/,'> initTransport is started')")
   
-    ! These two checks are redundant, I check if they are equal
-    if (input%poisson%defined .neqv. tPoisson) then
-      call error("Mismatch in ctrl and ginfo fields")
-    end if
-    tPoissonTwice = input%poisson%solveTwice
-
     ! contact calculation in case some contact is computed
     tContCalc = (input%transpar%taskContInd /= 0)
 
@@ -3737,30 +3751,6 @@ contains
       end if
 
     end associate
-
-    if (tPoisson) then
-      poissStr%nAtom = nAtom
-      poissStr%nSpecies = nType
-      poissStr%specie0 => species0
-      poissStr%x0 => coord0
-      poissStr%nel = nEl0
-      poissStr%isPeriodic = tPeriodic
-      if (tPeriodic) then
-        poissStr%latVecs(:,:) = latVec(:,:)
-      else
-        poissStr%latVecs(:,:) = 0.0_dp
-      end if
-      poissStr%tempElec = tempElec
-    #:if WITH_MPI
-      call poiss_init(poissStr, orb, hubbU, input%poisson, input%transpar, env%mpi%globalComm,&
-          & tInitialized)
-    #:else
-      call poiss_init(poissStr, orb, hubbU, input%poisson, input%transpar, tInitialized)
-    #:endif
-      if (.not. tInitialized) then
-        call error("Poisson solver not initialized")
-      end if
-    end if
 
     if (tNegf) then
       if(input%ctrl%verbose.gt.30) write(stdOut,*) 'init negf'
@@ -4178,14 +4168,11 @@ contains
 #:if WITH_TRANSPORT
 
   !> initialize arrays for tranpsport
-  subroutine initTransportArrays(tUpload, tPoisson, transpar, species0, orb, nAtom, nSpin,&
-      & shiftPerLUp, chargeUp, poissonDerivs, tBlockUp, blockUp, shiftBlockUp)
+  subroutine initTransportArrays(tUpload, transpar, species0, orb, nAtom, nSpin, shiftPerLUp,&
+      & chargeUp, tBlockUp, blockUp, shiftBlockUp)
 
     !> Are contacts being uploaded
     logical, intent(in) :: tUpload
-
-    !> Is the Poisson solver required
-    logical, intent(in) :: tPoisson
 
     !> Transport parameters
     type(TTransPar), intent(inout) :: transpar
@@ -4207,9 +4194,6 @@ contains
 
     !> uploaded charges for atoms
     real(dp), allocatable, intent(out) :: chargeUp(:,:,:)
-
-    !> Poisson Derivatives (needed for forces)
-    real(dp), allocatable, intent(out) :: poissonDerivs(:,:)
 
     !> Are block charges and potentials present?
     logical, intent(in) :: tBlockUp
@@ -4235,9 +4219,7 @@ contains
       end if
       call readContactShifts(shiftPerLUp, chargeUp, transpar, orb, shiftBlockUp, blockUp)
     end if
-    if (tPoisson) then
-      allocate(poissonDerivs(3,nAtom))
-    end if
+
 
   end subroutine initTransportArrays
 
