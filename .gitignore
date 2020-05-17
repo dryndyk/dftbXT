@@ -5,6 +5,8 @@ external/slakos/origin
 external/slakos/status
 external/dftd3/origin
 external/dftd3/status
+external/gbsa/origin
+external/gbsa/status
 _build*
 _install
 make.arch
