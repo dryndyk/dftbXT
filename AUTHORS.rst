@@ -13,7 +13,7 @@ now an open source project.
 
 DFTB+XT is an extended version of the DFTB+ code for model and atomistic quantum 
 transport at nanoscale, many-body nonequilibrium phenomena, material & device modeling. 
-Since 2018, it is developed as the core package of TraNaS OpenSuite.
+Since 2018, it is developed as the core package of the TraNaS OpenSuite.
 tranas.org/opensuite/
 
 
@@ -54,7 +54,7 @@ contributed to DFTB+ :
 
 * Gabriele Penazzi (formerly University of Bremen Germany (till 2016), now
   QuantumWise A/S, Denmark)
-  
+
 * Jan Řezáč (Institute of Organic Chemistry and Biochemistry AS CR, Czech Republic)
 
 * Michael Sternberg (Argonne National Laboratory, USA)

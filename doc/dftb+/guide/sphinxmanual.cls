@@ -58,7 +58,8 @@
       {\vskip 1cm\rm\LARGE\py@HeaderFamily open software for \\[0.2cm] quantum nanoscale modeling} \par
       % {\vskip 1cm\LARGE\py@HeaderFamily\em quantum transport, materials, devices}
 
-      {\vskip 1cm\Large\py@HeaderFamily\em DFTB$^{\text{+}}$ eXTended version for \\ model and atomistic quantum transport at nanoscale \\ many-body nonequilibrium phenomena \\ material \& device modeling \\}
+      {\vskip 1cm\Large\py@HeaderFamily\em DFTB$^{\text{+}}$XT package is DFTB$^{\text{+}}$ eXTended version \\[0.2cm]
+      CP2K$^{\text{+}}$XT package is CP2K eXTended version}
         
       \vfill
       {\LARGE\py@HeaderFamily

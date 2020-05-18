@@ -230,8 +230,13 @@ Unreleased
 Added
 -----
 
+- New options for the orthogonalization of Hamiltonians.
+
 Changed
 -------
+
+- Multiple changes in the base DFTB+ code are merged and adopted. 
+
 
 Fixed
 -----
