@@ -1,11 +1,16 @@
 \begin{thebibliography}{1}
 
 \bibitem{OpenSuite}
-D.~A. Ryndyk, {\it TraNaS OpenSuite}, tranas.org/opensuite.
+{\it TraNaS OpenSuite}, tranas.org/opensuite.
 
-\bibitem{dftbp-paper}
+\bibitem{dftbp-2007paper}
 B. Aradi, B. Hourahine, and T. Frauenheim, ``{DFTB+}, a Sparse Matrix-Based
   Implementation of the {DFTB} Method,''  {\bf 111,} 5678 (2007), dftbplus.org.
+
+\bibitem{dftbp-2020paper}
+B. Hourahine {\it et~al.}, ``\mbox{DFTB}+, a software package for efficient
+  approximate density functional theory based atomistic simulations,''  {\bf
+  152,} 124101 (2020).
 
 \bibitem{Pecchia08njp}
 A. Pecchia, G. Penazzi, L. Salvucci, and A. {Di Carlo}, ``Non-equilibrium
