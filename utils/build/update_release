@@ -145,7 +145,7 @@ def get_release_name(tag, commit=None):
     elif release is None:
         relname = 'development version (commit: %s)' % (commit,)
     else:
-        relname = ('development version (commit: %s, base: %s)'
+        relname = ('development version (commit: %s, dftb+ base: %s)'
                    % (commit, release))
     return relname
 

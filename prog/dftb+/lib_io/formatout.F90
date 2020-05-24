@@ -349,7 +349,7 @@ contains
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,'                                DFTB+XT 1.03 (17.05.2020)                   ',hBar,hBar 
+    write(outunit, '(5A)') hBar,hBar,'                               DFTB+XT 1.03.rc                              ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' DFTB+ eXTended version for quantum nanoscale modeling                      ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' Copyright (C) 2006-2020 DFTB+ developers group                             ',hBar,hBar
@@ -358,8 +358,8 @@ contains
     write(outunit, '(A)') repeat(hBar, headerWidth)
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' Please cite as:                                                            ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' DFTB+XT code as a part of TraNaS OpenSuite [1], partially based on         ',hBar,hBar
-    write(outunit, '(5A)') hBar,hBar,' the DFTB+ software package [2,3] and the CP2K software package [4].        ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' TraNaS OpenSuite [1], partially based on the DFTB+ software package [2,3]  ',hBar,hBar
+    write(outunit, '(5A)') hBar,hBar,' and the CP2K software package [4].                                         ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' [1] TraNaS OpenSuite, tranas.org/opensuite                                 ',hBar,hBar 
     write(outunit, '(5A)') hBar,hBar,' [2] B. Hourahine et al., J. Chem. Phys. 152, 124101 (2020)                 ',hBar,hBar 
@@ -371,6 +371,7 @@ contains
     write(outunit, '(5A)') hBar,hBar,' references. Other references to the particular methods are given in the    ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar,' manual and in the end of the output file.                                  ',hBar,hBar
     write(outunit, '(5A)') hBar,hBar, repeat(' ', headerWidth - 4),hBar,hBar
+    write(outunit, '(7A)') hBar,hBar,' ',trim(release),'                   ',hBar,hBar
     write(outunit, '(A)') repeat(hBar, headerWidth)
 
   end subroutine printDFTBHeader
