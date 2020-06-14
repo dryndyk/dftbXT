@@ -32,7 +32,8 @@ Added
 
 - Non-SCC helical geometries supported
 
-- Generalized Born implicit solvation model
+- Generalized Born (GB) and Analytical Linearized Poisson-Boltzmann (ALPB)
+  implicit solvation model for SCC calculations
 
 - Non-polar solvent accessible surface area solvation model
 
@@ -233,6 +234,9 @@ Notable only DFTB+XT related project changes from release 1.01 (2018-01-18).
 
 Unreleased
 ==========
+
+1.03 (2020-01-18)
+=================
 
 Added
 -----
