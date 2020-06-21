@@ -39,6 +39,7 @@ Added
 
 - Particle-particle random-phase approximation available for suitable excitation calculations
 
+- Range separated excited state calculations for spin free singlet systems
 
 Changed
 -------
