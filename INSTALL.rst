@@ -61,7 +61,7 @@ The source code of the last stable release can be downloaded from the
 
 Alternatively you can clone the `public git repository
 <https://github.com/tranas-open/dftbXT>`_. 
-The master branch contains the latest development version. 
+The default branch contains the latest development version. 
 As the project uses git-submodules, those must be additionally
 downloaded ::
 
