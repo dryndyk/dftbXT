@@ -192,10 +192,26 @@ Y. Yang, H. Yu, D. York, Q. Cui, and M. Elstner, ``Extension of the
 A.~V. Onufriev and D.~A. Case, ``Generalized {B}orn Implicit Solvent Models for
   Biomolecules,'' Annu{.} Rev{.} Biophys{.} {\bf 48},  275  (2019).
 
+\bibitem{still1990}
+W.~C. Still, A. Tempczyk, R.~C. Hawley, and T. Hendrickson, ``Semianalytical
+  treatment of solvation for molecular mechanics and dynamics,'' J{.} Am{.}
+  Chem{.} Soc{.} {\bf 112},  6127  (1990).
+
+\bibitem{lange2012}
+A.~W. Lange and J.~M. Herbert, ``Improving Generalized {B}orn Models by
+  Exploiting Connections to Polarizable Continuum Models. I. An Improved
+  Effective Coulomb Operator,'' J{.} of Chem{.} Theory Comput{.} {\bf 8},  1999
+   (2012), pMID: 26593834.
+
 \bibitem{onufriev2004}
 A. Onufriev, D. Bashford, and D.~A. Case, ``Exploring protein native states and
   large-scale conformational changes with a modified generalized born model,''
   Proteins {\bf 55},  383  (2004).
+
+\bibitem{sigalov2006}
+G. Sigalov, A. Fenley, and A. Onufriev, ``Analytical electrostatics for
+  biomolecules: Beyond the generalized {B}orn approximation,'' J{.} Chem{.}
+  Phys{.} {\bf 124},  124902  (2006).
 
 \bibitem{marenich2012}
 A.~V. Marenich, S.~V. Jerome, C.~J. Cramer, and D.~G. Truhlar, ``Charge Model
@@ -246,6 +262,14 @@ M. Elstner, D. Porezag, G. Jungnickel, J. Elsner, M. Haugk, T. Frauenheim, S.
 J. Pipek and P.~G. Mezey, ``A fast intrinsic localization procedure applicable
   for {\it ab initio} and semiempirical linear combination of atomic orbital
   wave functions,'' J{.} Chem{.} Phys{.} {\bf 90},  4916  (1989).
+
+\bibitem{realtime1}
+F.~P. Bonaf{\'{e}}, B. Aradi, B. Hourahine, C.~R. Medrano, F.~J.
+  Hern{\'{a}}ndez, T. Frauenheim, and C.~G. S{\'{a}}nchez, ``{A Real-Time
+  Time-Dependent Density Functional Tight-Binding Implementation for
+  Semiclassical Excited State Electron-Nuclear Dynamics and Pump-Probe
+  Spectroscopy Simulations},'' Journal of Chemical Theory and Computation
+  (2020).
 
 \bibitem{niehaus-prb-63-085108}
 T.~A. Niehaus, S. Suhai, F. Della~Sala, P. Lugli, M. Elstner, G. Seifert, and
