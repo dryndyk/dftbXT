@@ -375,15 +375,15 @@ contains
         cellVol = abs(determinant33(latVec))
         energy%EGibbs = energy%EMermin + extPressure * cellVol
       end if
-      call writeAutotestTag(autotestTag, tPeriodic, cellVol, tMulliken, qOutput, derivs,&
-          & chrgForces, excitedDerivs, tStress, totalStress, pDynMatrix, energy, extPressure,&
-          & coord0, tLocalise, localisation, esp, taggedWriter, tunnTot, ldosTot, tDefinedFreeE,&
+      call writeAutotestTag(autotestTag, electronicSolver, tPeriodic, cellVol, tMulliken, qOutput,&
+          & derivs, chrgForces, excitedDerivs, tStress, totalStress, pDynMatrix, energy,&
+          & extPressure, coord0, tLocalise, localisation, esp, taggedWriter, tunnTot, ldosTot,&
           & lCurrArray)
     end if
     if (tWriteResultsTag) then
       call writeResultsTag(resultsTag, energy, derivs, chrgForces, nEl, Ef, eigen, filling,&
           & electronicSolver, tStress, totalStress, pDynMatrix, tPeriodic, cellVol, tMulliken,&
-          & qOutput, q0, taggedWriter, tDefinedFreeE, cm5Cont)
+          & qOutput, q0, taggedWriter, cm5Cont)
     end if
     if (tWriteDetailedXML) then
       call writeDetailedXml(runId, speciesName, species0, pCoord0Out, tPeriodic, tHelical, latVec,&
@@ -642,8 +642,7 @@ contains
                 & tLatOpt, iLatGeoStep, iSccIter, energy, diffElec, sccErrorQ, indMovedAtom,&
                 & pCoord0Out, q0, qOutput, orb, species, tPrintMulliken, extPressure, cellVol,&
                 & tAtomicEnergy, tDispersion, tPeriodic, tSccCalc, invLatVec, kPoint,&
-                & iAtInCentralRegion, electronicSolver, tDefinedFreeE, reks, allocated(thirdOrd),&
-                & isRangeSep)
+                & iAtInCentralRegion, electronicSolver, reks, allocated(thirdOrd), isRangeSep)
           end if
           if (tWriteBandDat) then
             call writeBandOut(bandOut, eigen, filling, kWeight)
@@ -843,8 +842,8 @@ contains
               & tDFTBU, tImHam.or.tSpinOrbit, tPrintMulliken, orbitalL, qBlockOut, Ef, Eband, TS,&
               & E0, extPressure, cellVol, tAtomicEnergy, tDispersion, tEField, tPeriodic, nSpin,&
               & tSpin, tSpinOrbit, tSccCalc, allocated(onSiteElements), tNegf, invLatVec, kPoint,&
-              & iAtInCentralRegion, electronicSolver, tDefinedFreeE, allocated(halogenXCorrection),&
-              & isRangeSep, allocated(thirdOrd), allocated(solvation), cm5Cont)
+              & iAtInCentralRegion, electronicSolver, allocated(halogenXCorrection), isRangeSep,&
+              & allocated(thirdOrd), allocated(solvation), cm5Cont)
         end if
 
         if (tConverged .or. tStopScc) then
@@ -933,7 +932,7 @@ contains
           & iLatGeoStep, nSpin, qOutput, velocities)
     end if
 
-      if (input%ctrl%verbose.gt.0) call printEnergies(energy, TS, electronicSolver, tDefinedFreeE)
+    if (input%ctrl%verbose.gt.0) call printEnergies(energy, TS, electronicSolver)
 
     if (tForces) then
       call env%globalTimer%startTimer(globalTimers%forceCalc)
@@ -1413,7 +1412,7 @@ contains
     !> sparse overlap storage
     real(dp), allocatable, intent(inout) :: over(:)
 
-    !> Non-SCC hamitonian storage
+    !> Non-SCC hamiltonian storage
     real(dp), allocatable, intent(inout) :: h0(:)
 
     !> Sparse density matrix storage
@@ -1581,19 +1580,19 @@ contains
     !> data type for REKS
     type(TReksCalc), allocatable, intent(inout) :: reks
 
-    !> Sparse storage for hamitonian (sparseSize,nSpin)
+    !> Sparse storage for hamiltonian (sparseSize,nSpin)
     real(dp), allocatable, intent(inout) :: ham(:,:)
 
     !> Sparse storage for overlap
     real(dp), allocatable, intent(inout) :: over(:)
 
-    !> Sparse storage for non-SCC hamitonian
+    !> Sparse storage for non-SCC hamiltonian
     real(dp), allocatable, intent(inout) :: H0(:)
 
     !> Sparse storage for density matrix
     real(dp), allocatable, intent(inout) :: rhoPrim(:,:)
 
-    !> Sparse storage for imaginary hamitonian (not reallocated if not initially allocated)
+    !> Sparse storage for imaginary hamiltonian (not reallocated if not initially allocated)
     real(dp), allocatable, intent(inout) :: iHam(:,:)
 
     !> Sparse storage for imaginary part of density matrix (not reallocated if not initially
@@ -1865,7 +1864,7 @@ contains
     !> Electronic solver information
     type(TElectronicSolver), intent(inout) :: electronicSolver
 
-    !> Is the hamitonian real (no k-points/molecule/gamma point)?
+    !> Is the hamiltonian real (no k-points/molecule/gamma point)?
     logical, intent(in) :: tRealHS
 
     !> Is the Fermi level common accross spin channels?
@@ -1928,7 +1927,7 @@ contains
     !> extrapolated 0 temperature band energy
     real(dp), intent(out) :: E0(:)
 
-    !> imaginary part of hamitonian
+    !> imaginary part of hamiltonian
     real(dp), intent(in), allocatable :: iHam(:,:)
 
     !> spin orbit constants
@@ -2115,7 +2114,7 @@ contains
     !> Electronic solver information
     type(TElectronicSolver), intent(inout) :: electronicSolver
 
-    !> Is the hamitonian real (no k-points/molecule/gamma point)?
+    !> Is the hamiltonian real (no k-points/molecule/gamma point)?
     logical, intent(in) :: tRealHS
 
     !> Is the Fermi level common accross spin channels?
@@ -2175,7 +2174,7 @@ contains
     !> extrapolated 0 temperature band energy
     real(dp), intent(out) :: E0(:)
 
-    !> imaginary part of hamitonian
+    !> imaginary part of hamiltonian
     real(dp), intent(in), allocatable :: iHam(:,:)
 
     !> spin orbit constants
@@ -2336,7 +2335,7 @@ contains
     !> functional
     integer, intent(in), allocatable :: nNeighbourLC(:)
 
-    !> dense hamitonian matrix
+    !> dense hamiltonian matrix
     real(dp), intent(out) :: HSqrReal(:,:)
 
     !> dense overlap matrix
@@ -2467,7 +2466,7 @@ contains
     !> atomic coordinates
     real(dp), intent(in) :: coord(:,:)
 
-    !> dense hamitonian matrix
+    !> dense hamiltonian matrix
     complex(dp), intent(out) :: HSqrCplx(:,:)
 
     !> dense overlap matrix
@@ -2585,7 +2584,7 @@ contains
     !> eigenvalues (orbital, kpoint)
     real(dp), intent(out) :: eigen(:,:)
 
-    !> dense hamitonian matrix
+    !> dense hamiltonian matrix
     complex(dp), intent(out) :: HSqrCplx(:,:)
 
     !> dense overlap matrix
@@ -2904,7 +2903,7 @@ contains
     !> Dense matrix descriptor
     type(TDenseDescr), intent(in) :: denseDesc
 
-    !> Is the hamitonian real (no k-points/molecule/gamma point)?
+    !> Is the hamiltonian real (no k-points/molecule/gamma point)?
     logical, intent(in) :: tRealHS
 
     !> Are spin orbit interactions present
@@ -4394,7 +4393,7 @@ contains
     !> Vectors (in units of the lattice constants) to cells of the lattice
     real(dp), intent(in) :: cellVec(:,:)
 
-    !> Is the hamitonian real (no k-points/molecule/gamma point)?
+    !> Is the hamiltonian real (no k-points/molecule/gamma point)?
     logical, intent(in) :: tRealHS
 
     !> Sparse Hamiltonian
@@ -4430,7 +4429,7 @@ contains
     !> Storage for dense overlap matrix
     real(dp), intent(inout), allocatable :: SSqrReal(:,:)
 
-    !> Storage for dense hamitonian matrix (complex case)
+    !> Storage for dense hamiltonian matrix (complex case)
     complex(dp), intent(inout), allocatable :: HSqrCplx(:,:,:)
 
     !> Storage for dense overlap matrix (complex case)
@@ -4555,7 +4554,7 @@ contains
     !> Vectors (in units of the lattice constants) to cells of the lattice
     real(dp), intent(in) :: cellVec(:,:)
 
-    !> Is the hamitonian real (no k-points/molecule/gamma point)?
+    !> Is the hamiltonian real (no k-points/molecule/gamma point)?
     logical, intent(in) :: tRealHS
 
     !> Sparse Hamiltonian
@@ -4585,7 +4584,7 @@ contains
     !> Storage for dense overlap matrix
     real(dp), intent(inout), allocatable :: SSqrReal(:,:)
 
-    !> Storage for dense hamitonian matrix (complex case)
+    !> Storage for dense hamiltonian matrix (complex case)
     complex(dp), intent(inout), allocatable :: HSqrCplx(:,:,:)
 
     !> Storage for dense overlap matrix (complex case)
@@ -5085,7 +5084,7 @@ contains
     !> Vectors (in units of the lattice constants) to cells of the lattice
     real(dp), intent(in) :: cellVec(:,:)
 
-    !> Is the hamitonian real (no k-points/molecule/gamma point)?
+    !> Is the hamiltonian real (no k-points/molecule/gamma point)?
     logical, intent(in) :: tRealHS
 
     !> K-points and spins to process
@@ -5513,7 +5512,7 @@ contains
     !> refernce charges
     real(dp), intent(in) :: q0(:,:,:)
 
-    !> non-SCC hamitonian information
+    !> non-SCC hamiltonian information
     type(TSlakoCont), intent(in) :: skHamCont
 
     !> overlap information
@@ -6115,7 +6114,7 @@ contains
     !> Storage for dense overlap matrix
     real(dp), intent(inout), allocatable :: SSqrReal(:,:)
 
-    !> Storage for dense hamitonian matrix (complex case)
+    !> Storage for dense hamiltonian matrix (complex case)
     complex(dp), intent(inout), allocatable :: eigvecsCplx(:,:,:)
 
     !> Storage for dense overlap matrix (complex case)
@@ -6413,7 +6412,7 @@ contains
     !> Electronic solver information
     type(TElectronicSolver), intent(inout) :: electronicSolver
 
-    !> dense hamitonian matrix
+    !> dense hamiltonian matrix
     real(dp), intent(out) :: HSqrReal(:,:)
 
     !> dense overlap matrix
@@ -6486,7 +6485,7 @@ contains
     !> Electronic solver information
     type(TElectronicSolver), intent(inout) :: electronicSolver
 
-    !> dense hamitonian matrix
+    !> dense hamiltonian matrix
     real(dp), intent(out) :: HSqrReal(:,:)
 
     !> dense overlap matrix
@@ -6771,7 +6770,7 @@ contains
     !> electrostatic solver (poisson or gamma-functional)
     integer, intent(in) :: electrostatics
 
-    !> non-SCC hamitonian (sparse)
+    !> non-SCC hamiltonian (sparse)
     real(dp), intent(in) :: H0(:)
 
     !> sparse overlap matrix
@@ -6992,7 +6991,7 @@ contains
       & neighbourList, species, orb, iSparseStart, img2CentCell, &
       & hamSp, intBlock, Lpaired, iL)
 
-    !> non-SCC hamitonian (sparse)
+    !> non-SCC hamiltonian (sparse)
     real(dp), intent(in) :: H0(:)
 
     !> overlap (sparse)
@@ -7016,7 +7015,7 @@ contains
     !> image atoms to central cell atoms
     integer, intent(in) :: img2CentCell(:)
 
-    !> resulting hamitonian (sparse)
+    !> resulting hamiltonian (sparse)
     real(dp), intent(out) :: hamSp(:,:)
 
     !> internal block and spin resolved potential for each microstate
@@ -7242,7 +7241,7 @@ contains
       energy%Etotal = energy%Eelec + energy%Erep + energy%eDisp
       reks%enLtot(iL) = energy%Etotal
 
-      ! REKS is not affected by filling, so TS becmoes 0
+      ! REKS is not affected by filling, so TS becomes 0
       energy%EMermin = energy%Etotal
       ! extrapolated to 0 K
       energy%Ezero = energy%Etotal
