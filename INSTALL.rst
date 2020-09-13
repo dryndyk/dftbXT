@@ -1,6 +1,6 @@
-********************************
-Compiling and installing DFTB+XT
-********************************
+*******************************
+Building and installing DFTB+XT
+*******************************
 
 
 Requirements
@@ -36,7 +36,7 @@ Additionally there are optional requirements for some DFTB+ features:
 * The `MAGMA <http://icl.cs.utk.edu/magma/>`_ library for GPU accelerated
   computation.
 
-* The `PLUMED2 <https://github.com/plumed/plumed2>` library for metadynamics
+* The `PLUMED2 <https://github.com/plumed/plumed2>`_ library for metadynamics
   simulations. If you build DFTB+ with MPI, the linked PLUMED library must be
   also MPI-aware (and must have been built with the same MPI-framework as
   DFTB+).
@@ -52,6 +52,50 @@ results, you will additionally need:
 * time - GNU time program for measuring CPU resource usage
 
 * The Slater-Koster data used in the tests (see below)
+
+
+Tested builds
+-------------
+
+DFTB+ is regularly built and tested for both serial and MPI environments on the
+following architectures:
+
++---------------+----------------------+-------------+------------------+-----+
+| Architecture  | Compiler             | MPI         | Ext. libraries   |Notes|
++===============+======================+=============+==================+=====+
+| x86_64 /      | GNU Fortran/C 7.5    | OpenMPI 2.1 | OpenBlas 0.3.7,  |     |
+| Linux         |                      |             | ScaLAPACK 2.1    |     |
++---------------+----------------------+-------------+------------------+-----+
+| x86_64 /      | GNU Fortran/C 10.1   | OpenMPI 4.0 | OpenBlas 0.3.10, | [1] |
+| Linux         |                      |             | ScaLAPACK 2.1    |     |
++---------------+----------------------+-------------+------------------+-----+
+| x86_64 /      | Intel Fortran/C 18.0 | MPICH 3.2   | MKL 18.0         |     |
+| Linux         |                      |             |                  |     |
++---------------+----------------------+-------------+------------------+-----+
+| x86_64 /      | Intel Fortran/C 18.0 | MPICH 3.2   | MKL 18.0         |     |
+| Linux         |                      |             |                  |     |
++---------------+----------------------+-------------+------------------+-----+
+| x86_64 /      | Intel Fortran/C 19.0 | MPICH 3.3   | MKL 19.0         |     |
+| Linux         |                      |             |                  |     |
++---------------+----------------------+-------------+------------------+-----+
+| x86_64 /      | NAG Fortran 7.0      | MPICH 3.3   | OpenBlas 0.3.7   |     |
+| Linux         | GNU C 9.2            |             | ScaLAPACK 2.1    |     |
++---------------+----------------------+-------------+------------------+-----+
+| x86_64 /      | GNU Fortran/C 8.4    | --          | OpenBlas 0.3.10  | [2] |
+| OS X          |                      |             |                  |     |
+|               |                      |             |                  |     |
++---------------+----------------------+-------------+------------------+-----+
+
+All builds are also tested with the optional ARPACK-NG 3.7, ELSI 2.6.1 and
+PLUMED 2.5 libraries.
+
+Notes:
+
+[1] The timedep/C60_OscWindow test fails with recent versions (>= 0.3.8) of the
+OpenBlas library. If possible, use an older version or link against either MKL
+or an another BLAS/LAPACK library instead.
+
+[2] Only serial version tested.
 
 
 Obtaining the source
@@ -72,7 +116,7 @@ downloaded ::
 
 
 Optional extra components
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 Some optional software components are not distributed with the DFTB+ source
 code. If these are required, but are not already installed on your system, then
@@ -111,37 +155,47 @@ variables in some of the config files.
 **Note for developers:** Please see some further instructions at the end of the
 file.
 
+In order to build DFTB+ carry out the following steps:
+
 * Inspect the `config.cmake` file and customise the global build parameters. (If
   you are unsure, leave the defaults as they are.)
 
-* Create a build folder (e.g. `_build`) either within the DFTB+ source tree or
+* Create a build folder (e.g. `build`) either within the DFTB+ source tree or
   somewhere else outside of it and change to that folder, e.g.::
 
-    mkdir _build
-    cd _build
+    mkdir build
+    cd build
 
 * From the build folder invoke CMake to configure the build. You have to pass
   the source directory as argument to CMake. Additionally pass your Fortran and
-  C compilers as environment variables, e.g.::
+  C compilers as environment variables, e.g. (in a BASH compatible shell)::
 
-    env FC=gfortran CC=gcc cmake ..
+    FC=gfortran CC=gcc cmake ..
 
   If you want to build the code with MPI-support (see ``WITH_MPI`` in
   `config.cmake`), pass the name of the mpi compiler-wrapper as Fortran
   compiler, e.g.::
 
-    env FC=mpifort CC=gcc cmake ..
+    FC=mpifort CC=gcc cmake ..
 
   Based on the detected compilers, the build system will read further settings
-  from a corresponding toolchain file in the `sys/` folder. (The name of the
-  file is shown in the output.)
+  from a corresponding toolchain file in the `sys/` folder. Either from a
+  specific one (e.g. `gnu.cmake`, `intel.cmake`, etc.) or a generic one
+  (`generic.cmake`) if the detected compiler combination does not correspond to
+  any of the specific settings. (The name of the selected toolchain file is
+  shown in the output.)
 
   You may adjust any variables defined in `config.make` or in the toolchain file
   by either modifying the files directly or by overriding the definitions via
-  the ``-D`` command line option. For example, in order to change the name of
-  the LAPACK library, you can override the ``LAPACK_LIBRARIES`` variable with::
+  the ``-D`` command line option. For example, in order to use the MKL-library
+  with the GNU-compiler, you would have to override the ``LAPACK_LIBRARIES``
+  variable::
 
-    env FC=gfortran CC=gcc cmake -DLAPACK_LIBRARIES=openblas ..
+    FC=gfortran CC=gcc cmake -DLAPACK_LIBRARIES="mkl_gf_lp64;mkl_gnu_thread;mkl_core"  ..
+
+  When needed, you can also pass linker options in the library variables, e.g.::
+
+    -DLAPACK_LIBRARIES="-Wl,--start-group -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -Wl,--end-group"
 
   CMake automatically searches for the external libraries in the paths specified
   in the ``CMAKE_PREFIX_PATH`` environment variable. Make sure that it is set up
@@ -149,19 +203,19 @@ file.
   ``*_LIBRARY_DIRS`` variable for each external library to add path hints for
   the library search, e.g.::
 
-    env FC=gfortran CC=gcc cmake -DLAPACK_LIBRARY_DIRS=/opt/custom-lapack/lib ..
+    FC=gfortran CC=gcc cmake -DLAPACK_LIBRARY_DIRS=/opt/custom-lapack/lib ..
 
   Note: You can override the toolchain file selection by passing the
   ``-DTOOLCHAIN_FILE`` option with the name of the file to read, e.g.::
 
-    env FC=ifort CC=gcc cmake -DTOOLCHAIN_FILE=/somepath/myintelgnu.cmake ..
+    FC=ifort CC=gcc cmake -DTOOLCHAIN_FILE=/somepath/myintelgnu.cmake ..
 
   or by setting the toolchain file path in the ``DFTBPLUS_TOOCHAIN_FILE``
   environment variable. If the customized toolchain file is within the `sys/`
   folder, you may use the ``-DTOOLCHAIN`` option or the ``DFTBPLUS_TOOLCHAIN``
   environment variable instead::
 
-    env FC=ifort CC=gcc cmake -DTOOLCHAIN=gnu ..
+    FC=ifort CC=gcc cmake -DTOOLCHAIN=gnu ..
 
   Similarly, you can use an alternative build config file instead of
   `config.cmake` by specifying it with the ``-DBUILD_CONFIG_FILE`` option or by
@@ -180,7 +234,7 @@ file.
   should execute a serial build with verbosity turned on instead::
 
     make VERBOSE=1
-  
+
 * Note: The code can be compiled with distributed memory parallelism (MPI), but
   for smaller shared memory machines, you may find that the performance is
   better when using OpenMP parallelism only and an optimised thread aware BLAS
@@ -235,7 +289,7 @@ Installing DFTB+
 
   where the destination directory can be configured by the variable
   ``CMAKE_INSTALL_PREFIX`` (in the `config.cmake` file). The default location is
-  the `_install` subdirectory within the build directory.
+  the `install` subdirectory within the build directory.
 
 
 
@@ -251,7 +305,7 @@ for linking DFTB+ with C and Fortran programs.
 
 
 Linking the library in non-CMake based builds
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------
 
 Depending on the choice of external components and whether you want to link
 DFTB+ to a C or a Fortran binary, you may need different compilation flags and
@@ -275,7 +329,7 @@ pkg-config file.
 
 
 Linking the library in CMake based builds
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------
 
 If you use CMake to build your project, you can directly use the CMake
 configuration file installed by DFTB+ into the `lib/cmake/DftbPlus/` folder in
@@ -351,6 +405,6 @@ The customized config file is read by CMake before the compiler detection. If
 your config file contains toolchain dependent options, consider to define the
 ``DFTBPPLUS_TOOLCHAIN`` environment variable and query it in your config file.
 
-See this [CMake customization
-file](https://gist.github.com/aradi/39ab88acfbacc3b2f44d1e41e4da15e7) for a
+See this `CMake customization file
+<https://gist.github.com/aradi/39ab88acfbacc3b2f44d1e41e4da15e7>`_ for a
 template.

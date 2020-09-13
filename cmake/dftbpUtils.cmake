@@ -56,6 +56,10 @@ function (dftbp_add_fypp_defines fyppflags)
     list(APPEND _fyppflags -DDEBUG=0)
   endif()
 
+  if(INTERNAL_ERFC)
+    list(APPEND _fyppflags -DINTERNAL_ERFC=1)
+  endif()
+
   if(WITH_OMP)
     list(APPEND _fyppflags -DWITH_OMP)
   endif()
@@ -66,6 +70,10 @@ function (dftbp_add_fypp_defines fyppflags)
 
   if(WITH_DFTD3)
     list(APPEND _fyppflags -DWITH_DFTD3)
+  endif()
+
+  if(WITH_MBD)
+      list(APPEND _fyppflags -DWITH_MBD)
   endif()
 
   if(WITH_PLUMED)
@@ -133,15 +141,27 @@ function(dftbp_get_release_name release)
 endfunction()
 
 
-# Gets DFTB+ API release information.
+# Gets DFTB+ API version information.
 #
 # Args:
-#   release [out]: Release string.
+#   apiversion [out]: Version string.
+#   apimajor [out]: Major release number (as string).
+#   apiminor [out]: Minor release number (as string).
+#   apipatch [out]: Patch release number (as string).
 #
-function(dftbp_get_api_release apiversion)
+function(dftbp_get_api_version apiversion apimajor apiminor apipatch)
 
-  file(STRINGS ${CMAKE_SOURCE_DIR}/prog/dftb+/api/mm/API_VERSION _api REGEX "^[0-9]+\.[0-9]+\.[0-9]+$")
+  file(STRINGS ${CMAKE_SOURCE_DIR}/prog/dftb+/api/mm/API_VERSION _api
+    REGEX "^[0-9]+\.[0-9]+\.[0-9]+$")
+  string(REGEX MATCHALL "[0-9]+" _api_list "${_api}")
+  list(GET _api_list 0 _api_major)
+  list(GET _api_list 1 _api_minor)
+  list(GET _api_list 2 _api_patch)
+
   set(${apiversion} "${_api}" PARENT_SCOPE)
+  set(${apimajor} "${_api_major}" PARENT_SCOPE)
+  set(${apiminor} "${_api_minor}" PARENT_SCOPE)
+  set(${apipatch} "${_api_patch}" PARENT_SCOPE)
 
 endfunction()
 
@@ -154,6 +174,11 @@ endfunction()
 #
 function (dftbp_create_library_targets libraries libpaths)
   foreach(lib IN LISTS libraries)
+    string(REGEX MATCH "^[ ]*-.*" option ${lib})
+    # If the library is a linker option, skip target conversion (use it literally)
+    if(NOT "${option}" STREQUAL "")
+      continue()
+    endif()
     if(TARGET ${lib})
       continue()
     endif()
@@ -257,12 +282,13 @@ endfunction()
 #     pkgconfig_requires [out]: Value for the Requires field.
 #     pkgconfig_libs [out]: Value for the Libs field.
 #     pkgconfig_libs_private [out]: Value for the Libs.private field.
-#     pkgconfig_c_flags [out]: value for the cflags field.
+#     pkgconfig_c_flags [out]: Value for the cflags field.
+#     pkgconfig_prefix [out]: Value for the installation prefix.
 #
 function(dftbp_get_pkgconfig_params pkgconfig_requires pkgconfig_libs pkgconfig_libs_private
     pkgconfig_c_flags)
 
-  set(_pkgconfig_libs "-L${INSTALL_LIB_DIR} -ldftbplus")
+  set(_pkgconfig_libs "-L${CMAKE_INSTALL_FULL_LIBDIR} -ldftbplus")
   set(_pkgconfig_libs_private)
 
   dftbp_add_prefix("-l" "${EXPORTED_COMPILED_LIBRARIES}" complibs)
@@ -286,7 +312,7 @@ function(dftbp_get_pkgconfig_params pkgconfig_requires pkgconfig_libs pkgconfig_
     dftbp_library_linking_flags("${implibs}" implibs)
     list(APPEND _pkgconfig_libs_private "${implibs}")
 
-    set(_pkgconfig_c_flags "-I${INSTALL_INC_DIR} ${CMAKE_C_FLAGS}")
+    set(_pkgconfig_c_flags "-I${CMAKE_INSTALL_FULL_INCLUDEDIR} ${CMAKE_C_FLAGS}")
 
   else()
 
@@ -300,7 +326,7 @@ function(dftbp_get_pkgconfig_params pkgconfig_requires pkgconfig_libs pkgconfig_
     dftbp_library_linking_flags("${implibs}" implibs)
     list(APPEND _pkgconfig_libs_private "${implibs}")
 
-    set(_pkgconfig_c_flags "-I${INSTALL_MOD_DIR} ${CMAKE_Fortran_FLAGS}")
+    set(_pkgconfig_c_flags "-I${CMAKE_INSTALL_FULL_MODULEDIR} ${CMAKE_Fortran_FLAGS}")
 
   endif()
 
@@ -310,6 +336,7 @@ function(dftbp_get_pkgconfig_params pkgconfig_requires pkgconfig_libs pkgconfig_
   set(_pkgconfig_libs_private "${_pkgconfig_libs_private} ${CMAKE_EXE_LINKER_FLAGS}")
   string(REPLACE ";" " " _pkgconfig_requires "${EXPORTED_EXTERNAL_PACKAGES}")
 
+  set(${pkgconfig_prefix} "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
   set(${pkgconfig_requires} "${_pkgconfig_requires}" PARENT_SCOPE)
   set(${pkgconfig_libs} "${_pkgconfig_libs}" PARENT_SCOPE)
   set(${pkgconfig_libs_private} "${_pkgconfig_libs_private}" PARENT_SCOPE)
@@ -386,8 +413,7 @@ macro (dftbp_load_build_settings)
       set(BUILD_CONFIG_FILE "${CMAKE_SOURCE_DIR}/config.cmake")
     endif()
   endif()
-  message(STATUS "Reading build config file: ${BUILD_CONFIG_FILE}\n"
-    "(Adjust the variables defined in this file to enable/disable build components)")
+  message(STATUS "Reading global build config file: ${BUILD_CONFIG_FILE}")
   include(${BUILD_CONFIG_FILE})
   
 endmacro()
@@ -431,8 +457,7 @@ macro(dftbp_load_toolchain_settings)
     endif()
     set(TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/sys/${TOOLCHAIN}.cmake)
   endif()
-  message(STATUS "Loading toolchain file: ${TOOLCHAIN_FILE}\n"
-    "(Adjust variables defined in this file to change compiler, linker and library settings)")
+  message(STATUS "Reading build environment specific toolchain file: ${TOOLCHAIN_FILE}")
   include(${TOOLCHAIN_FILE})
 endmacro()
 
@@ -442,9 +467,10 @@ endmacro()
 macro (dftbp_setup_global_compiler_flags)
   string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILDTYPE_UPPER)
   foreach (lang IN ITEMS Fortran C)
-    string(APPEND CMAKE_${lang}_FLAGS " ${${lang}_FLAGS}")
-    string(APPEND CMAKE_${lang}_FLAGS_${BUILDTYPE_UPPER} " ${${lang}_FLAGS_${BUILDTYPE_UPPER}}")
+    set(CMAKE_${lang}_FLAGS " ${${lang}_FLAGS}")
+    set(CMAKE_${lang}_FLAGS_${BUILDTYPE_UPPER} " ${${lang}_FLAGS_${BUILDTYPE_UPPER}}")
     message(STATUS "Flags for ${lang}-compiler: "
       "${CMAKE_${lang}_FLAGS} ${CMAKE_${lang}_FLAGS_${BUILDTYPE_UPPER}}")
   endforeach()
+
 endmacro()

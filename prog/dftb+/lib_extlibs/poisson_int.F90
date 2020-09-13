@@ -200,7 +200,7 @@ contains
 
 
     ! local variables
-    integer :: i, iErr
+    integer :: iErr
 
     iErr = 0
     initinfo = .true.
@@ -445,7 +445,7 @@ contains
 
     real(dp) :: fakegrad(3,1)
 
-    integer :: ndim, ierr, array_size
+    integer :: ierr
     integer :: PoissFlag
 
     ! The subroutine gives the atom shifts.

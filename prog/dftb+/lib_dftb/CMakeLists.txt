@@ -20,12 +20,12 @@ set(sources-fpp
   ${curdir}/elecconstraints.F90
   ${curdir}/elstatpot.F90
   #${curdir}/emfields.F90
-  ${curdir}/energies.F90
+  ${curdir}/energytypes.F90
   ${curdir}/encharges.F90
   ${curdir}/etemp.F90
   ${curdir}/externalcharges.F90
-  ${curdir}/evaluateenergies.F90
   ${curdir}/forces.F90
+  ${curdir}/getenergies.F90
   ${curdir}/h5correction.F90
   ${curdir}/halogenx.F90
   ${curdir}/hamiltonian.F90
@@ -58,5 +58,9 @@ set(sources-fpp
 if(WITH_DFTD3)
   list(APPEND sources-fpp ${curdir}/dispdftd3.F90)
 endif(WITH_DFTD3)
+
+if(WITH_MBD)
+  list(APPEND sources-fpp ${curdir}/dispmbd.F90)
+endif(WITH_MBD)
 
 set(ALL-SOURCES-FPP ${ALL-SOURCES-FPP} ${sources-fpp} PARENT_SCOPE)

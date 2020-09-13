@@ -21,4 +21,8 @@ set(sources
 
 add_library(sparskit ${sources})
 
-install(TARGETS sparskit EXPORT ${INSTALL_EXPORT_NAME} DESTINATION ${INSTALL_LIB_DIR})
+if(WITH_API OR BUILD_SHARED_LIBS)
+  install(TARGETS sparskit DESTINATION "${CMAKE_INSTALL_LIBDIR}" EXPORT dftbplus-targets)
+endif()
+
+set(EXPORTED_COMPILED_LIBRARIES ${EXPORTED_COMPILED_LIBRARIES} sparskit PARENT_SCOPE)

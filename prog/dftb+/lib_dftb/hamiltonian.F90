@@ -25,6 +25,7 @@ module dftbp_hamiltonian
   use dftbp_scc, only : TScc
   use dftbp_elstattypes
   use poisson_init
+  use dftbp_dispersions, only : TDispersionIface
 
   implicit none
 
@@ -234,10 +235,10 @@ contains
   end subroutine resetInternalPotentials
 
 
-  !> Add potentials comming from point charges.
+  !> Add potentials coming from point charges.
   subroutine addChargePotentials(env, sccCalc, qInput, q0, chargePerShell, orb, species,&
       & neighbourList, img2CentCell, spinW, solvation, thirdOrd, potential, electrostatics,&
-      & tPoisson, tUpload, shiftPerLUp)
+      & tPoisson, tUpload, shiftPerLUp, dispersion)
 
     !> Environment settings
     type(TEnvironment), intent(inout) :: env
@@ -289,6 +290,9 @@ contains
 
     !> uploded potential per shell per atom
     real(dp), allocatable, intent(in) :: shiftPerLUp(:,:)
+
+    !> Dispersion interactions object
+    class(TDispersionIface), allocatable, intent(in) :: dispersion
 
     ! local variables
     real(dp), allocatable :: atomPot(:,:)
@@ -342,6 +346,10 @@ contains
       call sccCalc%setShiftPerL(shellPot(:,:,1))
 
     end select
+
+    if (allocated(dispersion)) then
+      call dispersion%addPotential(atomPot(:,1))
+    end if
 
     potential%intAtom(:,1) = potential%intAtom(:,1) + atomPot(:,1)
     potential%intShell(:,:,1) = potential%intShell(:,:,1) + shellPot(:,:,1)
@@ -426,10 +434,9 @@ contains
   end subroutine addBlockChargePotentials
 
 
-
   !> Returns the Hamiltonian for the given scc iteration
   subroutine getSccHamiltonian(H0, over, nNeighbourSK, neighbourList, species, orb, iSparseStart,&
-      & img2CentCell, potential, ham, iHam)
+      & img2CentCell, potential, isREKS, ham, iHam)
 
     !> non-SCC hamiltonian (sparse)
     real(dp), intent(in) :: H0(:)
@@ -458,8 +465,11 @@ contains
     !> potential acting on sustem
     type(TPotentials), intent(in) :: potential
 
-    !> resulting hamiltonian (sparse)
-    real(dp), intent(out) :: ham(:,:)
+    !> Is this DFTB/SSR formalism
+    logical, intent(in) :: isREKS
+
+    !> resulting hamitonian (sparse)
+    real(dp), intent(inout) :: ham(:,:)
 
     !> imaginary part of hamiltonian (if required, signalled by being allocated)
     real(dp), allocatable, intent(inout) :: iHam(:,:)
@@ -468,8 +478,11 @@ contains
 
     nAtom = size(orb%nOrbAtom)
 
-    ham(:,:) = 0.0_dp
-    ham(:,1) = h0
+    if (.not. isREKS) then
+      ham(:,:) = 0.0_dp
+      ham(:,1) = h0
+    end if
+
     call add_shift(ham, over, nNeighbourSK, neighbourList%iNeighbour, species, orb, iSparseStart,&
         & nAtom, img2CentCell, potential%intBlock)
 

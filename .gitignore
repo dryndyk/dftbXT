@@ -7,9 +7,7 @@ external/gbsa/origin
 external/gbsa/status
 external/slakos/origin
 external/slakos/status
-_build*
-_install
-make.arch
+build
 custom.cmake
 __pycache__
 .idea
