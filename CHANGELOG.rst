@@ -18,8 +18,10 @@ Changed
 -------
 
 - MPI parallelisation for UFF, Slater-Kirkwood and DFT-D4 dispersion
+
 - OMP parallelisation for UFF and Slater-Kirkwood dispersion
 
+- Re-enabled (collinear) spin polarization in transport
 
 Fixed
 -----
@@ -277,6 +279,21 @@ Notable only DFTB+XT related project changes from release 1.01 (2018-01-18).
 
 Unreleased
 ==========
+
+Added
+-----
+
+- 
+
+Changed
+-------
+
+- 
+
+Fixed
+-----
+
+- 
 
 1.03 (2020-01-18)
 =================

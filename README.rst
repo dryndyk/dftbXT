@@ -27,14 +27,6 @@ software packages as a library.
 Installation
 ============
 
-
-Downloading the binary distribution
------------------------------------
-
-Binary (threaded) distribution of the latest stable release can be found on the
-`stable release page <http://www.dftbplus.org/download/dftb-stable/>`_.
-
-
 Building from source
 --------------------
 
@@ -43,8 +35,11 @@ only a subset of all possible features in DFTB+) in a typical Linux
 environment. For more detailed information on the build customization and the
 build process, consult the `detailed building instructions <INSTALL.rst>`_.
 
-Download the source code from the `stable release page
-<http://www.dftbplus.org/download/dftb-stable/>`_.
+The source code of the last stable release can be downloaded from the 
+`TraNaS OpenSuite homepage <http://tranas.org/opensuite>`_.
+
+Alternatively you can clone the `public git repository
+<https://github.com/tranas-open/dftbXT>`_. 
 
 You need CMake (>= 3.5.0) to build DFTB+. Create a build folder
 (e.g. ``build``) in the source folder and start the configuration from
@@ -85,8 +80,13 @@ parameterisations (a.k.a. Slater-Koster files). You can download them from
 `dftb.org <https://dftb.org>`_.
 
 
-Documentation
-=============
+Documentation DFTB+XT
+=====================
+
+  <http://tranas.org/opensuite/documentation.html>`_
+
+Documentation DFTB+
+===================
 
 Consult following resources for documentation:
 
@@ -100,11 +100,13 @@ Consult following resources for documentation:
 Citing
 ======
 
-When publishing results obtained with DFTB+, please cite following works:
+When publishing results obtained with DFTB+XT, please cite as: 
+DFTB+XT software package from TraNaS OpenSuite [1],
+partially based on the DFTB+ software package [2,3].
 
-* `DFTB+, a software package for efficient approximate density functional theory
-  based atomistic simulations; J. Chem. Phys. 152, 124101 (2020)
-  <https://doi.org/10.1063/1.5143190>`_
+[1] TraNaS OpenSuite, tranas.org/opensuite
+[2] B. Hourahine et al., J. Chem. Phys. 152, 124101 (2020)
+[3] A. Pecchia et al., New Journal of Physics 10, 065022 (2008) 
 
 * Reference publications of the Slater-Koster parameterization sets you
   used. (See `dftb.org <https://dftb.org>`_ for the references.)
