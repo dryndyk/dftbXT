@@ -152,6 +152,10 @@ module dftbp_initprogram
   !> file name for shift data
   character(*), parameter :: fShifts = "shifts.dat"
 
+  !> Is this calculation using a restarted input that does not require self consistency before
+  !> moving to the post SCC loop part (i.e. Ehrenfest)
+  logical :: tRestartNoSC = .false.
+
   !> Is the calculation SCC?
   logical :: tSccCalc
 
@@ -1278,6 +1282,8 @@ contains
     end if
     tFracCoord = input%geom%tFracCoord
 
+    isSccConvRequired = (input%ctrl%isSccConvRequired .and. tSccCalc) ! no point if not SCC
+
     if (tSccCalc) then
       maxSccIter = input%ctrl%maxIter
     else
@@ -1285,6 +1291,15 @@ contains
     end if
     if (maxSccIter < 1) then
       call error("SCC iterations must be larger than 0")
+    end if
+    if (tSccCalc) then
+      if (allocated(input%ctrl%elecDynInp)) then
+        if (input%ctrl%elecDynInp%tReadRestart .and. .not.input%ctrl%elecDynInp%tPopulations) then
+          maxSccIter = 0
+          isSccConvRequired = .false.
+          tRestartNoSC = .true.
+        end if
+      end if
     end if
 
     tWriteHS = input%ctrl%tWriteHS
@@ -1652,7 +1667,7 @@ contains
     ! Initialize mixer
     ! (at the moment, the mixer does not need to know about the size of the
     ! vector to mix.)
-    if (tSccCalc .and. .not.allocated(reks)) then
+    if (tSccCalc .and. .not.allocated(reks) .and. .not.tRestartNoSC) then
       allocate(pChrgMixer)
       iMixer = input%ctrl%iMixSwitch
       nGeneration = input%ctrl%iGenerations
@@ -2349,6 +2364,7 @@ contains
     end if
 
     minSccIter = getMinSccIters(tSccCalc, tDftbU, nSpin)
+    minSccIter = min(minSccIter, maxSccIter)
     if (isXlbomd) then
       call xlbomdIntegrator%setDefaultSCCParameters(minSccIter, maxSccIter, sccTol)
     end if
@@ -2431,7 +2447,7 @@ contains
     tWriteAutotest = env%tGlobalLead .and. input%ctrl%tWriteTagged
     tWriteDetailedXML = env%tGlobalLead .and. input%ctrl%tWriteDetailedXML
     tWriteResultsTag = env%tGlobalLead .and. input%ctrl%tWriteResultsTag
-    tWriteDetailedOut = env%tGlobalLead .and. input%ctrl%tWriteDetailedOut
+    tWriteDetailedOut = env%tGlobalLead .and. input%ctrl%tWriteDetailedOut .and. .not.tRestartNoSC
     tWriteBandDat = input%ctrl%tWriteBandDat .and. env%tGlobalLead&
         & .and. electronicSolver%providesEigenvals
 
@@ -2789,9 +2805,11 @@ contains
     end if
 
     if (tSccCalc) then
-      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Self consistent charges", "Yes"
-      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "SCC-tolerance", sccTol
-      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Max. scc iterations", maxSccIter
+      if (.not.tRestartNoSC) then
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Self consistent charges", "Yes"
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,E14.6)") "SCC-tolerance", sccTol
+        if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,I14)") "Max. scc iterations", maxSccIter
+      end if
       if (tPeriodic) then
         write(stdout, "(A,':',T30,E14.6)") "Ewald alpha parameter", sccCalc%getEwaldPar()
       end if
@@ -2846,13 +2864,15 @@ contains
       if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Periodic boundaries", "No"
     end if
 
-    if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Electronic solver", electronicSolver%getSolverName()
+    if (.not.tRestartNoSC) then
+      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,':',T30,A)") "Electronic solver", electronicSolver%getSolverName()
+    end if
 
     if (electronicSolver%iSolver == electronicSolverTypes%magma_gvd) then
       call gpuInfo()
     endif
 
-    if (tSccCalc) then
+    if (tSccCalc .and. .not.tRestartNoSC) then
       if (.not. allocated(reks)) then
         select case (iMixer)
         case(mixerTypes%simple)
@@ -2891,7 +2911,7 @@ contains
       end if
     end if
 
-    if (.not. allocated(reks)) then
+    if (.not. allocated(reks) .and. .not.tRestartNoSC) then
       if (.not.input%ctrl%tSetFillingTemp) then
       if(input%ctrl%verbose.gt.50) write(stdOut, format2Ue) "Electronic temperature", tempElec, 'H', Hartree__eV * tempElec,&
             & 'eV'
@@ -2907,7 +2927,7 @@ contains
       end if
     end if
 
-    if (tSccCalc) then
+    if (tSccCalc .and. .not.tRestartNoSC) then
       if (tReadChrg) then
         write (strTmp, "(A,A,A)") "Read in from '", trim(fCharges), "'"
       else
