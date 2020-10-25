@@ -41,33 +41,34 @@ The source code of the last stable release can be downloaded from the
 Alternatively you can clone the `public git repository
 <https://github.com/tranas-open/dftbXT>`_. 
 
-You need CMake (>= 3.5.0) to build DFTB+. Create a build folder
-(e.g. ``build``) in the source folder and start the configuration from
-there. Pass your compilers as environment variables (``FC`` and ``CC``) and
-the location where the code should be installed (``-DCMAKE_INSTALL_PREFIX``)::
+You need CMake (>= 3.16) to build DFTB+. If your environment offers no CMake or
+an only an older one, you can easily install the latest CMake via Python's
+``pip`` command::
 
-  mkdir build
-  cd build
-  FC=gfortran CC=gcc cmake -DCMAKE_INSTALL_PREFIX=$HOME/opt/dftb+ ..
+  pip install cmake
 
-If the configuration was successful, start the build with ::
+Start CMake by passing your compilers as environment variables (``FC`` and
+``CC``), and the location where the code should be installed and the build
+directory (``_build``) and als options::
 
-  make -j
+  FC=gfortran CC=gcc cmake -DCMAKE_INSTALL_PREFIX=$HOME/opt/dftb+ -B _build .
+
+If the configuration was successful, start the build with::
+
+  cmake --build _build -- -j
 
 After successful build, you should test the code. First download the SK-files
 needed for the test ::
 
-  cd ..
   ./utils/get_opt_externals slakos
-  cd build
 
 and then run the tests with ::
 
-  ctest -j
+  pushd _build; ctest -j; popd
 
 If the tests were successful, install the package with ::
 
-  make install
+  cmake --install _build
 
 For further details see the `detailed building instructions <INSTALL.rst>`_.
 

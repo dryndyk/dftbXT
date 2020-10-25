@@ -20,9 +20,13 @@ set(sources
   ORDERINGS/zdsepart.f)
 
 add_library(sparskit ${sources})
+if(WITH_OMP)
+  target_link_libraries(sparskit PUBLIC OpenMP::OpenMP_Fortran)
+endif()
 
 if(WITH_API OR BUILD_SHARED_LIBS)
   install(TARGETS sparskit DESTINATION "${CMAKE_INSTALL_LIBDIR}" EXPORT dftbplus-targets)
 endif()
 
-set(EXPORTED_COMPILED_LIBRARIES ${EXPORTED_COMPILED_LIBRARIES} sparskit PARENT_SCOPE)
+list(APPEND PKG_CONFIG_LIBS sparskit)
+set(PKG_CONFIG_LIBS "${PKG_CONFIG_LIBS}" PARENT_SCOPE)

@@ -119,6 +119,7 @@ module dftbp_initprogram
 #:endif
   use poisson_init
   use dftbp_transportio
+  use dftbp_determinants
   implicit none
 
 
@@ -817,15 +818,6 @@ module dftbp_initprogram
   !> electronic filling
   real(dp), allocatable :: filling(:,:,:)
 
-  !> band structure energy
-  real(dp), allocatable :: Eband(:)
-
-  !> entropy of electrons at temperature T
-  real(dp), allocatable :: TS(:)
-
-  !> zero temperature electronic energy
-  real(dp), allocatable :: E0(:)
-
   !> Square dense hamiltonian storage for cases with k-points
   complex(dp), allocatable :: HSqrCplx(:,:)
 
@@ -850,8 +842,8 @@ module dftbp_initprogram
   !> density matrix
   real(dp), allocatable :: rhoSqrReal(:,:,:)
 
-  !> Total energy components
-  type(TEnergies) :: energy
+  !> Total energy components (potentially for multiple determinants)
+  type(TEnergies), allocatable :: dftbEnergy(:)
 
   !> Potentials for orbitals
   type(TPotentials) :: potential
@@ -865,14 +857,23 @@ module dftbp_initprogram
   !> Energy derivative with respect to atomic positions
   real(dp), allocatable :: derivs(:,:)
 
+  !> Energy derivative for ground state determinant
+  real(dp), allocatable :: groundDerivs(:,:)
+
+  !> Energy derivative for triplet determinant (TI-DFTB excited states)
+  real(dp), allocatable :: tripletDerivs(:,:)
+
+  !> Energy derivative for mixed determinant (TI-DFTB excited states)
+  real(dp), allocatable :: mixedDerivs(:,:)
+
   !> Forces on any external charges
   real(dp), allocatable :: chrgForces(:,:)
 
   !> excited state force addition
   real(dp), allocatable :: excitedDerivs(:,:)
 
-  !> dipole moments when available
-  real(dp), allocatable :: dipoleMoment(:)
+  !> dipole moments, when available, for whichever determinants are present
+  real(dp), allocatable :: dipoleMoment(:, :)
 
   !> Coordinates to print out
   real(dp), pointer :: pCoord0Out(:,:)
@@ -934,6 +935,9 @@ module dftbp_initprogram
   !> Stress tensors for various contribution in periodic calculations
   !> Sign convention: Positive diagonal elements expand the supercell
   real(dp) :: totalStress(3,3)
+
+  !> Stress tensors for determinants if using TI-DFTB
+  real(dp), allocatable :: mixedStress(:,:), tripletStress(:,:)
 
   ! Tagged writer
   type(TTaggedWriter) :: taggedWriter
@@ -1023,6 +1027,21 @@ module dftbp_initprogram
 
   !> All of the excited energies actuall solved by Casida routines (if used)
   real(dp), allocatable :: energiesCasida(:)
+
+  !> Type for determinant control in DFTB (Delta DFTB)
+  type(TDftbDeterminants) :: deltaDftb
+
+  !> Number of determinants in use in the calculation
+  integer :: nDets
+
+  !> Final SCC charges if multiple determinants being used
+  real(dp), allocatable :: qDets(:,:,:,:)
+
+  !> Final SCC block charges if multiple determinants being used
+  real(dp), allocatable :: qBlockDets(:,:,:,:,:)
+
+  !> Final density matrices if multiple determinants being used
+  real(dp), allocatable :: deltaRhoDets(:,:)
 
   !> data type for REKS
   type(TReksCalc), allocatable :: reks
@@ -1782,6 +1801,10 @@ contains
          & input%ctrl%customOccFillings, q0, qShell0)
     call setNElectrons(q0, nrChrg, nrSpinPol, nEl, nEl0)
 
+    ! DFTB related variables if multiple determinants are used
+    call TDftbDeterminants_init(deltaDftb, input%ctrl%isNonAufbau, input%ctrl%isSpinPurify,&
+        & input%ctrl%isGroundGuess, nEl, dftbEnergy)
+
     if (tForces) then
       tCasidaForces = input%ctrl%tCasidaForces
     else
@@ -1860,6 +1883,10 @@ contains
           & kWeight(parallelKS%localKS(1, 1)), input%ctrl%tWriteHS,&
           & electronicSolver%providesElectronEntropy)
 
+    end if
+
+    if (deltaDftb%isNonAufbau .and. .not.electronicSolver%providesEigenvals) then
+      call error("Eigensolver that calculates eigenvalues is required for Delta DFTB")
     end if
 
     if (allocated(reks)) then
@@ -2398,6 +2425,9 @@ contains
     end if
 
     tReadChrg = input%ctrl%tReadChrg
+    if (tReadChrg .and. deltaDftb%isNonAufbau) then
+      call error("Charge restart not currently supported for Delta DFTB")
+    end if
 
     if (isRangeSep) then
       call ensureRangeSeparatedReqs(tPeriodic, tHelical, tReadChrg, input%ctrl%tShellResolved,&
@@ -2554,13 +2584,19 @@ contains
           & nExtChrg, t3rd.or.t3rdFull, isRangeSep, tForces, tPeriodic, tStress, tDipole)
     end if
 
-    call initArrays(env, electronicSolver, tForces, tExtChrg, isLinResp, tLinRespZVect, tMd,&
-        & tMulliken, tSpinOrbit, tImHam, tWriteRealHS, tWriteHS, t2Component, tRealHS,&
-        & tPrintExcitedEigvecs, tDipole, allocated(reks), orb, nAtom, nMovedAtom, nKPoint, nSpin,&
-        & nExtChrg, indMovedAtom, mass, denseDesc, rhoPrim, h0, iRhoPrim, excitedDerivs, ERhoPrim,&
-        & derivs, chrgForces, energy, potential, TS, E0, Eband, eigen, filling, coord0Fold,&
-        & newCoords, orbitalL, HSqrCplx, SSqrCplx, eigvecsCplx, HSqrReal, SSqrReal, eigvecsReal,&
-        & rhoSqrReal, occNatural, velocities, movedVelo, movedAccel, movedMass, dipoleMoment)
+    call initDetArrays(nDets, deltaDftb, qDets, tDftbU .or. allocated(onSiteElements), qBlockDets,&
+        & isRangeSep, deltaRhoDets, orb, nAtom, nSpin)
+
+    call initArrays(env, electronicSolver, tForces, tStress, tExtChrg, isLinResp, tLinRespZVect,&
+        & tMd, tMulliken, tSpinOrbit, tImHam, tWriteRealHS, tWriteHS, t2Component, tRealHS,&
+        & tPrintExcitedEigvecs, tDipole, allocated(reks), deltaDftb%isNonAufbau, orb, nAtom,&
+        & nMovedAtom, nKPoint, nSpin, nExtChrg, indMovedAtom, mass, denseDesc, rhoPrim, h0,&
+        & iRhoPrim, excitedDerivs, ERhoPrim, derivs, groundDerivs, tripletDerivs, mixedDerivs,&
+        & tripletStress, mixedStress, chrgForces, dftbEnergy, potential, eigen, filling,&
+        & coord0Fold, newCoords, orbitalL, HSqrCplx, SSqrCplx, eigvecsCplx, HSqrReal, SSqrReal,&
+        & eigvecsReal, rhoSqrReal, occNatural, velocities, movedVelo, movedAccel, movedMass,&
+        & dipoleMoment)
+
 
   #:if WITH_TRANSPORT
     ! note, this has the side effect of setting up module variable transpar as copy of
@@ -3223,10 +3259,54 @@ contains
       end do
     end if
 
-      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Force type", "original"
-      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Force type", "erho with re-diagonalized eigenvalues"
-      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Force type", "erho with DHD-product (T_elec = 0K)"
-      if(input%ctrl%verbose.gt.50) write(stdOut, "(A,T30,A)") "Force type", "erho with S^-1 H D (Te <> 0K)"
+    if (deltaDftb%isNonAufbau) then
+      if (nSpin /= 2) then
+        call error("Internal error, Delta DFTB requires two spin channels")
+      end if
+      if (nEl(1) /= nEl(2)) then
+        call error("Internal error, Delta DFTB requires a spin free reference")
+      end if
+      if (abs(nEl(1) - nint(nEl(1))) > epsilon(0.0)) then
+        call error("Delta DFTB requires an integer number of electrons in the reference state")
+      end if
+      if (mod(sum(nint(nEl)),2) /= 0) then
+        call error("Delta DFTB requires an even number of electrons in reference state")
+      end if
+      if (sum(nEl) >= 2*nOrb) then
+        call error("Delta DFTB requires at least one empty orbita in the system")
+      end if
+      if (sum(nEl) < 2) then
+        call error("Delta DFTB requires at least one full orbital in the system")
+      end if
+    end if
+    if (deltaDftb%isNonAufbau .and. .not.tSccCalc) then
+      call error("Delta DFTB must use SCC = Yes")
+    end if
+    if (deltaDftb%isNonAufbau .and. isLinResp) then
+      call error("Delta DFTB incompatible with linear response")
+    end if
+    if (deltaDftb%isNonAufbau .and. allocated(ppRPA)) then
+      call error("Delta DFTB incompatible with ppRPA")
+    end if
+    if (deltaDftb%isNonAufbau .and. allocated(input%ctrl%elecDynInp)) then
+      call error("Delta DFTB incompatible with electron dynamics")
+    end if
+    if (deltaDftb%isNonAufbau .and. tFixEf) then
+      call error("Delta DFTB incompatible with fixed Fermi energy")
+    end if
+    if (deltaDftb%isNonAufbau .and. tSpinSharedEf) then
+      call error("Delta DFTB incompatible with shared Fermi energy")
+    end if
+    if (deltaDftb%isNonAufbau .and. allocated(reks)) then
+      call error("Delta DFTB incompatible with REKS")
+    end if
+    if (deltaDftb%isNonAufbau .and. tNegf) then
+      call error("Delta DFTB incompatible with transport")
+    end if
+    if (deltaDftb%isNonAufbau .and. tLocalise) then
+      call error("Delta DFTB incompatible with localisation")
+    end if
+
     if (tSpinOrbit .and. tDFTBU .and. .not. tDualSpinOrbit)  then
       call error("Only dual spin orbit currently supported for orbital potentials")
     end if
@@ -3255,10 +3335,6 @@ contains
     if (isLinResp) then
       if (tDFTBU) then
         call error("Linear response is not compatible with Orbitally dependant functionals yet")
-      end if
-
-      if (tForces .and. nSpin > 1) then
-        call error("Linear response is not available for spin polarised forces yet")
       end if
 
       if (t2Component) then
@@ -3948,7 +4024,7 @@ contains
     nEl0 = sum(q0(:,:,1))
     if (abs(nEl0 - nint(nEl0)) < elecTolMax) then
       nEl0 = nint(nEl0)
-   end if
+    end if
     nEl(:) = 0.0_dp
     if (nSpin == 1 .or. nSpin == 4) then
       nEl(1) = nEl0 - nrChrg
@@ -4070,8 +4146,9 @@ contains
     @:SAFE_DEALLOC(thirdOrd, onSiteElements, onSiteDipole)
     @:SAFE_DEALLOC(dispersion, xlbomdIntegrator)
     @:SAFE_DEALLOC(velocities, movedVelo, movedAccel, movedMass)
-    @:SAFE_DEALLOC(rhoPrim, iRhoPrim, ERhoPrim, h0, filling, Eband, TS, E0)
+    @:SAFE_DEALLOC(rhoPrim, iRhoPrim, ERhoPrim, h0, filling)
     @:SAFE_DEALLOC(HSqrCplx, SSqrCplx, eigvecsCplx, HSqrReal, SSqrReal, eigvecsReal, eigen)
+    @:SAFE_DEALLOC(groundDerivs, tripletDerivs, mixedDerivs, tripletStress, mixedStress)
     @:SAFE_DEALLOC(RhoSqrReal, qDepExtPot, derivs, chrgForces, excitedDerivs, dipoleMoment)
     @:SAFE_DEALLOC(coord0Fold, newCoords, orbitalL, occNatural, mu)
     @:SAFE_DEALLOC(shiftPerLUp, chargeUp)
@@ -4227,7 +4304,7 @@ contains
         call error('Internal error: DenseDesc not created')
       end if
 
-      ! Some sanity checks and initialization of GDFTB/NEGF
+      ! Some checks and initialization of GDFTB/NEGF
     #:if WITH_MPI
       !NEW     & tempElec, electronicSolver%iSolver)
       call negf_init(negfStr, input%transpar, input%ginfo%greendens, input%ginfo%tundos,&
@@ -4343,11 +4420,12 @@ contains
 
 
   !> Allocates most of the large arrays needed during the DFTB run.
-  subroutine initArrays(env, electronicSolver, tForces, tExtChrg, isLinResp, tLinRespZVect, tMd,&
-      & tMulliken, tSpinOrbit, tImHam, tWriteRealHS, tWriteHS, t2Component, tRealHS,&
-      & tPrintExcitedEigvecs, tDipole, isREKS, orb, nAtom, nMovedAtom, nKPoint, nSpin, nExtChrg,&
-      & indMovedAtom, mass, denseDesc, rhoPrim, h0, iRhoPrim, excitedDerivs, ERhoPrim, derivs,&
-      & chrgForces, energy, potential, TS, E0, Eband, eigen, filling, coord0Fold, newCoords,&
+  subroutine initArrays(env, electronicSolver, tForces, tStress, tExtChrg, isLinResp,&
+      & tLinRespZVect, tMd, tMulliken, tSpinOrbit, tImHam, tWriteRealHS, tWriteHS, t2Component,&
+      & tRealHS, tPrintExcitedEigvecs, tDipole, isREKS, isNonAufbau, orb, nAtom, nMovedAtom,&
+      & nKPoint, nSpin, nExtChrg, indMovedAtom, mass, denseDesc, rhoPrim, h0, iRhoPrim,&
+      & excitedDerivs, ERhoPrim, derivs, groundDerivs, tripletderivs, mixedderivs, tripletStress,&
+      & mixedStress, chrgForces, dftbEnergy, potential, eigen, filling, coord0Fold, newCoords,&
       & orbitalL, HSqrCplx, SSqrCplx, eigvecsCplx, HSqrReal, SSqrReal, eigvecsReal, rhoSqrReal,&
       & occNatural, velocities, movedVelo, movedAccel, movedMass, dipoleMoment)
 
@@ -4359,6 +4437,9 @@ contains
 
     !> Are forces required
     logical, intent(in) :: tForces
+
+    !> Can stress be calculated?
+    logical :: tStress
 
     !> Are the external charges
     logical, intent(in) :: tExtChrg
@@ -4401,6 +4482,9 @@ contains
 
     !> Is this DFTB/SSR formalism
     logical, intent(in) :: isREKS
+
+    !> Is this a Delta DFTB calculation
+    logical, intent(in) :: isNonAufbau
 
     !> data structure with atomic orbital information
     type(TOrbitals), intent(in) :: orb
@@ -4447,23 +4531,29 @@ contains
     !> Derivatives of total energy with respect to atomic coordinates
     real(dp), intent(out), allocatable :: derivs(:,:)
 
+    !> Energy derivative for ground state determinant
+    real(dp), intent(out), allocatable :: groundDerivs(:,:)
+
+    !> Energy derivative for triplet determinant (TI-DFTB excited states)
+    real(dp), intent(out), allocatable :: tripletDerivs(:,:)
+
+    !> Energy derivative for mixed determinant (TI-DFTB excited states)
+    real(dp), intent(out), allocatable :: mixedDerivs(:,:)
+
+    !> Stress tensor for triplet determinant (TI-DFTB excited states)
+    real(dp), intent(out), allocatable :: tripletStress(:,:)
+
+    !> Stress tensor for mixed determinant (TI-DFTB excited states)
+    real(dp), intent(out), allocatable :: mixedStress(:,:)
+
     !> Forces on (any) external charges
     real(dp), intent(out), allocatable :: chrgForces(:,:)
 
-    !> Energy terms
-    type(TEnergies), intent(out) :: energy
+    !> Energy terms for each determinant present
+    type(TEnergies), intent(out) :: dftbEnergy(:)
 
     !> Potentials acting on the system
     type(TPotentials), intent(out) :: potential
-
-    !> Electron entropy contribution at T
-    real(dp), intent(out), allocatable :: TS(:)
-
-    !> zero temperature extrapolated electronic energy
-    real(dp), intent(out), allocatable :: E0(:)
-
-    !> band  energy
-    real(dp), intent(out), allocatable :: Eband(:)
 
     !> single particle energies (band structure)
     real(dp), intent(out), allocatable :: eigen(:,:,:)
@@ -4517,10 +4607,9 @@ contains
     real(dp), intent(out), allocatable :: movedMass(:,:)
 
     !> system dipole moment
-    real(dp), intent(out), allocatable :: dipoleMoment(:)
+    real(dp), intent(out), allocatable :: dipoleMoment(:,:)
 
-
-    integer :: nSpinHams, sqrHamSize
+    integer :: nSpinHams, sqrHamSize, iDet
 
     if (isREKS) then
       allocate(rhoPrim(0, 1))
@@ -4538,6 +4627,15 @@ contains
         allocate(ERhoPrim(0))
       end if
       allocate(derivs(3, nAtom))
+      if (isNonAufbau) then
+        allocate(groundDerivs(3, nAtom))
+        allocate(tripletDerivs(3, nAtom))
+        allocate(mixedDerivs(3, nAtom))
+        if (tStress) then
+          allocate(mixedStress(3,3))
+          allocate(tripletStress(3,3))
+        end if
+      end if
       if (tExtChrg) then
         allocate(chrgForces(3, nExtChrg))
       end if
@@ -4547,7 +4645,6 @@ contains
       end if
     end if
 
-    call TEnergies_init(energy, nAtom)
     call init(potential, orb, nAtom, nSpin)
 
     ! Nr. of independent spin Hamiltonians
@@ -4563,13 +4660,11 @@ contains
       nSpinHams = 1
     end if
 
+    do iDet = 1, size(dftbEnergy)
+      call TEnergies_init(dftbEnergy(iDet), nAtom, nSpinHams)
+    end do
+
     sqrHamSize = denseDesc%fullSize
-    allocate(TS(nSpinHams))
-    allocate(E0(nSpinHams))
-    allocate(Eband(nSpinHams))
-    TS = 0.0_dp
-    E0 = 0.0_dp
-    Eband = 0.0_dp
 
     if (electronicSolver%providesEigenvals) then
       allocate(eigen(sqrHamSize, nKPoint, nSpinHams))
@@ -4624,10 +4719,67 @@ contains
     end if
 
     if (tDipole) then
-      allocate(dipoleMoment(3))
+      if (deltaDftb%isSpinPurify) then
+        allocate(dipoleMoment(3, deltaDftb%nDeterminant()+1))
+      else
+        allocate(dipoleMoment(3, deltaDftb%nDeterminant()))
+      end if
     end if
 
   end subroutine initArrays
+
+
+  !> Initialize storage for multi-determinantal calculations
+  subroutine initDetArrays(nDets, deltaDftb, qDets, isBlockCharge, qBlockDets, isRangeSep,&
+      & deltaRhoDets, orb, nAtom, nSpin)
+
+    !> Number of determinants in use
+    integer, intent(out) :: nDets
+
+    !> Type for determinant control in DFTB (Delta DFTB)
+    type(TDftbDeterminants), intent(in) :: deltaDftb
+
+    !> Final SCC charges if multiple determinants being used
+    real(dp), intent(out), allocatable :: qDets(:,:,:,:)
+
+    !> Whether block charges are needed
+    logical, intent(in) :: isBlockCharge
+
+    !> Final SCC block charges if multiple determinants being used
+    real(dp), intent(out), allocatable :: qBlockDets(:,:,:,:,:)
+
+    !> Whether to run a range separated calculation
+    logical, intent(in) :: isRangeSep
+
+    !> Final density matrices if multiple determinants being used
+    real(dp), intent(out), allocatable :: deltaRhoDets(:,:)
+
+    !> data structure with atomic orbital information
+    type(TOrbitals), intent(in) :: orb
+
+    !> Number of atoms
+    integer, intent(in) :: nAtom
+
+    !> Number of spin channels
+    integer, intent(in) :: nSpin
+
+    nDets = deltaDftb%nDeterminant()
+    if (nDets > 1) then
+      ! must be SCC and also need storage for final charges
+      allocate(qDets(orb%mOrb, nAtom, nSpin, nDets))
+      qDets(:,:,:,:) = 0.0_dp
+      if (isBlockCharge) then
+        allocate(qBlockDets(orb%mOrb, orb%mOrb, nAtom, nSpin, nDets))
+        qBlockDets(:,:,:,:,:) = 0.0_dp
+      end if
+      if (isRangeSep) then
+        allocate(deltaRhoDets(nOrb * nOrb * nSpin, nDets))
+        deltaRhoDets(:,:) = 0.0_dp
+      end if
+    end if
+
+  end subroutine initDetArrays
+
 
 #:if WITH_TRANSPORT
 
@@ -4724,6 +4876,7 @@ contains
 
     !> Eigenvectors for real eigenproblem
     real(dp), allocatable, intent(out) :: eigvecsReal(:,:,:)
+
 
     integer :: nLocalCols, nLocalRows, nLocalKS
 
@@ -5252,10 +5405,6 @@ contains
       call error("Linear reponse does not work with non-colinear spin polarization yet")
     end if
 
-    if (tSpin .and. tCasidaForces) then
-      call error("excited state forces are not implemented yet for spin-polarized systems")
-    end if
-
     if (tSpinOrbit) then
       call error("Linear response does not support spin orbit coupling at the moment.")
     end if
@@ -5266,7 +5415,7 @@ contains
       call error("Linear response does not support shell resolved scc yet")
     end if
 
-    if (tempElec > 0.0_dp .and. tCasidaForces) then
+    if (tempElec > minTemp .and. tCasidaForces) then
       write(tmpStr, "(A,E12.4,A)")"Excited state forces are not implemented yet for fractional&
           & occupations, kT=", tempElec/Boltzmann,"K"
       call warning(tmpStr)

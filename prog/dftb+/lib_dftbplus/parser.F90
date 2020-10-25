@@ -285,10 +285,15 @@ contains
     call getChild(root, "Geometry", tmp)
     call readGeometry(tmp, input)
 
+    ! Hamiltonian settings that need to know settings from the REKS block
+    call getChildValue(root, "Reks", dummy, "None", child=child)
+    call readReks(child, dummy, input%ctrl, input%geom)
+    
     ! Read in transport and modify geometry if only contact calculation
     call getChild(root, "Transport", dummy, requested=.false.)
     ! Electronic Hamiltonian
     call getChildValue(root, "Hamiltonian", hamNode)
+
 
 #:if WITH_TRANSPORT
 
@@ -303,22 +308,21 @@ contains
       input%transpar%idxdevice(2) = input%geom%nAtom
     end if
 
-    ! electronic Hamiltonian
-    call getChildValue(root, "Hamiltonian", hamNode)
-
-    call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako, input%transpar,&
-        & input%ginfo%greendens, input%poisson)
-
 !NEW    call getChild(root, "Dephasing", child, requested=.false.)
 !NEW    if (associated(child)) then
 !NEW      call detailedError(child, "Be patient... Dephasing feature will be available soon!")    
 !NEW      !call readDephasing(child, input%slako%orb, input%geom, input%transpar, input%ginfo%tundos)
 !NEW    end if
 
+    ! electronic Hamiltonian
+    call getChildValue(root, "Hamiltonian", hamNode)
+    call readHamiltonian(hamNode, input%ctrl, input%geom, input%slako, input%transpar,&
+        & input%ginfo%greendens, input%poisson)
+
 #:else
 
     if (associated(dummy)) then
-      call detailedError(dummy, "Program had been compiled without transport enabled")
+      call detailedError(dummy, "Program has been compiled without transport enabled")
     end if
 
     ! electronic Hamiltonian
@@ -368,9 +372,6 @@ contains
         & allowEmptyValue=.true., dummyValue=.true.)
     call readExcited(child, input%geom, input%ctrl)
 
-    call getChildValue(root, "Reks", dummy, "None", child=child)
-    call readReks(child, dummy, input%ctrl, input%geom)
-
     ! Hamiltonian settings that need to know settings from the blocks above
     call readLaterHamiltonian(hamNode, input%ctrl, driverNode, input%geom)
 
@@ -382,7 +383,9 @@ contains
     call readSpinConstants(hamNode, input%geom, input%slako, input%ctrl)
 
     ! analysis settings that need to know settings from the options block
-    call readLaterAnalysis(analysisNode, input%ctrl)
+    if (tReadAnalysis) then
+      call readLaterAnalysis(analysisNode, input%ctrl)
+    end if
     
 #:if WITH_TRANSPORT
     call finalizeNegf(input) !DAR
@@ -1536,6 +1539,21 @@ contains
       ! DFTB hydrogen bond corrections
       call readHCorrection(node, geo, ctrl)
 
+      !> TI-DFTB varibles for Delta DFTB
+      call getChild(node, "NonAufbau", child, requested=.false.)
+      if (associated(child)) then
+        ctrl%isNonAufbau = .true.
+        call getChildValue(child, "SpinPurify", ctrl%isSpinPurify, .true.)
+        call getChildValue(child, "GroundGuess", ctrl%isGroundGuess, .false.)
+        ctrl%nrChrg = 0.0_dp
+        ctrl%tSpin = .true.
+        ctrl%t2Component = .false.
+        ctrl%nrSpinPol = 0.0_dp
+        ctrl%tSpinSharedEf = .false.
+      else
+        ctrl%isNonAufbau = .false.
+      end if
+
     end if ifSCC
 
     ! Customize the reference atomic charges for virtual doping
@@ -1543,11 +1561,13 @@ contains
         & ctrl%customOccAtoms, ctrl%customOccFillings)
 
     ! Spin calculation
-  #:if WITH_TRANSPORT
-    call readSpinPolarisation(node, ctrl, geo, tp)
-  #:else
-    call readSpinPolarisation(node, ctrl, geo)
-  #:endif
+    if (ctrl%reksInp%reksAlg == reksTypes%noReks  .and. .not.ctrl%isNonAufbau) then
+    #:if WITH_TRANSPORT
+      call readSpinPolarisation(node, ctrl, geo, tp)
+    #:else
+      call readSpinPolarisation(node, ctrl, geo)
+    #:endif
+    end if
 
     ! temporararily removed until debugged
     !if (.not. ctrl%tscc) then
@@ -1591,6 +1611,7 @@ contains
   #:else
     call readSolver(node, ctrl, geo, poisson)
   #:endif
+
 
     ! Charge
     call getChildValue(node, "Charge", ctrl%nrChrg, 0.0_dp)
@@ -1885,14 +1906,31 @@ contains
       ! get charge mixing options etc.
       call readSccOptions(node, ctrl, geo)
 
+      !> TI-DFTB varibles for Delta DFTB
+      call getChild(node, "NonAufbau", child, requested=.false.)
+      if (associated(child)) then
+        ctrl%isNonAufbau = .true.
+        call getChildValue(child, "SpinPurify", ctrl%isSpinPurify, .true.)
+        call getChildValue(child, "GroundGuess", ctrl%isGroundGuess, .false.)
+        ctrl%nrChrg = 0.0_dp
+        ctrl%tSpin = .true.
+        ctrl%t2Component = .false.
+        ctrl%nrSpinPol = 0.0_dp
+        ctrl%tSpinSharedEf = .false.
+      else
+        ctrl%isNonAufbau = .false.
+      end if
+
     end if ifSCC
 
     ! Spin calculation
-  #:if WITH_TRANSPORT
-    call readSpinPolarisation(node, ctrl, geo, tp)
-  #:else
-    call readSpinPolarisation(node, ctrl, geo)
-  #:endif
+    if (ctrl%reksInp%reksAlg == reksTypes%noReks .and. .not.ctrl%isNonAufbau) then
+    #:if WITH_TRANSPORT
+      call readSpinPolarisation(node, ctrl, geo, tp)
+    #:else
+      call readSpinPolarisation(node, ctrl, geo)
+    #:endif
+    end if
 
     ! temporararily removed until debugged
     !if (.not. ctrl%tscc) then
