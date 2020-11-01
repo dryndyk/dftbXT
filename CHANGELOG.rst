@@ -14,6 +14,8 @@ Added
 
 - Many body and Tkatchenko-Scheffler dispersion
 
+- Delta DFTB for lowest singlet excitated state
+
 Changed
 -------
 
